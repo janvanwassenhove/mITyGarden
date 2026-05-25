@@ -17,7 +17,7 @@
 - Clicking "Next" advances to Step 2
 
 ### AC-003: Step 2 — Garden Boundary (optional)
-- If `VITE_GOOGLE_MAPS_API_KEY` is configured, an interactive Google Maps view is shown
+- If `GOOGLE_MAPS_API_KEY` is configured, an interactive Google Maps view is shown
 - User can draw a polygon to trace their garden outline
 - After drawing, width/height (bounding box) and area are displayed
 - If no API key, a message explains the feature requires configuration
@@ -53,7 +53,7 @@
 
 ## Requirements
 
-- REQ-WIZ-01: Wizard MUST have exactly 5 steps
+- REQ-WIZ-01: Wizard MUST have exactly 5 steps: Location → Boundary → Dimensions → Style → Goals (see [spec 003](../003-google-maps-boundary/spec.md) for Boundary step detail)
 - REQ-WIZ-02: All wizard state MUST be managed in `uiStore.wizard`
 - REQ-WIZ-03: Project creation MUST call `projectStore.newProject()`
 - REQ-WIZ-04: Wizard MUST be accessible via keyboard (Tab, Enter, Escape)
@@ -64,15 +64,16 @@
 | Element | data-testid |
 |---------|-------------|
 | Wizard modal | `project-wizard` |
-| Step 1 container | `wizard-step-dimensions` |
+| Step 1 container | `wizard-step-location` |
+| Address input | `wizard-address-input` |
+| Step 2 container | `wizard-step-boundary` |
+| Step 3 container | `wizard-step-dimensions` |
 | Width input | `wizard-width` |
 | Height input | `wizard-height` |
-| Step 2 container | `wizard-step-style` |
+| Step 4 container | `wizard-step-style` |
 | Style button (template) | `wizard-style-{style}` |
-| Step 4 container | `wizard-step-goals` |
+| Step 5 container | `wizard-step-goals` |
 | Goal checkbox (template) | `wizard-goal-{goal}` |
-| Step 5 container | `wizard-step-location` |
-| Address input | `wizard-address-input` |
 | Back button | `wizard-back` |
 | Next button | `wizard-next` |
 | Finish button | `wizard-finish` |

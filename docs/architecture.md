@@ -69,19 +69,21 @@ Future upgrade path: `react-native-skia` for native mobile rendering.
 | Platform | Adapter |
 |----------|---------|
 | Web | `IndexedDBRepository` (IndexedDB) |
-| Desktop | `SQLiteRepository` (better-sqlite3) — _Milestone 4_ |
+| Desktop | `ElectronRepository` (IPC → `better-sqlite3` in main process) |
 | Mobile | `AsyncStorageRepository` (MMKV) — _Milestone 8_ |
 
 All adapters implement the `ProjectRepository` interface. Cloud sync is defined via `CloudSyncAdapter` interface but not implemented in v1 (uses `NoOpCloudSyncAdapter`).
 
-## LLM Integration (Desktop-Only)
+## LLM Integration
 
-API keys are **never sent to the renderer process**. The flow:
-1. Electron reads `MITY_GARDEN_OPENAI_API_KEY` / `MITY_GARDEN_ANTHROPIC_API_KEY` from env
-2. `ipcMain` handles `llm:complete` — makes the HTTP request in the Node.js main process
-3. Only the text response is sent back via IPC
+mITyGarden supports LLM features on **both web and desktop**.
 
-Supported providers: OpenAI (gpt-4o-mini default), Anthropic (claude-3-haiku default).
+**Web / Desktop renderer**: API keys are supplied via `VITE_*` build-time env vars or persisted in `localStorage` through the `ApiKeySettingsModal`. The `packages/llm` factory (`createLLMProvider`) picks OpenAI → Anthropic → NoOp in priority order.
+
+**Desktop main process (Electron)**: The `ipcMain` handler `llm:complete` is also available for future server-side key management. In this path API keys are read from `MITY_GARDEN_*` env vars and the HTTP request is made in the Node.js main process — the renderer only receives the text response.
+
+Supported text providers: OpenAI (`gpt-4o-mini` default), Anthropic (`claude-3-haiku` default).
+Supported image providers: DALL·E 3 (via `DalleProvider`), Gemini Imagen (via `GeminiImageProvider`). See [llm-integration.md](llm-integration.md) for full details.
 
 ## Internationalisation
 
@@ -89,14 +91,14 @@ Supported providers: OpenAI (gpt-4o-mini default), Anthropic (claude-3-haiku def
 
 ## Development Milestones
 
-| # | Feature | Status |
-|---|---------|--------|
-| 0 | Foundation (monorepo, packages, CI) | ✅ Complete |
-| 1 | Project Wizard | 🔄 In Progress |
-| 2 | Asset Library Panel | 🔲 Planned |
-| 3 | Konva Canvas (place/move/delete) | 🔲 Planned |
-| 4 | Desktop (Electron + SQLite) | 🔲 Planned |
-| 5 | Export (PNG/JSON/PDF proposal) | 🔲 Planned |
-| 6 | Google Maps Integration | 🔲 Planned |
-| 7 | LLM Garden Suggestions | 🔲 Planned |
-| 8 | Mobile (Expo) | 🔲 Planned |
+| # | Feature | Spec | Status |
+|---|---------|------|--------|
+| 0 | Foundation (monorepo, packages, CI) | — | ✅ Complete |
+| 1 | Project Creation Wizard | [spec 001](../specs/001-project-wizard/spec.md) | ✅ Complete |
+| 2 | Asset Library Panel | — | ✅ Complete |
+| 3 | Garden Canvas (place/move/delete/undo) | [spec 002](../specs/002-garden-canvas/spec.md) | ✅ Complete |
+| 4 | Desktop — Electron + SQLite | — | ✅ Complete |
+| 5 | Export (JSON + text proposal) | — | ✅ Complete |
+| 6 | Google Maps Boundary Drawing | [spec 003](../specs/003-google-maps-boundary/spec.md) | ✅ Complete |
+| 7 | LLM Garden Suggestions + Image Generation | — | ✅ Complete |
+| 8 | Mobile (Expo) | — | 🔲 Planned |

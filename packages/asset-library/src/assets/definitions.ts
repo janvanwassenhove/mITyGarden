@@ -1,17 +1,118 @@
 import type { AssetDefinition } from "@mity-garden/domain";
 
-// ─── SVG Placeholder Thumbnails ───────────────────────────────────────────────
+// ─── SVG Thumbnail Generators ─────────────────────────────────────────────────
+//
+// All stroke-widths use fractional values (≤0.5 SVG units) because the viewBox
+// is only 64×64. A stroke-width="2" would scale to ~10 px on a 300 px element.
 
+/** Thin-bordered rectangle — base for area elements */
 function rectSvg(fill: string, stroke: string, rx = 4): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="2"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/></svg>`;
 }
 
+/** Thin-bordered circle */
 function circleSvg(fill: string, stroke: string): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="${fill}" stroke="${stroke}" stroke-width="2"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/></svg>`;
 }
 
+/** Tree: foliage crown + trunk */
 function treeSvg(trunkColor: string, crownColor: string): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="24" r="20" fill="${crownColor}"/><rect x="28" y="44" width="8" height="16" fill="${trunkColor}"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="24" r="20" fill="${crownColor}"/><rect x="28" y="42" width="8" height="16" rx="2" fill="${trunkColor}"/></svg>`;
+}
+
+/** Swimming pool with dashed lane-divider lines */
+function poolSvg(fill: string, stroke: string, rx = 4): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><line x1="10" y1="21" x2="54" y2="21" stroke="white" stroke-width="0.8" stroke-opacity="0.55" stroke-dasharray="5,3"/><line x1="10" y1="32" x2="54" y2="32" stroke="white" stroke-width="0.8" stroke-opacity="0.55" stroke-dasharray="5,3"/><line x1="10" y1="43" x2="54" y2="43" stroke="white" stroke-width="0.8" stroke-opacity="0.55" stroke-dasharray="5,3"/></svg>`;
+}
+
+/** Oval / freeform pool with lane lines */
+function ovalPoolSvg(fill: string, stroke: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="30" ry="30" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><line x1="10" y1="24" x2="54" y2="24" stroke="white" stroke-width="0.8" stroke-opacity="0.55" stroke-dasharray="5,3"/><line x1="8" y1="32" x2="56" y2="32" stroke="white" stroke-width="0.8" stroke-opacity="0.55" stroke-dasharray="5,3"/><line x1="10" y1="40" x2="54" y2="40" stroke="white" stroke-width="0.8" stroke-opacity="0.55" stroke-dasharray="5,3"/></svg>`;
+}
+
+/** Terrace with tile-grid pattern */
+function terraceTileSvg(fill: string, stroke: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><line x1="2" y1="18" x2="62" y2="18" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.5"/><line x1="2" y1="34" x2="62" y2="34" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.5"/><line x1="2" y1="50" x2="62" y2="50" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.5"/><line x1="18" y1="2" x2="18" y2="62" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.5"/><line x1="34" y1="2" x2="34" y2="62" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.5"/><line x1="50" y1="2" x2="50" y2="62" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.5"/></svg>`;
+}
+
+/** Wood decking with horizontal plank lines */
+function terraceWoodSvg(fill: string, stroke: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><line x1="2" y1="14" x2="62" y2="14" stroke="${stroke}" stroke-width="0.7" stroke-opacity="0.5"/><line x1="2" y1="26" x2="62" y2="26" stroke="${stroke}" stroke-width="0.7" stroke-opacity="0.5"/><line x1="2" y1="38" x2="62" y2="38" stroke="${stroke}" stroke-width="0.7" stroke-opacity="0.5"/><line x1="2" y1="50" x2="62" y2="50" stroke="${stroke}" stroke-width="0.7" stroke-opacity="0.5"/><line x1="32" y1="2" x2="32" y2="14" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.35"/><line x1="32" y1="26" x2="32" y2="38" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.35"/><line x1="32" y1="50" x2="32" y2="62" stroke="${stroke}" stroke-width="0.4" stroke-opacity="0.35"/></svg>`;
+}
+
+/** Gravel: speckled dot texture */
+function gravelSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="#e0dcd6" stroke="#9e9e9e" stroke-width="0.5"/><circle cx="12" cy="12" r="2" fill="#bdbdbd" opacity="0.7"/><circle cx="26" cy="18" r="1.5" fill="#9e9e9e" opacity="0.6"/><circle cx="40" cy="10" r="2.5" fill="#bdbdbd" opacity="0.5"/><circle cx="54" cy="16" r="1.5" fill="#9e9e9e" opacity="0.7"/><circle cx="8" cy="32" r="1.5" fill="#9e9e9e" opacity="0.6"/><circle cx="20" cy="28" r="2" fill="#bdbdbd" opacity="0.7"/><circle cx="34" cy="36" r="1.5" fill="#9e9e9e" opacity="0.5"/><circle cx="48" cy="30" r="2" fill="#bdbdbd" opacity="0.6"/><circle cx="58" cy="38" r="1.5" fill="#9e9e9e" opacity="0.7"/><circle cx="14" cy="48" r="2" fill="#bdbdbd" opacity="0.6"/><circle cx="28" cy="54" r="1.5" fill="#9e9e9e" opacity="0.5"/><circle cx="42" cy="46" r="2.5" fill="#bdbdbd" opacity="0.7"/><circle cx="56" cy="52" r="2" fill="#9e9e9e" opacity="0.6"/></svg>`;
+}
+
+/** Grass / lawn with alternating mowing stripe effect */
+function grassSvg(fill: string, stroke: string, rx = 2): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><rect x="2" y="2" width="60" height="11" rx="${rx}" fill="${stroke}" opacity="0.08"/><rect x="2" y="24" width="60" height="11" fill="${stroke}" opacity="0.08"/><rect x="2" y="46" width="60" height="11" fill="${stroke}" opacity="0.08"/></svg>`;
+}
+
+/** Building / house footprint: crosshatch + door indicator */
+function buildingSvg(fill: string, stroke: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><line x1="2" y1="2" x2="62" y2="62" stroke="${stroke}" stroke-width="0.5" stroke-opacity="0.2"/><line x1="62" y1="2" x2="2" y2="62" stroke="${stroke}" stroke-width="0.5" stroke-opacity="0.2"/><rect x="24" y="44" width="16" height="18" rx="1" fill="${stroke}" opacity="0.3"/></svg>`;
+}
+
+/** Greenhouse: glass pane grid + slight white gloss */
+function greenhouseSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="2" fill="#b2dfdb" stroke="#00796b" stroke-width="0.5"/><line x1="2" y1="22" x2="62" y2="22" stroke="#00796b" stroke-width="0.5" stroke-opacity="0.4"/><line x1="2" y1="42" x2="62" y2="42" stroke="#00796b" stroke-width="0.5" stroke-opacity="0.4"/><line x1="22" y1="2" x2="22" y2="62" stroke="#00796b" stroke-width="0.5" stroke-opacity="0.4"/><line x1="42" y1="2" x2="42" y2="62" stroke="#00796b" stroke-width="0.5" stroke-opacity="0.4"/><rect x="2" y="2" width="60" height="60" rx="2" fill="white" opacity="0.12"/></svg>`;
+}
+
+/** Gazebo / pergola: octagonal silhouette */
+function gazeboSvg(fill: string, stroke: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><polygon points="22,2 42,2 62,22 62,42 42,62 22,62 2,42 2,22" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><circle cx="32" cy="32" r="8" fill="${stroke}" opacity="0.15"/></svg>`;
+}
+
+/** Playground: swing-set A-frame icon */
+function playgroundSvg(fill: string, stroke: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="4" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><line x1="14" y1="10" x2="50" y2="10" stroke="${stroke}" stroke-width="1.5" stroke-opacity="0.6" stroke-linecap="round"/><line x1="14" y1="10" x2="24" y2="54" stroke="${stroke}" stroke-width="1.5" stroke-opacity="0.6" stroke-linecap="round"/><line x1="50" y1="10" x2="40" y2="54" stroke="${stroke}" stroke-width="1.5" stroke-opacity="0.6" stroke-linecap="round"/><line x1="30" y1="10" x2="30" y2="38" stroke="${stroke}" stroke-width="0.8" stroke-opacity="0.5"/><rect x="24" y="38" width="12" height="3" rx="1" fill="${stroke}" opacity="0.6"/></svg>`;
+}
+
+/** Sandbox with sand-texture dots */
+function sandboxSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="4" fill="#ffe082" stroke="#f9a825" stroke-width="0.5"/><rect x="8" y="8" width="48" height="48" rx="2" fill="#ffecb3" stroke="#f9a825" stroke-width="0.3"/><circle cx="16" cy="20" r="2" fill="#f9a825" opacity="0.4"/><circle cx="30" cy="14" r="1.5" fill="#f9a825" opacity="0.3"/><circle cx="44" cy="22" r="2" fill="#f9a825" opacity="0.4"/><circle cx="20" cy="40" r="1.5" fill="#f9a825" opacity="0.3"/><circle cx="38" cy="44" r="2" fill="#f9a825" opacity="0.4"/><circle cx="50" cy="34" r="1.5" fill="#f9a825" opacity="0.3"/></svg>`;
+}
+
+/** Stepping-stone path: ellipse stones */
+function steppingStonesSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="#c8c0b0" stroke="#795548" stroke-width="0.5" opacity="0.3"/><ellipse cx="32" cy="10" rx="16" ry="7" fill="#bcaaa4" stroke="#795548" stroke-width="0.5"/><ellipse cx="32" cy="26" rx="14" ry="6" fill="#a1887f" stroke="#795548" stroke-width="0.5"/><ellipse cx="32" cy="42" rx="16" ry="7" fill="#bcaaa4" stroke="#795548" stroke-width="0.5"/><ellipse cx="32" cy="57" rx="14" ry="6" fill="#a1887f" stroke="#795548" stroke-width="0.5"/></svg>`;
+}
+
+/** Paved path: offset brick pattern */
+function pavedPathSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="#9e9e9e" stroke="#616161" stroke-width="0.5"/><rect x="4" y="4" width="26" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="34" y="4" width="26" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="4" y="19" width="14" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="22" y="19" width="20" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="46" y="19" width="14" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="4" y="34" width="26" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="34" y="34" width="26" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="4" y="49" width="14" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="22" y="49" width="20" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/><rect x="46" y="49" width="14" height="11" rx="1" fill="#bdbdbd" stroke="#757575" stroke-width="0.3"/></svg>`;
+}
+
+/** Wooden fence: horizontal board bands */
+function fenceSvg(fill: string, stroke: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/><rect x="4" y="4" width="56" height="9" rx="1" fill="${stroke}" opacity="0.2"/><rect x="4" y="17" width="56" height="9" rx="1" fill="${stroke}" opacity="0.2"/><rect x="4" y="30" width="56" height="9" rx="1" fill="${stroke}" opacity="0.2"/><rect x="4" y="43" width="56" height="9" rx="1" fill="${stroke}" opacity="0.2"/><rect x="4" y="56" width="56" height="6" rx="1" fill="${stroke}" opacity="0.2"/></svg>`;
+}
+
+/** Brick wall: offset brick rows */
+function brickWallSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="#e57373" stroke="#c62828" stroke-width="0.5"/><rect x="4" y="4" width="26" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="34" y="4" width="26" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="4" y="19" width="14" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="22" y="19" width="20" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="46" y="19" width="14" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="4" y="34" width="26" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="34" y="34" width="26" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="4" y="49" width="14" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="22" y="49" width="20" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/><rect x="46" y="49" width="14" height="11" rx="1" fill="#ef9a9a" stroke="#c62828" stroke-width="0.3"/></svg>`;
+}
+
+/** Hedge: layered foliage circles */
+function hedgeSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="6" fill="#43a047" stroke="#1b5e20" stroke-width="0.5"/><circle cx="14" cy="26" r="14" fill="#4caf50"/><circle cx="32" cy="20" r="16" fill="#66bb6a"/><circle cx="50" cy="26" r="14" fill="#4caf50"/><circle cx="20" cy="44" r="14" fill="#4caf50"/><circle cx="44" cy="44" r="14" fill="#66bb6a"/></svg>`;
+}
+
+/** Outdoor dining set: round table + 4 chairs */
+function diningSetSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="2" fill="#fff8e1" stroke="#e65100" stroke-width="0.5"/><circle cx="32" cy="32" r="13" fill="#ffb74d" stroke="#e65100" stroke-width="0.5"/><rect x="28" y="7" width="8" height="7" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/><rect x="28" y="50" width="8" height="7" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/><rect x="7" y="28" width="7" height="8" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/><rect x="50" y="28" width="7" height="8" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/></svg>`;
+}
+
+/** Outdoor lounge set: sofa + coffee table */
+function loungeSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="2" fill="#cfd8dc" stroke="#546e7a" stroke-width="0.5"/><rect x="8" y="18" width="48" height="28" rx="3" fill="#b0bec5" stroke="#546e7a" stroke-width="0.5"/><rect x="8" y="18" width="48" height="9" rx="3" fill="#90a4ae" stroke="#546e7a" stroke-width="0.3"/><rect x="8" y="27" width="6" height="19" rx="2" fill="#90a4ae" stroke="#546e7a" stroke-width="0.3"/><rect x="50" y="27" width="6" height="19" rx="2" fill="#90a4ae" stroke="#546e7a" stroke-width="0.3"/><rect x="16" y="50" width="32" height="10" rx="2" fill="#a5d6a7" stroke="#2e7d32" stroke-width="0.3"/></svg>`;
+}
+
+/** BBQ / grill with grate lines and legs */
+function bbqSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="26" r="22" fill="#ff7043" stroke="#bf360c" stroke-width="0.5"/><circle cx="32" cy="26" r="16" fill="#ff8a65" opacity="0.8"/><line x1="16" y1="26" x2="48" y2="26" stroke="#bf360c" stroke-width="0.8" stroke-opacity="0.5"/><line x1="22" y1="10" x2="22" y2="42" stroke="#bf360c" stroke-width="0.8" stroke-opacity="0.5"/><line x1="32" y1="8" x2="32" y2="44" stroke="#bf360c" stroke-width="0.8" stroke-opacity="0.5"/><line x1="42" y1="10" x2="42" y2="42" stroke="#bf360c" stroke-width="0.8" stroke-opacity="0.5"/><line x1="22" y1="48" x2="18" y2="62" stroke="#bf360c" stroke-width="1.5"/><line x1="42" y1="48" x2="46" y2="62" stroke="#bf360c" stroke-width="1.5"/><line x1="32" y1="48" x2="32" y2="62" stroke="#bf360c" stroke-width="1.5"/></svg>`;
 }
 
 // ─── Asset Definitions ────────────────────────────────────────────────────────
@@ -34,7 +135,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Rechthoekig zwembad", description: "Standaard rechthoekig zwembad" },
       fr: { name: "Piscine rectangulaire", description: "Piscine de natation rectangulaire standard" },
     },
-    thumbnail: rectSvg("#4fc3f7", "#0277bd", 2),
+    thumbnail: poolSvg("#4fc3f7", "#0277bd", 2),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -53,7 +154,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Ovaal zwembad", description: "Ovaalvormig zwembad" },
       fr: { name: "Piscine ovale", description: "Piscine de natation de forme ovale" },
     },
-    thumbnail: circleSvg("#4fc3f7", "#0277bd"),
+    thumbnail: ovalPoolSvg("#4fc3f7", "#0277bd"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -71,7 +172,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "L-vormig zwembad", description: "L-vormig zwembad" },
       fr: { name: "Piscine en L", description: "Piscine de natation en forme de L" },
     },
-    thumbnail: rectSvg("#4fc3f7", "#0277bd", 0),
+    thumbnail: poolSvg("#4fc3f7", "#0277bd", 0),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -88,7 +189,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Vrijvormig zwembad", description: "Organisch vrijvormig zwembad" },
       fr: { name: "Piscine libre", description: "Piscine de natation à forme libre" },
     },
-    thumbnail: circleSvg("#29b6f6", "#0277bd"),
+    thumbnail: ovalPoolSvg("#29b6f6", "#0277bd"),
     constraints: { snapToGrid: false, allowOverlap: false },
   },
   {
@@ -107,7 +208,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Plonsbad", description: "Compact plonsbad" },
       fr: { name: "Bassin plongeoir", description: "Petit bassin de plongeon compact" },
     },
-    thumbnail: rectSvg("#80d8ff", "#0277bd", 8),
+    thumbnail: poolSvg("#80d8ff", "#0277bd", 8),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
 
@@ -352,7 +453,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Betonnen terras", description: "Gegoten of betegeld betonnen terras" },
       fr: { name: "Terrasse en béton", description: "Terrasse en béton coulé ou carrelé" },
     },
-    thumbnail: rectSvg("#bdbdbd", "#757575", 0),
+    thumbnail: terraceTileSvg("#bdbdbd", "#757575"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -369,7 +470,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Natuursteen terras", description: "Bestrating van natuursteen" },
       fr: { name: "Terrasse en pierre naturelle", description: "Dallage en pierre naturelle" },
     },
-    thumbnail: rectSvg("#bcaaa4", "#795548", 0),
+    thumbnail: terraceTileSvg("#bcaaa4", "#795548"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -386,7 +487,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Houten terras", description: "Hardhouten of composiet terrasplanken" },
       fr: { name: "Terrasse en bois", description: "Planches de terrasse en bois dur ou composite" },
     },
-    thumbnail: rectSvg("#a1887f", "#5d4037", 0),
+    thumbnail: terraceWoodSvg("#a1887f", "#5d4037"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -403,7 +504,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Grindzône", description: "Decoratief grindoppervlak" },
       fr: { name: "Zone de gravier", description: "Surface en gravier décoratif" },
     },
-    thumbnail: rectSvg("#e0e0e0", "#9e9e9e", 0),
+    thumbnail: gravelSvg(),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
 
@@ -422,7 +523,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Gazon", description: "Standaard gemaaid gazonoppervlak" },
       fr: { name: "Pelouse", description: "Zone de pelouse tondue standard" },
     },
-    thumbnail: rectSvg("#66bb6a", "#2e7d32", 2),
+    thumbnail: grassSvg("#66bb6a", "#2e7d32", 2),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -439,7 +540,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Bloemenweiland", description: "Natuurlijke zone met veldbloemen" },
       fr: { name: "Prairie fleurie", description: "Zone de prairie naturelle avec fleurs sauvages" },
     },
-    thumbnail: rectSvg("#aed581", "#558b2f", 2),
+    thumbnail: grassSvg("#aed581", "#558b2f", 2),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
 
@@ -458,7 +559,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Schommelrek", description: "Kinderschommelrek" },
       fr: { name: "Portique de balançoire", description: "Portique de balançoire pour enfants" },
     },
-    thumbnail: rectSvg("#ffca28", "#f57f17", 2),
+    thumbnail: playgroundSvg("#ffca28", "#f57f17"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -475,7 +576,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Zandbak", description: "Kinderzandbak" },
       fr: { name: "Bac à sable", description: "Bac à sable pour enfants" },
     },
-    thumbnail: rectSvg("#ffe082", "#f9a825", 4),
+    thumbnail: sandboxSvg(),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -511,7 +612,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Stapstenen", description: "Informeel pad met stapstenen" },
       fr: { name: "Pierres de gué", description: "Chemin informel en pierres de gué" },
     },
-    thumbnail: rectSvg("#bcaaa4", "#795548", 4),
+    thumbnail: steppingStonesSvg(),
     constraints: { snapToGrid: false, allowOverlap: false },
   },
   {
@@ -528,7 +629,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Betegeld pad", description: "Betegeld of geplaveide tuinpad" },
       fr: { name: "Chemin pavé", description: "Chemin de jardin carrelé ou pavé" },
     },
-    thumbnail: rectSvg("#9e9e9e", "#616161", 0),
+    thumbnail: pavedPathSvg(),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
 
@@ -547,7 +648,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Huis / Gebouw", description: "Bestaand gebouw of huis (grondplan)" },
       fr: { name: "Maison / Bâtiment", description: "Empreinte de bâtiment ou maison existant" },
     },
-    thumbnail: rectSvg("#ef9a9a", "#c62828", 0),
+    thumbnail: buildingSvg("#ef9a9a", "#c62828"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -564,7 +665,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Tuinhuis", description: "Berging of tuinhuis" },
       fr: { name: "Abri de jardin", description: "Abri de rangement ou d'outils" },
     },
-    thumbnail: rectSvg("#ffab91", "#e64a19", 0),
+    thumbnail: buildingSvg("#ffab91", "#e64a19"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -581,7 +682,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Serre", description: "Glazen of plastic serre" },
       fr: { name: "Serre", description: "Serre en verre ou en plastique" },
     },
-    thumbnail: rectSvg("#b2dfdb", "#00796b", 2),
+    thumbnail: greenhouseSvg(),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -598,7 +699,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Prieel / Pergola", description: "Tuinprieel of pergola" },
       fr: { name: "Kiosque / Pergola", description: "Kiosque de jardin ou pergola" },
     },
-    thumbnail: circleSvg("#ffe0b2", "#e65100"),
+    thumbnail: gazeboSvg("#ffe0b2", "#e65100"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
 
@@ -617,7 +718,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Houten schutting", description: "Houten privacyschutting" },
       fr: { name: "Clôture en bois", description: "Panneau de clôture en bois" },
     },
-    thumbnail: rectSvg("#a1887f", "#5d4037", 0),
+    thumbnail: fenceSvg("#a1887f", "#5d4037"),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
   {
@@ -634,7 +735,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Haag", description: "Gesnoeide tuinhaag" },
       fr: { name: "Haie", description: "Haie de jardin taillée" },
     },
-    thumbnail: rectSvg("#388e3c", "#1b5e20", 2),
+    thumbnail: hedgeSvg(),
     constraints: { snapToGrid: false, allowOverlap: false },
   },
   {
@@ -651,7 +752,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Bakstenen muur", description: "Massieve bakstenen of blokken muur" },
       fr: { name: "Mur en brique", description: "Mur en briques ou parpaings" },
     },
-    thumbnail: rectSvg("#e57373", "#c62828", 0),
+    thumbnail: brickWallSvg(),
     constraints: { snapToGrid: true, allowOverlap: false },
   },
 
@@ -670,7 +771,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Tuintafelset", description: "Tafel met 4–6 stoelen" },
       fr: { name: "Salon de jardin", description: "Table avec 4 à 6 chaises" },
     },
-    thumbnail: circleSvg("#ffb74d", "#e65100"),
+    thumbnail: diningSetSvg(),
     constraints: { snapToGrid: false, allowOverlap: false },
   },
   {
@@ -687,7 +788,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Loungebank", description: "Buitenbank en loungestoelen" },
       fr: { name: "Salon lounge", description: "Canapé et chaises de salon extérieur" },
     },
-    thumbnail: rectSvg("#b0bec5", "#546e7a", 4),
+    thumbnail: loungeSvg(),
     constraints: { snapToGrid: false, allowOverlap: false },
   },
   {
@@ -704,7 +805,7 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
       nl: { name: "Barbecue", description: "Buiten barbecue of grill" },
       fr: { name: "Barbecue", description: "Barbecue ou grill extérieur" },
     },
-    thumbnail: circleSvg("#ff7043", "#bf360c"),
+    thumbnail: bbqSvg(),
     constraints: { snapToGrid: false, allowOverlap: false },
   },
 ];

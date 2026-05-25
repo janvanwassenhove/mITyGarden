@@ -25,4 +25,12 @@ export default defineConfig({
     sourcemap: true,
   },
   base: process.env["VITE_BASE_URL"] ?? "/",
+  // Expose non-VITE_ prefixed variables explicitly so they are available as
+  // import.meta.env.OPENAI_API_KEY etc. in the browser bundle.
+  define: {
+    "import.meta.env.OPENAI_API_KEY": JSON.stringify(process.env["OPENAI_API_KEY"] ?? ""),
+    "import.meta.env.ANTHROPIC_API_KEY": JSON.stringify(process.env["ANTHROPIC_API_KEY"] ?? ""),
+    "import.meta.env.GEMINI_API_KEY": JSON.stringify(process.env["GEMINI_API_KEY"] ?? ""),
+    "import.meta.env.GOOGLE_MAPS_API_KEY": JSON.stringify(process.env["GOOGLE_MAPS_API_KEY"] ?? ""),
+  },
 });

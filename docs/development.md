@@ -52,12 +52,59 @@ pnpm --filter @mity-garden/web dev
 pnpm --filter @mity-garden/desktop dev
 ```
 
+## E2E Tests
+
+```bash
+# Install Playwright browsers (first time only)
+cd tests/e2e
+node_modules/.bin/playwright install chromium
+
+# Run all E2E tests
+cd tests/e2e
+node_modules/.bin/playwright test --project=chromium
+
+# Run a single E2E file
+pnpm exec playwright test tests/e2e/wizard.spec.ts --project=chromium
+
+# Open the Playwright HTML report
+node_modules/.bin/playwright show-report
+```
+
+E2E tests require the web dev server to be running on `http://localhost:5173`.
+
+## Spec-Kit Workflow
+
+Every feature is governed by a spec file under `specs/<NNN>-<slug>/spec.md`.
+
+### Starting a new feature
+
+1. Find the next available ID (`ls specs/` and increment).
+2. Create `specs/<NNN>-<slug>/spec.md` from the template in [`.github/copilot-instructions.md`](../.github/copilot-instructions.md).
+3. Write Acceptance Criteria, Requirements, and Test IDs **before** coding.
+4. Implement code to satisfy the ACs.
+5. Add E2E tests that use the `data-testid` values from the spec's Test IDs table.
+6. Update the spec if implementation reveals new ACs or requirements.
+
+### Updating an existing spec
+
+- If you change behaviour covered by an AC or REQ, update the spec in the same commit.
+- Spec IDs (`AC-xxx`, `REQ-xxx`) are never deleted — add a `> Deprecated:` note if superseded.
+
+### Current specs
+
+| ID | Feature | Spec |
+|----|---------|------|
+| 001 | Project Creation Wizard | [specs/001-project-wizard/spec.md](../specs/001-project-wizard/spec.md) |
+| 002 | Garden Design Canvas | [specs/002-garden-canvas/spec.md](../specs/002-garden-canvas/spec.md) |
+| 003 | Google Maps Boundary Drawing | [specs/003-google-maps-boundary/spec.md](../specs/003-google-maps-boundary/spec.md) |
+
 ## Creating a New Package
 
 1. Create `packages/<name>/` with `package.json`, `tsconfig.json`, `src/index.ts`
 2. Name it `@mity-garden/<name>` in `package.json`
 3. Extend `../../tsconfig.base.json` in tsconfig
 4. Add `"workspace:*"` dependency in consumer packages
+5. Update `docs/architecture.md` — package table and dependency graph
 
 ## Environment Variables (Desktop)
 

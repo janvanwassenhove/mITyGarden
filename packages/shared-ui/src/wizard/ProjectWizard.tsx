@@ -285,7 +285,7 @@ function StepBoundary(): React.ReactElement {
           <div style={{ fontSize: 36, marginBottom: 8 }}>🗺️</div>
           <p style={{ fontWeight: 600, color: "#555", margin: "0 0 6px" }}>Google Maps not configured</p>
           <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
-            Set <code>VITE_GOOGLE_MAPS_API_KEY</code> to enable drawing your garden boundary on a satellite map and auto-calculating dimensions.
+            Set <code>GOOGLE_MAPS_API_KEY</code> to enable drawing your garden boundary on a satellite map and auto-calculating dimensions.
           </p>
         </div>
         <p style={{ fontSize: 13, color: "#888", marginTop: 12 }}>

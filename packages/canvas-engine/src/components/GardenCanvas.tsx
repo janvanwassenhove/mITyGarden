@@ -115,6 +115,10 @@ function ElementShape({
 
   // Fallback appearance (shown while SVG loads or if no asset found)
   const fill = FILL_BY_TYPE[el.type] ?? "#90a4ae";
+  const assetName = el.customLabel ?? asset?.labels.en.name ?? el.assetId.split("-").slice(1).join(" ");
+  const minDim = Math.min(w, h);
+  const showLabel = minDim >= 40;
+  const labelFontSize = Math.max(9, Math.min(13, minDim * 0.18));
 
   return (
     <Group
@@ -135,29 +139,36 @@ function ElementShape({
         // Render the asset's own SVG thumbnail scaled to the element size
         <KonvaImage image={thumbnailImg} width={w} height={h} />
       ) : (
-        // Fallback: colored rect + text label while image loads
-        <>
-          <Rect
-            width={w}
-            height={h}
-            fill={fill}
-            stroke="#616161"
-            strokeWidth={1}
-            cornerRadius={el.type === "tree" || el.type === "pool" ? Math.min(w, h) / 2 : 4}
-            opacity={0.85}
-          />
-          <Text
-            text={el.assetId.split("-").slice(1).join(" ")}
-            fontSize={Math.max(9, Math.min(12, Math.min(w, h) * 0.2))}
-            fill="#212121"
-            align="center"
-            verticalAlign="middle"
-            width={w}
-            height={h}
-            listening={false}
-            ellipsis
-          />
-        </>
+        // Fallback: colored rect while image loads
+        <Rect
+          width={w}
+          height={h}
+          fill={fill}
+          stroke="rgba(0,0,0,0.15)"
+          strokeWidth={1}
+          cornerRadius={el.type === "tree" || el.type === "pool" ? minDim / 2 : 4}
+          opacity={0.85}
+        />
+      )}
+
+      {/* Name label — always rendered on top of both SVG and fallback */}
+      {showLabel && (
+        <Text
+          text={assetName}
+          fontSize={labelFontSize}
+          fill="#1a1a1a"
+          shadowColor="rgba(255,255,255,0.9)"
+          shadowBlur={4}
+          shadowOffsetX={0}
+          shadowOffsetY={0}
+          align="center"
+          verticalAlign="middle"
+          width={w}
+          height={h}
+          listening={false}
+          ellipsis
+          wrap="word"
+        />
       )}
 
       {/* Selection border overlay */}

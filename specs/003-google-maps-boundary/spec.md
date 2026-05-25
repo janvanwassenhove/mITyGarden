@@ -17,13 +17,13 @@
 - Then I am shown the Garden Boundary step (Step 2)
 
 ### AC-003: Google Maps not configured
-- Given `VITE_GOOGLE_MAPS_API_KEY` is not set
+- Given `GOOGLE_MAPS_API_KEY` is not set
 - When the Boundary step is shown
 - Then a clear message explains that boundary drawing requires a Google Maps API key
 - And the user can skip to the Dimensions step without drawing
 
 ### AC-004: Interactive boundary map
-- Given `VITE_GOOGLE_MAPS_API_KEY` is set
+- Given `GOOGLE_MAPS_API_KEY` is set
 - When the Boundary step is shown
 - Then a Google Maps satellite view is rendered, centred on the previously searched address (or default region if no address)
 - And a polygon drawing tool is active

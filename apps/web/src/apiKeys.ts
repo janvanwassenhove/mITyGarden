@@ -28,16 +28,16 @@ export function saveApiKeys(keys: ApiKeys): void {
 }
 
 /**
- * Keys set as environment variables at build time (VITE_ prefix).
+ * Keys set as environment variables at build time.
  * Only the keys that are actually set are included in the returned object.
  */
 export function getEnvApiKeys(): Partial<ApiKeys> {
   const result: Partial<ApiKeys> = {};
-  const openai = import.meta.env["VITE_OPENAI_API_KEY"] as string | undefined;
+  const openai = import.meta.env.OPENAI_API_KEY;
   if (openai && openai.length > 0) result.openai = openai;
-  const anthropic = import.meta.env["VITE_ANTHROPIC_API_KEY"] as string | undefined;
+  const anthropic = import.meta.env.ANTHROPIC_API_KEY;
   if (anthropic && anthropic.length > 0) result.anthropic = anthropic;
-  const gemini = import.meta.env["VITE_GEMINI_API_KEY"] as string | undefined;
+  const gemini = import.meta.env.GEMINI_API_KEY;
   if (gemini && gemini.length > 0) result.gemini = gemini;
   return result;
 }

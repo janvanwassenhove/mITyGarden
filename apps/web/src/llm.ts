@@ -6,7 +6,7 @@ import { getEffectiveApiKeys } from "./apiKeys.js";
 
 // ─── Text LLM factory ─────────────────────────────────────────────────────────
 //
-// Priority: env var (VITE_OPENAI_API_KEY) → localStorage → NoOp
+// Priority: env var (OPENAI_API_KEY) → localStorage → NoOp
 
 export function createLLMProvider(): LLMProvider {
   const keys = getEffectiveApiKeys();

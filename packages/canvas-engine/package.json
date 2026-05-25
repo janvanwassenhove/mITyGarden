@@ -18,10 +18,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@mity-garden/domain": "workspace:*",
     "@mity-garden/asset-library": "workspace:*",
+    "@mity-garden/domain": "workspace:*",
     "konva": "^9.3.0",
-    "react-konva": "^18.2.10",
+    "react-konva": "^19.2.4",
     "zustand": "^5.0.0"
   },
   "peerDependencies": {
@@ -33,4 +33,3 @@
     "typescript": "^5.8.0"
   }
 }
-

@@ -8,6 +8,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
     alias: {
       "@mity-garden/domain": resolve(__dirname, "../../packages/domain/src"),
       "@mity-garden/i18n": resolve(__dirname, "../../packages/i18n/src"),

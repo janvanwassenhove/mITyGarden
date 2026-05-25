@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect } from "react";
-import { Stage, Layer, Rect, Text, Group, Transformer } from "react-konva";
+import { Stage, Layer, Rect, Text, Group, Transformer, Image as KonvaImage } from "react-konva";
 import type Konva from "konva";
 import { useStore } from "zustand";
 import { getAssetById } from "@mity-garden/asset-library";
@@ -61,6 +61,33 @@ function GridLines({
   return <>{lines}</>;
 }
 
+// ─── SVG image loader hook ────────────────────────────────────────────────────
+//
+// Converts an SVG string to an HTMLImageElement so Konva can render it.
+// Returns null while loading (falls back to colored rect).
+
+function useSvgImage(svgString: string | undefined): HTMLImageElement | null {
+  const [img, setImg] = React.useState<HTMLImageElement | null>(null);
+
+  React.useEffect(() => {
+    if (!svgString) {
+      setImg(null);
+      return;
+    }
+    let cancelled = false;
+    const image = new window.Image();
+    image.onload = () => {
+      if (!cancelled) setImg(image);
+    };
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+    return () => {
+      cancelled = true;
+    };
+  }, [svgString]);
+
+  return img;
+}
+
 // ─── Single Element ────────────────────────────────────────────────────────────
 
 function ElementShape({
@@ -81,9 +108,11 @@ function ElementShape({
   const x = el.position.x * ppm;
   const y = el.position.y * ppm;
 
-  // Pick fill color based on element type
+  const asset = getAssetById(el.assetId);
+  const thumbnailImg = useSvgImage(asset?.thumbnail);
+
+  // Fallback appearance (shown while SVG loads or if no asset found)
   const fill = FILL_BY_TYPE[el.type] ?? "#90a4ae";
-  const stroke = selected ? "#1565c0" : "#616161";
 
   return (
     <Group
@@ -99,26 +128,46 @@ function ElementShape({
       }}
       id={el.id}
     >
-      <Rect
-        width={w}
-        height={h}
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={selected ? 2 : 1}
-        cornerRadius={el.type === "tree" || el.type === "pool" ? Math.min(w, h) / 2 : 4}
-        opacity={0.85}
-      />
-      <Text
-        text={el.assetId.split("-").slice(1).join(" ")}
-        fontSize={Math.max(9, Math.min(12, Math.min(w, h) * 0.2))}
-        fill={selected ? "#0d47a1" : "#212121"}
-        align="center"
-        verticalAlign="middle"
-        width={w}
-        height={h}
-        listening={false}
-        ellipsis
-      />
+      {thumbnailImg ? (
+        // Render the asset's own SVG thumbnail scaled to the element size
+        <KonvaImage image={thumbnailImg} width={w} height={h} />
+      ) : (
+        // Fallback: colored rect + text label while image loads
+        <>
+          <Rect
+            width={w}
+            height={h}
+            fill={fill}
+            stroke="#616161"
+            strokeWidth={1}
+            cornerRadius={el.type === "tree" || el.type === "pool" ? Math.min(w, h) / 2 : 4}
+            opacity={0.85}
+          />
+          <Text
+            text={el.assetId.split("-").slice(1).join(" ")}
+            fontSize={Math.max(9, Math.min(12, Math.min(w, h) * 0.2))}
+            fill="#212121"
+            align="center"
+            verticalAlign="middle"
+            width={w}
+            height={h}
+            listening={false}
+            ellipsis
+          />
+        </>
+      )}
+
+      {/* Selection border overlay */}
+      {selected && (
+        <Rect
+          width={w}
+          height={h}
+          fill="transparent"
+          stroke="#1565c0"
+          strokeWidth={2}
+          dash={[5, 3]}
+        />
+      )}
     </Group>
   );
 }

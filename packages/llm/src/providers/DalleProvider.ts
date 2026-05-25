@@ -87,15 +87,10 @@ export class DalleProvider implements ImageGenerationProvider {
       quality: mapQuality(req.quality, model),
     };
 
-    // GPT Image models: output_format controls format, always returns b64_json
+    // output_format (png/jpeg/webp) is only documented for GPT Image models.
+    // DALL-E models default to returning a URL; we handle both url and b64_json below.
     if (isGpt) {
       body["output_format"] = "png";
-    } else {
-      // DALL-E: response_format controls return type, style is only for dall-e-3
-      body["response_format"] = "url";
-      if (model === "dall-e-3") {
-        body["style"] = "natural";
-      }
     }
 
     const response = await fetch("https://api.openai.com/v1/images/generations", {

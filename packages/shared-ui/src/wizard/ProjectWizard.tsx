@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useUiStore } from "../hooks/useUiStore.js";
 import { useProjectStore } from "../hooks/useProjectStore.js";
 import type { GardenStyle, GardenGoal, UnitSystem, GeoCoordinates, MapData } from "@mity-garden/domain";
@@ -195,10 +196,12 @@ function LeafletBoundaryEditor({
   const [vertCount, setVertCount] = React.useState(0);
   const [closed, setClosed] = React.useState(false);
 
+  const { t } = useTranslation("common");
+
   React.useEffect(() => {
     loadLeafletScript()
       .then(() => setLoaded(true))
-      .catch(() => setLoadError("Could not load map. Check your connection."));
+      .catch(() => setLoadError("wizard.steps.boundary.loadError"));
   }, []);
 
   React.useEffect(() => {
@@ -277,13 +280,13 @@ function LeafletBoundaryEditor({
     onClear();
   }
 
-  if (loadError) return <p style={{ color: "#c62828", fontSize: 13 }}>{loadError}</p>;
+  if (loadError) return <p style={{ color: "#c62828", fontSize: 13 }}>{t(loadError)}</p>;
 
   return (
     <div>
       {!loaded && (
         <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
-          Loading map…
+          {t("wizard.steps.boundary.loadingMap")}
         </div>
       )}
       <div
@@ -294,21 +297,21 @@ function LeafletBoundaryEditor({
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
           <span style={{ fontSize: 12, color: "#888", flex: 1 }}>
             {vertCount === 0
-              ? "Click on the satellite map to start tracing your garden outline."
+              ? t("wizard.steps.boundary.hintStart")
               : vertCount < 3
-              ? `${vertCount} point${vertCount > 1 ? "s" : ""} — add at least 3 to close the shape.`
-              : `${vertCount} points — press "Close shape" when done.`}
+              ? t("wizard.steps.boundary.hintNeedMore", { count: vertCount })
+              : t("wizard.steps.boundary.hintReady", { count: vertCount })}
           </span>
           <button
             onClick={handleClose}
             disabled={vertCount < 3}
             style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: vertCount >= 3 ? "#4caf50" : "#e0e0e0", color: vertCount >= 3 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 12, cursor: vertCount >= 3 ? "pointer" : "not-allowed" }}
           >
-            Close shape
+            {t("wizard.steps.boundary.closeShape")}
           </button>
           {vertCount > 0 && (
             <button onClick={handleClearLocal} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
-              Clear
+              {t("wizard.steps.boundary.clear")}
             </button>
           )}
         </div>
@@ -316,7 +319,7 @@ function LeafletBoundaryEditor({
       {loaded && closed && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
           <button onClick={handleClearLocal} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-            Clear &amp; redraw
+            {t("wizard.steps.boundary.clearRedraw")}
           </button>
         </div>
       )}
@@ -331,20 +334,21 @@ function StepDimensions(): React.ReactElement {
   const setDimensions = useUiStore((s) => s.wizardSetDimensions);
   const setUnit = useUiStore((s) => s.wizardSetUnit);
   const hasBoundary = (wizard.mapBoundary?.length ?? 0) > 2;
+  const { t } = useTranslation("common");
 
   return (
     <div data-testid="wizard-step-dimensions">
-      <h2>Garden Dimensions</h2>
+      <h2>{t("wizard.steps.dimensions.title")}</h2>
       {hasBoundary ? (
         <p style={{ color: "#2e7d32", fontSize: 13, background: "#e8f5e9", borderRadius: 6, padding: "8px 12px", border: "1px solid #a5d6a7", marginBottom: 16 }}>
-          ✅ Dimensions auto-calculated from your drawn boundary (bounding box). You can fine-tune them below.
+          ✅ {t("wizard.steps.dimensions.autocalcNote")}
         </p>
       ) : (
-        <p>Enter the size of your garden and choose your measurement unit.</p>
+        <p>{t("wizard.steps.dimensions.description")}</p>
       )}
       <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
         <label>
-          Width
+          {t("wizard.steps.dimensions.width")}
           <input
             type="number"
             min={1}
@@ -356,7 +360,7 @@ function StepDimensions(): React.ReactElement {
           {wizard.unit === "metric" ? " m" : " ft"}
         </label>
         <label>
-          Depth
+          {t("wizard.steps.dimensions.height")}
           <input
             type="number"
             min={1}
@@ -369,7 +373,7 @@ function StepDimensions(): React.ReactElement {
         </label>
       </div>
       <fieldset>
-        <legend>Unit System</legend>
+        <legend>{t("wizard.steps.dimensions.unit")}</legend>
         {(["metric", "imperial"] as UnitSystem[]).map((u) => (
           <label key={u} style={{ marginRight: 16 }}>
             <input
@@ -379,7 +383,7 @@ function StepDimensions(): React.ReactElement {
               checked={wizard.unit === u}
               onChange={() => setUnit(u)}
             />
-            {u === "metric" ? "Metric (meters)" : "Imperial (feet)"}
+            {u === "metric" ? t("wizard.steps.dimensions.metric") : t("wizard.steps.dimensions.imperial")}
           </label>
         ))}
       </fieldset>
@@ -389,24 +393,15 @@ function StepDimensions(): React.ReactElement {
 
 // ─── Step 2: Style ────────────────────────────────────────────────────────────
 
-const STYLE_LABELS: Record<GardenStyle, string> = {
-  modern: "Modern",
-  classic: "Classic",
-  japanese: "Japanese",
-  mediterranean: "Mediterranean",
-  english: "English",
-  minimal: "Minimal",
-  custom: "Custom / Mixed",
-};
-
 function StepStyle(): React.ReactElement {
   const style = useUiStore((s) => s.wizard.style);
   const setStyle = useUiStore((s) => s.wizardSetStyle);
+  const { t } = useTranslation("common");
 
   return (
     <div data-testid="wizard-step-style">
-      <h2>Garden Style</h2>
-      <p>Choose the overall style that best reflects your vision.</p>
+      <h2>{t("wizard.steps.style.title")}</h2>
+      <p>{t("wizard.steps.style.description")}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {GARDEN_STYLES.map((s) => (
           <button
@@ -422,7 +417,7 @@ function StepStyle(): React.ReactElement {
               fontWeight: style === s ? 700 : 400,
             }}
           >
-            {STYLE_LABELS[s]}
+            {t(`wizard.steps.style.${s}`)}
           </button>
         ))}
       </div>
@@ -441,6 +436,7 @@ function StepBoundary(): React.ReactElement {
   const setDimensions = useUiStore((s) => s.wizardSetDimensions);
   const setBoundary = useUiStore((s) => s.wizardSetMapBoundary);
   const setBoundaryVerts = useUiStore((s) => s.wizardSetBoundaryVertices);
+  const { t } = useTranslation("common");
 
   const mapDivRef = React.useRef<HTMLDivElement>(null);
   const [mapsLoaded, setMapsLoaded] = React.useState(false);
@@ -459,7 +455,7 @@ function StepBoundary(): React.ReactElement {
     if (mode !== "map" || !apiKey) return;
     loadGoogleMapsScript(apiKey)
       .then(() => setMapsLoaded(true))
-      .catch(() => setLoadError("Could not load Google Maps. Check your connection and API key."));
+      .catch(() => setLoadError("wizard.steps.boundary.loadError"));
   }, [apiKey, mode]);
 
   React.useEffect(() => {
@@ -527,15 +523,15 @@ function StepBoundary(): React.ReactElement {
 
   return (
     <div data-testid="wizard-step-boundary">
-      <h2>Draw Your Garden</h2>
+      <h2>{t("wizard.steps.boundary.title")}</h2>
 
       {/* Mode tabs */}
       <div style={{ display: "flex", borderBottom: "1px solid #e0e0e0", marginBottom: 14 }}>
         <button style={modeTabStyle(mode === "map")} onClick={() => setMode("map")}>
-          🗺️ Satellite Map
+          🗺️ {t("wizard.steps.boundary.satelliteTab")}
         </button>
         <button style={modeTabStyle(mode === "image")} onClick={() => setMode("image")}>
-          🖼️ Trace Image
+          🖼️ {t("wizard.steps.boundary.traceTab")}
         </button>
       </div>
 
@@ -543,28 +539,28 @@ function StepBoundary(): React.ReactElement {
       {mode === "map" && (
         <>
           <p style={{ marginTop: 0 }}>
-            Trace your garden boundary on the satellite map. Works for any shape — rectangular, irregular, or curved.
+            {t("wizard.steps.boundary.description")}
           </p>
           {!apiKey && (
             <div style={{ fontSize: 12, color: "#666", marginBottom: 8, padding: "4px 8px", background: "#f5f5f5", borderRadius: 4, display: "inline-block" }}>
-              📡 Free satellite imagery (no API key required)
+              📡 {t("wizard.steps.boundary.freeImagery")}
             </div>
           )}
 
           {apiKey ? (
             <>
-              {loadError && <p style={{ color: "#c62828", fontSize: 13 }}>{loadError}</p>}
+              {loadError && <p style={{ color: "#c62828", fontSize: 13 }}>{t(loadError)}</p>}
               {!mapsLoaded && !loadError && (
                 <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
-                  Loading Google Maps…
+                  {t("wizard.steps.boundary.loadingGoogleMaps")}
                 </div>
               )}
               <div ref={mapDivRef} style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
               {hasBoundary && area !== null && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-                  <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
+                  <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}</span>
                   <button onClick={handleClearGmaps} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-                    Clear &amp; redraw
+                    {t("wizard.steps.boundary.clearRedraw")}
                   </button>
                 </div>
               )}
@@ -584,15 +580,14 @@ function StepBoundary(): React.ReactElement {
               />
               {hasBoundary && area !== null && (
                 <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-                  <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
+                  <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}</span>
                 </div>
               )}
             </>
           )}
 
           <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
-            Use the polygon tool to trace the outline. Add extra points to approximate curves.
-            This step is optional — you can adjust dimensions on the next step.
+            {t("wizard.steps.boundary.optional")}
           </p>
         </>
       )}

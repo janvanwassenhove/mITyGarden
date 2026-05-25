@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import { Stage, Layer, Rect, Text, Group, Transformer, Image as KonvaImage } from "react-konva";
 import type Konva from "konva";
 import { useStore } from "zustand";
@@ -96,12 +96,14 @@ function ElementShape({
   selected,
   onClick,
   onDragEnd,
+  onContextMenu,
 }: {
   el: GardenElement;
   ppm: number;
   selected: boolean;
   onClick: (id: UUID, evt: Konva.KonvaEventObject<MouseEvent>) => void;
   onDragEnd: (id: UUID, x: number, y: number) => void;
+  onContextMenu: (id: UUID, evt: Konva.KonvaEventObject<MouseEvent>) => void;
 }): React.ReactElement {
   const w = el.size.width * ppm;
   const h = el.size.height * ppm;
@@ -123,6 +125,7 @@ function ElementShape({
       rotation={el.rotation}
       draggable
       onClick={(e) => onClick(el.id, e)}
+      onContextMenu={(e) => onContextMenu(el.id, e)}
       onDragEnd={(e) => {
         onDragEnd(el.id, e.target.x() / ppm, e.target.y() / ppm);
       }}
@@ -186,6 +189,55 @@ const FILL_BY_TYPE: Record<string, string> = {
   custom: "#e1bee7",
 };
 
+// ─── Context menu item ─────────────────────────────────────────────────────────
+
+function CtxItem({
+  icon,
+  label,
+  testId,
+  onClick,
+  disabled = false,
+  danger = false,
+}: {
+  icon: string;
+  label: string;
+  testId: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+}): React.ReactElement {
+  return (
+    <button
+      data-testid={testId}
+      disabled={disabled}
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        padding: "8px 14px",
+        border: "none",
+        background: "transparent",
+        cursor: disabled ? "default" : "pointer",
+        fontSize: 13,
+        color: disabled ? "#bdbdbd" : danger ? "#c62828" : "#212121",
+        textAlign: "left",
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled)
+          (e.currentTarget as HTMLButtonElement).style.background = danger ? "#ffebee" : "#f5f5f5";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+      }}
+    >
+      <span style={{ fontSize: 15, lineHeight: 1 }}>{icon}</span>
+      {label}
+    </button>
+  );
+}
+
 // ─── GardenCanvas ──────────────────────────────────────────────────────────────
 
 export function GardenCanvas({
@@ -197,6 +249,12 @@ export function GardenCanvas({
 }: GardenCanvasProps): React.ReactElement {
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Context menu
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
+  // Clipboard for copy / paste
+  const [clipboard, setClipboard] = useState<GardenElement[]>([]);
 
   const ppm = BASE_PIXELS_PER_METER;
   const gardenW = project.dimensions.width * ppm;
@@ -242,6 +300,7 @@ export function GardenCanvas({
   // Delete key removes selected elements
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent): void {
+      if (e.key === "Escape") { setCtxMenu(null); return; }
       if (e.key !== "Delete" && e.key !== "Backspace") return;
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
@@ -254,6 +313,62 @@ export function GardenCanvas({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [allElements, removeElement, clearSelection, elementLayerMap]);
+
+  // Dismiss context menu on outside click
+  useEffect(() => {
+    if (!ctxMenu) return;
+    function onOutsideClick(): void { setCtxMenu(null); }
+    window.addEventListener("mousedown", onOutsideClick);
+    return () => window.removeEventListener("mousedown", onOutsideClick);
+  }, [ctxMenu]);
+
+  // Right-click on element → select + show context menu
+  const handleElementContextMenu = useCallback(
+    (id: UUID, e: Konva.KonvaEventObject<MouseEvent>) => {
+      e.evt.preventDefault();
+      e.cancelBubble = true;
+      // Ensure the right-clicked element is selected
+      if (!canvasStore.getState().selectedElementIds.includes(id)) {
+        selectElement(id, false);
+      }
+      // Position relative to canvas container
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setCtxMenu({ x: e.evt.clientX - rect.left, y: e.evt.clientY - rect.top });
+    },
+    [selectElement],
+  );
+
+  // Copy selected elements to clipboard
+  const handleCopy = useCallback(() => {
+    const ids = canvasStore.getState().selectedElementIds;
+    setClipboard(allElements.filter((el) => ids.includes(el.id)));
+    setCtxMenu(null);
+  }, [allElements]);
+
+  // Paste clipboard elements with a small offset
+  const handlePaste = useCallback(() => {
+    const OFFSET = 0.5;
+    for (const el of clipboard) {
+      const newPos = { x: el.position.x + OFFSET, y: el.position.y + OFFSET };
+      const newId = addElement(defaultLayerId, el.assetId, el.type, newPos, el.size);
+      if (el.rotation !== 0 && newId) {
+        updateElement(defaultLayerId, newId, { rotation: el.rotation });
+      }
+    }
+    setCtxMenu(null);
+  }, [clipboard, defaultLayerId, addElement, updateElement]);
+
+  // Delete selected elements
+  const handleDeleteSelected = useCallback(() => {
+    const ids = canvasStore.getState().selectedElementIds;
+    for (const id of ids) {
+      const layerId = elementLayerMap.get(id);
+      if (layerId) removeElement(layerId, id);
+    }
+    clearSelection();
+    setCtxMenu(null);
+  }, [elementLayerMap, removeElement, clearSelection]);
 
   // Pan: drag the stage background
   const handleStageDragEnd = useCallback(
@@ -320,6 +435,7 @@ export function GardenCanvas({
   const handleElementClick = useCallback(
     (id: UUID, e: Konva.KonvaEventObject<MouseEvent>) => {
       e.cancelBubble = true;
+      setCtxMenu(null);
       selectElement(id, e.evt.shiftKey);
     },
     [selectElement],
@@ -342,7 +458,10 @@ export function GardenCanvas({
   const initOffsetX = (width - gardenW) / 2;
   const initOffsetY = (height - gardenH) / 2;
 
+  const selectedCount = selectedElementIds.length;
+
   return (
+    <div ref={containerRef} style={{ position: "relative", width, height, flexShrink: 0 }}>
     <Stage
       ref={stageRef}
       width={width}
@@ -417,6 +536,7 @@ export function GardenCanvas({
             selected={selectedElementIds.includes(el.id)}
             onClick={handleElementClick}
             onDragEnd={handleElementDragEnd}
+            onContextMenu={handleElementContextMenu}
           />
         ))}
         <Transformer
@@ -439,5 +559,44 @@ export function GardenCanvas({
         />
       </Layer>
     </Stage>
+
+    {/* Context menu — HTML overlay so it can overflow the canvas */}
+    {ctxMenu && (
+      <div
+        data-testid="canvas-context-menu"
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          position: "absolute",
+          left: ctxMenu.x,
+          top: ctxMenu.y,
+          background: "#fff",
+          border: "1px solid #e0e0e0",
+          borderRadius: 8,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+          padding: "4px 0",
+          zIndex: 200,
+          minWidth: 160,
+          userSelect: "none",
+        }}
+      >
+        <CtxItem icon="📋" label="Copy" testId="ctx-copy" onClick={handleCopy} />
+        <CtxItem
+          icon="📌"
+          label={clipboard.length > 0 ? `Paste (${clipboard.length})` : "Paste"}
+          testId="ctx-paste"
+          onClick={handlePaste}
+          disabled={clipboard.length === 0}
+        />
+        <div style={{ height: 1, background: "#f0f0f0", margin: "4px 0" }} />
+        <CtxItem
+          icon="🗑"
+          label={selectedCount > 1 ? `Delete (${selectedCount})` : "Delete"}
+          testId="ctx-delete"
+          onClick={handleDeleteSelected}
+          danger
+        />
+      </div>
+    )}
+  </div>
   );
 }

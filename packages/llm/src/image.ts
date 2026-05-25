@@ -4,9 +4,10 @@ import type { GardenProject } from "@mity-garden/domain";
 
 export interface ImageGenerationRequest {
   prompt: string;
-  /** Landscape wide: best for garden overhead views */
-  size?: "1024x1024" | "1792x1024" | "1024x1792";
-  quality?: "standard" | "hd";
+  /** Image dimensions — provider maps to nearest supported size. */
+  size?: string;
+  /** Quality hint — provider maps to model-specific values. */
+  quality?: string;
 }
 
 export interface GeneratedImage {

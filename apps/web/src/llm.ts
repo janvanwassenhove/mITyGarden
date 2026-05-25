@@ -7,7 +7,7 @@ import { getEffectiveApiKeys } from "./apiKeys.js";
 // ─── Available provider definitions ───────────────────────────────────────────
 
 export type LLMProviderName = "openai" | "anthropic";
-export type ImageProviderName = "gpt-image-1" | "dall-e-3" | "imagen-3";
+export type ImageProviderName = "gpt-image-1" | "imagen-3";
 
 export interface ProviderOption {
   id: string;
@@ -29,7 +29,6 @@ export function getAvailableImageProviders(): ProviderOption[] {
   const keys = getEffectiveApiKeys();
   return [
     { id: "gpt-image-1", label: "GPT Image 1 (OpenAI)", available: keys.openai.length > 0 },
-    { id: "dall-e-3", label: "DALL-E 3 (OpenAI)", available: keys.openai.length > 0 },
     { id: "imagen-3", label: "Imagen 3 (Gemini)", available: keys.gemini.length > 0 },
   ];
 }
@@ -51,7 +50,6 @@ export function createLLMProvider(name?: LLMProviderName): LLMProvider {
 export function createImageProvider(name?: ImageProviderName): ImageGenerationProvider {
   const keys = getEffectiveApiKeys();
   if (name === "gpt-image-1" && keys.openai.length > 0) return new DalleProvider(keys.openai, "gpt-image-1");
-  if (name === "dall-e-3" && keys.openai.length > 0) return new DalleProvider(keys.openai, "dall-e-3");
   if (name === "imagen-3" && keys.gemini.length > 0) return new GeminiImageProvider(keys.gemini);
   // Auto-select first available
   if (keys.openai.length > 0) return new DalleProvider(keys.openai, "gpt-image-1");
@@ -76,7 +74,12 @@ export function setDefaultLLMProviderName(name: LLMProviderName): void {
 
 export function getDefaultImageProviderName(): ImageProviderName | undefined {
   const v = localStorage.getItem(LS_IMAGE_PROVIDER);
-  if (v === "gpt-image-1" || v === "dall-e-3" || v === "imagen-3") return v;
+  // Migrate away from deprecated dall-e-3 which is no longer available
+  if (v === "dall-e-3") {
+    localStorage.removeItem(LS_IMAGE_PROVIDER);
+    return undefined;
+  }
+  if (v === "gpt-image-1" || v === "imagen-3") return v;
   return undefined;
 }
 

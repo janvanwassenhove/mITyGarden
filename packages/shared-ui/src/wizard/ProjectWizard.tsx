@@ -608,12 +608,11 @@ function StepBoundary(): React.ReactElement {
           />
           {area !== null && (
             <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-              <span style={{ fontSize: 13 }}>✅ Dimensions calculated — area ≈ <strong>{area} m²</strong></span>
+              <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.dimensionsCalculated", { area })}</span>
             </div>
           )}
           <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
-            Tip: for a Google Maps screenshot, zoom in until you can see a recognisable feature (car, door, path) whose real-world size you know.
-            This step is optional — you can adjust dimensions on the next step.
+            {t("wizard.steps.boundary.traceTip")}
           </p>
         </>
       )}
@@ -640,6 +639,8 @@ function ImageTraceBoundaryEditor({
   const [closed, setClosed] = React.useState(false);
   const [imgLoaded, setImgLoaded] = React.useState(false);
   const [canvasSize, setCanvasSize] = React.useState({ w: 0, h: 0 });
+
+  const { t } = useTranslation("common");
 
   // Scale calibration
   const [refWidthM, setRefWidthM] = React.useState("");
@@ -810,13 +811,13 @@ function ImageTraceBoundaryEditor({
           fontSize: 13, marginBottom: 10,
         }}
       >
-        📂 Upload image (photo, screenshot, plan…)
+        📂 {t("wizard.steps.boundary.upload")}
         <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
       </label>
 
       {!imgLoaded && (
         <div style={{ padding: "28px 0", background: "#f5f5f5", borderRadius: 8, border: "2px dashed #ccc", textAlign: "center", color: "#999", fontSize: 13 }}>
-          Upload an aerial photo, map screenshot, or garden plan to trace the boundary
+          {t("wizard.steps.boundary.uploadHint")}
         </div>
       )}
 
@@ -841,21 +842,21 @@ function ImageTraceBoundaryEditor({
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
           <span style={{ fontSize: 12, color: "#888", flex: 1 }}>
             {vertCount === 0
-              ? "Click on the image to place vertices around your garden."
+              ? t("wizard.steps.boundary.traceHintStart")
               : vertCount < 3
-              ? `${vertCount} point${vertCount > 1 ? "s" : ""} placed — add at least 3 to close.`
-              : `${vertCount} points — press "Close shape" when the outline is complete.`}
+              ? t("wizard.steps.boundary.traceHintNeedMore", { count: vertCount })
+              : t("wizard.steps.boundary.traceHintReady", { count: vertCount })}
           </span>
           <button
             onClick={handleClose}
             disabled={vertCount < 3}
             style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: vertCount >= 3 ? "#4caf50" : "#e0e0e0", color: vertCount >= 3 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 12, cursor: vertCount >= 3 ? "pointer" : "not-allowed" }}
           >
-            Close shape
+            {t("wizard.steps.boundary.closeShape")}
           </button>
           {vertCount > 0 && (
             <button onClick={handleReset} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
-              Clear
+              {t("wizard.steps.boundary.clear")}
             </button>
           )}
         </div>
@@ -865,11 +866,10 @@ function ImageTraceBoundaryEditor({
       {imgLoaded && closed && !calculated && (
         <div style={{ marginTop: 12, padding: "12px 14px", background: "#fff8e1", border: "1px solid #ffe082", borderRadius: 8 }}>
           <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "#795548" }}>
-            📏 Set scale — how wide is your traced outline in real life?
+            📏 {t("wizard.steps.boundary.scaleTitle")}
           </p>
           <p style={{ margin: "0 0 10px", fontSize: 12, color: "#888" }}>
-            The width of your polygon is <strong>{widthPx.toFixed(0)} px</strong>. Enter the real-world width
-            (e.g. look up the width of a recognisable feature like a house or driveway).
+            {t("wizard.steps.boundary.scaleHint", { px: widthPx.toFixed(0) })}
           </p>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input
@@ -881,18 +881,18 @@ function ImageTraceBoundaryEditor({
               onChange={(e) => setRefWidthM(e.target.value)}
               style={{ width: 90, padding: "6px 8px", border: "1px solid #ccc", borderRadius: 6, fontSize: 13 }}
             />
-            <span style={{ fontSize: 13, color: "#555" }}>meters wide</span>
+            <span style={{ fontSize: 13, color: "#555" }}>{t("wizard.steps.boundary.metersWide")}</span>
             <button
               onClick={handleCalculate}
               disabled={!refWidthM || parseFloat(refWidthM) <= 0}
               style={{ padding: "7px 16px", borderRadius: 6, border: "none", background: refWidthM && parseFloat(refWidthM) > 0 ? "#4caf50" : "#e0e0e0", color: refWidthM && parseFloat(refWidthM) > 0 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
             >
-              Calculate
+              {t("wizard.steps.boundary.calculate")}
             </button>
           </div>
           <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
             <button onClick={handleReset} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-              ← Redraw
+              {t("wizard.steps.boundary.redraw")}
             </button>
           </div>
         </div>
@@ -901,7 +901,7 @@ function ImageTraceBoundaryEditor({
       {imgLoaded && calculated && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
           <button onClick={handleReset} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-            Clear &amp; redraw
+            {t("wizard.steps.boundary.clearRedraw")}
           </button>
         </div>
       )}
@@ -911,25 +911,15 @@ function ImageTraceBoundaryEditor({
 
 // ─── Step 4: Goals ────────────────────────────────────────────────────────────
 
-const GOAL_LABELS: Record<GardenGoal, string> = {
-  pool: "Swimming Pool",
-  playground: "Children's Playground",
-  terrace: "Terrace / Patio",
-  plants: "Plants & Flowers",
-  "low-maintenance": "Low Maintenance",
-  "vegetable-garden": "Vegetable Garden",
-  "outdoor-dining": "Outdoor Dining Area",
-  other: "Other",
-};
-
 function StepGoals(): React.ReactElement {
   const goals = useUiStore((s) => s.wizard.goals);
   const toggleGoal = useUiStore((s) => s.wizardToggleGoal);
+  const { t } = useTranslation("common");
 
   return (
     <div data-testid="wizard-step-goals">
-      <h2>Garden Goals</h2>
-      <p>What do you want to achieve? Select all that apply.</p>
+      <h2>{t("wizard.steps.goals.title")}</h2>
+      <p>{t("wizard.steps.goals.description")}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {GARDEN_GOALS.map((goal) => (
           <label
@@ -951,7 +941,7 @@ function StepGoals(): React.ReactElement {
               checked={goals.includes(goal)}
               onChange={() => toggleGoal(goal)}
             />
-            {GOAL_LABELS[goal]}
+            {t(`wizard.steps.goals.${goal}`)}
           </label>
         ))}
       </div>
@@ -982,12 +972,12 @@ function StepLocation(): React.ReactElement {
     try {
       const found = await adapter.searchPlace(q);
       if (found.length === 0) {
-        setError("No results found. Try a more specific address.");
+        setError("wizard.steps.location.noResults");
       } else {
         setResults(found);
       }
     } catch {
-      setError("Search failed. Please check your connection and try again.");
+      setError("wizard.steps.location.searchFailed");
     } finally {
       setSearching(false);
     }
@@ -1009,16 +999,18 @@ function StepLocation(): React.ReactElement {
       `&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`
     : null;
 
+  const { t } = useTranslation("common");
+
   return (
     <div data-testid="wizard-step-location">
-      <h2>Garden Location</h2>
-      <p>Find your garden on the map to help with orientation. This step is optional.</p>
+      <h2>{t("wizard.steps.location.title")}</h2>
+      <p>{t("wizard.steps.location.description")}</p>
 
       {/* Search row */}
       <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
         <input
           type="text"
-          placeholder="Enter your address…"
+          placeholder={t("wizard.steps.location.searchPlaceholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { void handleSearch(); } }}
@@ -1047,13 +1039,13 @@ function StepLocation(): React.ReactElement {
             opacity: searching || !query.trim() ? 0.6 : 1,
           }}
         >
-          {searching ? "…" : "Search"}
+          {searching ? t("wizard.steps.location.searching") : t("wizard.steps.location.search")}
         </button>
       </div>
 
       {/* Error */}
       {error && (
-        <p style={{ color: "#c62828", fontSize: 13, marginTop: 4 }}>{error}</p>
+        <p style={{ color: "#c62828", fontSize: 13, marginTop: 4 }}>{t(error)}</p>
       )}
 
       {/* Results dropdown */}
@@ -1147,12 +1139,12 @@ function StepLocation(): React.ReactElement {
             }}
           >
             <span style={{ fontSize: 32 }}>🗺️</span>
-            <span style={{ fontSize: 13 }}>Search for an address to see it on the map</span>
+            <span style={{ fontSize: 13 }}>{t("wizard.steps.location.mapPlaceholder")}</span>
           </div>
         )}
       </div>
       <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
-        This step is optional — you can skip it and configure dimensions manually on the canvas.
+        {t("wizard.steps.location.optional")}
       </p>
     </div>
   );
@@ -1175,6 +1167,7 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApi
   const prevStep = useUiStore((s) => s.wizardPrevStep);
   const wizardReset = useUiStore((s) => s.wizardReset);
   const newProject = useProjectStore((s) => s.newProject);
+  const { t } = useTranslation("common");
 
   const StepComponent = STEPS[wizard.step - 1] ?? StepDimensions;
   const isLastStep = wizard.step === WIZARD_TOTAL_STEPS;
@@ -1192,7 +1185,9 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApi
         }
       : undefined;
     newProject({
-      name: wizard.mapAddress ? `Garden at ${wizard.mapAddress}` : "My Garden",
+      name: wizard.mapAddress
+        ? t("project.namedAfterAddress", { address: wizard.mapAddress })
+        : t("project.defaultName"),
       dimensions: wizard.dimensions,
       unit: wizard.unit,
       style: wizard.style,
@@ -1241,7 +1236,7 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApi
         }}
       >
         <div style={{ marginBottom: 8, color: "#888", fontSize: 13 }}>
-          Step {wizard.step} of {WIZARD_TOTAL_STEPS}
+          {t("wizard.step", { current: wizard.step, total: WIZARD_TOTAL_STEPS })}
         </div>
         <div
           style={{
@@ -1268,21 +1263,21 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApi
 
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 32 }}>
           <button onClick={handleCancel} style={{ padding: "8px 20px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-            Cancel
+            {t("wizard.cancel")}
           </button>
           <div style={{ display: "flex", gap: 8 }}>
             {!isFirstStep && (
               <button onClick={prevStep} data-testid="wizard-back" style={{ padding: "8px 20px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-                Back
+                {t("wizard.back")}
               </button>
             )}
             {isLastStep ? (
               <button onClick={handleFinish} data-testid="wizard-finish" style={{ padding: "8px 24px", borderRadius: 6, border: "none", background: "#4caf50", color: "#fff", fontWeight: 700, cursor: "pointer" }}>
-                Create Garden
+                {t("wizard.finish")}
               </button>
             ) : (
               <button onClick={nextStep} data-testid="wizard-next" style={{ padding: "8px 24px", borderRadius: 6, border: "none", background: "#4caf50", color: "#fff", fontWeight: 700, cursor: "pointer" }}>
-                Next
+                {t("wizard.next")}
               </button>
             )}
           </div>

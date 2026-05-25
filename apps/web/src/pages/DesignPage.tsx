@@ -1,12 +1,15 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GardenCanvas } from "@mity-garden/canvas-engine";
-import { useProjectStore, useUiStore, AssetLibraryPanel } from "@mity-garden/shared-ui";
+import { useProjectStore, useUiStore, AssetLibraryPanel, LLMSuggestionsPanel } from "@mity-garden/shared-ui";
 import type { AssetDefinition } from "@mity-garden/domain";
 import { getRepoInstance } from "../repository.js";
 import { exportProjectAsJSON, exportProjectAsText } from "../export.js";
+import { getLLMProvider, getImageProvider } from "../llm.js";
 
 const repo = getRepoInstance();
+const llmProvider = getLLMProvider();
+const imageProvider = getImageProvider();
 
 export function DesignPage(): React.ReactElement {
   const project = useProjectStore((s) => s.project);
@@ -21,6 +24,7 @@ export function DesignPage(): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = React.useState({ width: 800, height: 600 });
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [llmPanelOpen, setLlmPanelOpen] = useState(false);
 
   // Wire up Electron File → Export JSON menu item
   useEffect(() => {
@@ -157,6 +161,23 @@ export function DesignPage(): React.ReactElement {
           >
             📄 Proposal
           </button>
+          <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
+          <button
+            onClick={() => setLlmPanelOpen((v) => !v)}
+            title="Toggle AI suggestions panel"
+            data-testid="toolbar-ai-panel"
+            style={{
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: llmPanelOpen ? "1px solid #4caf50" : "1px solid #ccc",
+              cursor: "pointer",
+              background: llmPanelOpen ? "#e8f5e9" : "#fff",
+              fontSize: 12,
+              fontWeight: llmPanelOpen ? 700 : 400,
+            }}
+          >
+            ✨ AI
+          </button>
         </div>
 
         {/* Canvas Area */}
@@ -170,6 +191,15 @@ export function DesignPage(): React.ReactElement {
           />
         </div>
       </div>
+
+      {/* Right: LLM Suggestions Panel */}
+      {llmPanelOpen && (
+        <LLMSuggestionsPanel
+          project={project}
+          llmProvider={llmProvider}
+          imageProvider={imageProvider}
+        />
+      )}
     </div>
   );
 }

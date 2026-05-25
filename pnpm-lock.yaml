@@ -333,6 +333,9 @@ importers:
       '@mity-garden/i18n':
         specifier: workspace:*
         version: link:../i18n
+      '@mity-garden/llm':
+        specifier: workspace:*
+        version: link:../llm
       '@mity-garden/maps':
         specifier: workspace:*
         version: link:../maps

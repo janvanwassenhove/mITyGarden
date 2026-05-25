@@ -9,7 +9,9 @@
       "@mity-garden/asset-library": ["../asset-library/src/index.ts"],
       "@mity-garden/asset-library/*": ["../asset-library/src/*"],
       "@mity-garden/maps": ["../maps/src/index.ts"],
-      "@mity-garden/maps/*": ["../maps/src/*"]
+      "@mity-garden/maps/*": ["../maps/src/*"],
+      "@mity-garden/llm": ["../llm/src/index.ts"],
+      "@mity-garden/llm/*": ["../llm/src/*"]
     }
   },
   "include": ["src/**/*"],

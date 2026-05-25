@@ -7,6 +7,7 @@ import { DesignPage } from "./pages/DesignPage.js";
 import { AppShell } from "./layouts/AppShell.js";
 import { ProjectWizard } from "@mity-garden/shared-ui";
 import { useUiStore } from "@mity-garden/shared-ui";
+import { getMapsAdapter } from "./maps.js";
 
 function LocaleSync(): null {
   const locale = useUiStore((s) => s.locale);
@@ -26,6 +27,7 @@ function WizardController(): React.ReactElement | null {
 
   return (
     <ProjectWizard
+      mapsAdapter={getMapsAdapter()}
       onComplete={() => {
         closeWizard();
         void navigate("/design");

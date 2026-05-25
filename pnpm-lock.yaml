@@ -333,6 +333,9 @@ importers:
       '@mity-garden/i18n':
         specifier: workspace:*
         version: link:../i18n
+      '@mity-garden/maps':
+        specifier: workspace:*
+        version: link:../maps
       react:
         specifier: ^19.0.0
         version: 19.2.6

@@ -16,6 +16,7 @@ export default defineConfig({
       "@mity-garden/asset-library": resolve(__dirname, "../../packages/asset-library/src"),
       "@mity-garden/persistence": resolve(__dirname, "../../packages/persistence/src"),
       "@mity-garden/shared-ui": resolve(__dirname, "../../packages/shared-ui/src"),
+      "@mity-garden/maps": resolve(__dirname, "../../packages/maps/src"),
     },
   },
   build: {

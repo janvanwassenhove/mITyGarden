@@ -7,7 +7,9 @@
       "@mity-garden/domain": ["../domain/src/index.ts"],
       "@mity-garden/domain/*": ["../domain/src/*"],
       "@mity-garden/asset-library": ["../asset-library/src/index.ts"],
-      "@mity-garden/asset-library/*": ["../asset-library/src/*"]
+      "@mity-garden/asset-library/*": ["../asset-library/src/*"],
+      "@mity-garden/maps": ["../maps/src/index.ts"],
+      "@mity-garden/maps/*": ["../maps/src/*"]
     }
   },
   "include": ["src/**/*"],

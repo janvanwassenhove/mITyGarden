@@ -1,5 +1,5 @@
 import { createStore } from "zustand/vanilla";
-import type { Locale, WizardState, UnitSystem, GardenStyle, GardenGoal, Polygon, GeoCoordinates } from "../models/types.js";
+import type { Locale, WizardState, UnitSystem, GardenStyle, GardenGoal, Polygon, GeoCoordinates, Position } from "../models/types.js";
 import { WIZARD_TOTAL_STEPS } from "../models/types.js";
 
 // ─── UI Store ─────────────────────────────────────────────────────────────────
@@ -36,6 +36,7 @@ export interface UiActions {
   wizardSetMapAddress: (address: string) => void;
   wizardSetMapCoordinates: (coords: GeoCoordinates) => void;
   wizardSetMapBoundary: (boundary: Polygon) => void;
+  wizardSetBoundaryVertices: (vertices: Position[]) => void;
   wizardAddStructure: (polygon: Polygon) => void;
   wizardReset: () => void;
 }
@@ -110,6 +111,9 @@ export const uiStore = createStore<UiStore>()((set, get) => ({
   },
   wizardSetMapBoundary: (boundary) => {
     set((s) => ({ wizard: { ...s.wizard, mapBoundary: boundary } }));
+  },
+  wizardSetBoundaryVertices: (vertices) => {
+    set((s) => ({ wizard: { ...s.wizard, boundaryVertices: vertices } }));
   },
   wizardAddStructure: (polygon) => {
     set((s) => ({

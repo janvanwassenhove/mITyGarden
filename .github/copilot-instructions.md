@@ -75,6 +75,17 @@ The `docs/` directory contains living documentation. **Keep it current automatic
 | Adding a new monorepo command | Update `docs/development.md` — Monorepo Commands section |
 | Changing an IPC channel name | Update `docs/llm-integration.md` (or the relevant doc) |
 | Any public API surface change | Update the relevant `docs/` file in the same commit |
+| Making a significant architectural decision | Create a new ADR in `docs/adr/` and add it to `docs/adr/README.md` |
+| Introducing a new domain or technical term | Add it to `docs/glossary.md` |
+
+### When to write an ADR
+
+Create an ADR (`docs/adr/NNN-title.md`) whenever you:
+- Choose a library or framework over concrete alternatives.
+- Reverse or significantly modify a previous architectural decision.
+- Accept a meaningful trade-off that future contributors need to understand.
+
+ADRs are append-only. To reverse a decision, mark the old ADR **Superseded** and create a new one.
 
 ### Documentation style
 
@@ -83,6 +94,7 @@ The `docs/` directory contains living documentation. **Keep it current automatic
 - Use code blocks with the correct language tag for all code examples.
 - Do not duplicate information across docs — cross-link with relative Markdown links instead.
 - Keep the `## Overview` section at the top of each doc short (≤ 5 sentences).
+- All new domain or technical terms introduced in specs or code must be added to `docs/glossary.md`.
 
 ---
 

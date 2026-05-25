@@ -69,6 +69,22 @@ function computeBoundingBox(vertices: GeoCoordinates[]): { width: number; height
   return { width, height, areaM2: Math.abs(area) / 2 };
 }
 
+/** Convert geo-polygon to local metre-coordinate vertices (origin = bounding-box top-left). */
+function geoToMeterVertices(vertices: GeoCoordinates[]): Array<{ x: number; y: number }> {
+  const lats = vertices.map((v) => v.lat);
+  const lngs = vertices.map((v) => v.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const avgLatRad = ((minLat + maxLat) / 2) * (Math.PI / 180);
+  const mPerDegLat = 111_320;
+  const mPerDegLng = 111_320 * Math.cos(avgLatRad);
+  return vertices.map((v) => ({
+    x: Math.round(((v.lng - minLng) * mPerDegLng) * 100) / 100,
+    y: Math.round(((maxLat - v.lat) * mPerDegLat) * 100) / 100,
+  }));
+}
+
 function loadGoogleMapsScript(apiKey: string): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.google?.maps?.drawing) { resolve(); return; }
@@ -424,6 +440,7 @@ function StepBoundary(): React.ReactElement {
   const boundary = useUiStore((s) => s.wizard.mapBoundary);
   const setDimensions = useUiStore((s) => s.wizardSetDimensions);
   const setBoundary = useUiStore((s) => s.wizardSetMapBoundary);
+  const setBoundaryVerts = useUiStore((s) => s.wizardSetBoundaryVertices);
 
   const mapDivRef = React.useRef<HTMLDivElement>(null);
   const [mapsLoaded, setMapsLoaded] = React.useState(false);
@@ -483,6 +500,7 @@ function StepBoundary(): React.ReactElement {
       dm.setDrawingMode(null);
       const verts = polygon.getPath().getArray().map((ll) => ({ lat: ll.lat(), lng: ll.lng() }));
       setBoundary(verts);
+      setBoundaryVerts(geoToMeterVertices(verts));
       const { width, height, areaM2 } = computeBoundingBox(verts);
       setDimensions(Math.max(1, Math.round(width * 10) / 10), Math.max(1, Math.round(height * 10) / 10));
       setArea(Math.round(areaM2));
@@ -493,6 +511,7 @@ function StepBoundary(): React.ReactElement {
 
   function handleClearGmaps(): void {
     setBoundary([]);
+    setBoundaryVerts([]);
     setArea(null);
     setMapsLoaded(false);
     setTimeout(() => setMapsLoaded(true), 20);
@@ -557,10 +576,11 @@ function StepBoundary(): React.ReactElement {
                 {...(boundary && boundary.length > 0 ? { initialBoundary: boundary } : {})}
                 onBoundaryComplete={(verts, width, height, areaM2) => {
                   setBoundary(verts);
+                  setBoundaryVerts(geoToMeterVertices(verts));
                   setDimensions(width, height);
                   setArea(areaM2);
                 }}
-                onClear={() => { setBoundary([]); setArea(null); }}
+                onClear={() => { setBoundary([]); setBoundaryVerts([]); setArea(null); }}
               />
               {hasBoundary && area !== null && (
                 <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
@@ -584,12 +604,12 @@ function StepBoundary(): React.ReactElement {
             Upload any aerial photo, map screenshot, or garden plan. Trace the outline by clicking, then enter one known measurement to set the scale.
           </p>
           <ImageTraceBoundaryEditor
-            onBoundaryComplete={(widthM, heightM, areaM2) => {
-              // Store pixel-derived dimensions (no geo-coordinates in this mode)
+            onBoundaryComplete={(widthM, heightM, areaM2, vertices) => {
               setDimensions(widthM, heightM);
+              setBoundaryVerts(vertices);
               setArea(areaM2);
             }}
-            onClear={() => { setDimensions(10, 10); setArea(null); }}
+            onClear={() => { setDimensions(10, 10); setBoundaryVerts([]); setArea(null); }}
           />
           {area !== null && (
             <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
@@ -612,7 +632,7 @@ function ImageTraceBoundaryEditor({
   onBoundaryComplete,
   onClear,
 }: {
-  onBoundaryComplete: (widthM: number, heightM: number, areaM2: number) => void;
+  onBoundaryComplete: (widthM: number, heightM: number, areaM2: number, vertices: Array<{ x: number; y: number }>) => void;
   onClear: () => void;
 }): React.ReactElement {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -761,8 +781,18 @@ function ImageTraceBoundaryEditor({
     const mPerPx = widthM / widthPx;
     const heightM = Math.max(0.1, Math.round(heightPx * mPerPx * 10) / 10);
     const areaM2 = Math.round(areaPx * mPerPx * mPerPx);
+    // Convert pixel vertices to metre vertices (origin = bbox top-left)
+    const verts = vertsRef.current;
+    const xs = verts.map((v) => v.x);
+    const ys = verts.map((v) => v.y);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    const meterVerts = verts.map((v) => ({
+      x: Math.round((v.x - minX) * mPerPx * 100) / 100,
+      y: Math.round((v.y - minY) * mPerPx * 100) / 100,
+    }));
     setCalculated(true);
-    onBoundaryComplete(Math.max(0.1, Math.round(widthM * 10) / 10), heightM, areaM2);
+    onBoundaryComplete(Math.max(0.1, Math.round(widthM * 10) / 10), heightM, areaM2, meterVerts);
   }
 
   // ── redraw when canvas size changes (image loaded) ────────────────────────
@@ -1173,6 +1203,9 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApi
       style: wizard.style,
       goals: wizard.goals,
       ...(mapData !== undefined ? { mapData } : {}),
+      ...(wizard.boundaryVertices && wizard.boundaryVertices.length >= 3
+        ? { boundaryVertices: wizard.boundaryVertices }
+        : {}),
     });
     wizardReset();
     onComplete();

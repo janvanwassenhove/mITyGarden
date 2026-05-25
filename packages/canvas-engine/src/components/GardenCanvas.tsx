@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect, useState } from "react";
-import { Stage, Layer, Rect, Text, Group, Transformer, Image as KonvaImage } from "react-konva";
+import { Stage, Layer, Rect, Line, Text, Group, Transformer, Image as KonvaImage } from "react-konva";
 import type Konva from "konva";
 import { useStore } from "zustand";
 import { getAssetById } from "@mity-garden/asset-library";
@@ -277,6 +277,17 @@ export function GardenCanvas({
   const ppm = BASE_PIXELS_PER_METER;
   const gardenW = project.dimensions.width * ppm;
   const gardenH = project.dimensions.height * ppm;
+
+  // Convert boundary vertices (in metres) to canvas pixel polygon points
+  const boundaryPoints = React.useMemo<number[] | null>(() => {
+    const verts = project.boundaryVertices;
+    if (!verts || verts.length < 3) return null;
+    const pts: number[] = [];
+    for (const v of verts) {
+      pts.push(v.x * ppm, v.y * ppm);
+    }
+    return pts;
+  }, [project.boundaryVertices, ppm]);
 
   // Canvas state
   const offsetX = useStore(canvasStore, (s) => s.offsetX);
@@ -566,16 +577,27 @@ export function GardenCanvas({
       {/* Garden area layer */}
       <Layer>
         {/* Garden boundary fill */}
-        <Rect
-          x={0}
-          y={0}
-          width={gardenW}
-          height={gardenH}
-          fill="#c8e6c9"
-          stroke="#4caf50"
-          strokeWidth={2 / scale}
-          listening={false}
-        />
+        {boundaryPoints ? (
+          <Line
+            points={boundaryPoints}
+            closed
+            fill="#c8e6c9"
+            stroke="#4caf50"
+            strokeWidth={2 / scale}
+            listening={false}
+          />
+        ) : (
+          <Rect
+            x={0}
+            y={0}
+            width={gardenW}
+            height={gardenH}
+            fill="#c8e6c9"
+            stroke="#4caf50"
+            strokeWidth={2 / scale}
+            listening={false}
+          />
+        )}
         {/* Garden name label */}
         <Text
           x={8 / scale}

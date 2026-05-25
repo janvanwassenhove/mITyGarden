@@ -175,6 +175,8 @@ export interface GardenProject {
   layers: Layer[];
   metadata: ProjectMetadata;
   mapData?: MapData;
+  /** Polygon boundary vertices in metres, origin at top-left of bounding box. */
+  boundaryVertices?: Position[];
   history: HistoryStack;
 }
 
@@ -190,6 +192,8 @@ export interface WizardState {
   mapAddress?: string;
   mapCoordinates?: GeoCoordinates;
   mapBoundary?: Polygon;
+  /** Polygon boundary in metres (computed from map or image trace). */
+  boundaryVertices?: Position[];
 }
 
 export const WIZARD_TOTAL_STEPS = 5;

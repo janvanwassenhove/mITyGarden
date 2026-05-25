@@ -1,5 +1,16 @@
 # Development Guide
 
+## Key documentation
+
+| Doc | Purpose |
+|-----|---------|
+| [docs/architecture.md](architecture.md) | Monorepo layout, stores, persistence, milestones |
+| [docs/glossary.md](glossary.md) | Definitions for all domain and technical terms |
+| [docs/adr/](adr/README.md) | Architecture Decision Records — why decisions were made |
+| [docs/llm-integration.md](llm-integration.md) | LLM + image providers, env vars, adding providers |
+| [docs/i18n.md](i18n.md) | Supported locales, adding translations |
+| [specs/](../specs/) | Feature specs (ACs, REQs, test IDs) |
+
 ## Prerequisites
 
 | Tool | Version |

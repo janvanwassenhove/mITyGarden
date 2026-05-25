@@ -148,7 +148,9 @@ export function LLMSuggestionsPanel({
       const img = await imageService.generateFromProject(project, viewType);
       setGeneratedImage(img);
     } catch (err) {
-      setImageError(err instanceof Error ? err.message : "Image generation failed.");
+      const msg = err instanceof Error ? err.message : "Image generation failed.";
+      console.error("[mITyGarden] Image generation error:", msg);
+      setImageError(msg);
     } finally {
       setImageLoading(false);
     }

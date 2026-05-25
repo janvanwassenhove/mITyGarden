@@ -5,7 +5,9 @@
     "baseUrl": ".",
     "paths": {
       "@mity-garden/domain": ["../domain/src/index.ts"],
-      "@mity-garden/domain/*": ["../domain/src/*"]
+      "@mity-garden/domain/*": ["../domain/src/*"],
+      "@mity-garden/asset-library": ["../asset-library/src/index.ts"],
+      "@mity-garden/asset-library/*": ["../asset-library/src/*"]
     }
   },
   "include": ["src/**/*"],

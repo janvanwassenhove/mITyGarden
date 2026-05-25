@@ -1,8 +1,9 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GardenCanvas } from "@mity-garden/canvas-engine";
-import { useProjectStore, useUiStore } from "@mity-garden/shared-ui";
+import { useProjectStore, useUiStore, AssetLibraryPanel } from "@mity-garden/shared-ui";
 import { IndexedDBRepository } from "@mity-garden/persistence";
+import type { AssetDefinition } from "@mity-garden/domain";
 
 const repo = new IndexedDBRepository();
 
@@ -14,9 +15,11 @@ export function DesignPage(): React.ReactElement {
   const setSaving = useProjectStore((s) => s.setSaving);
   const markClean = useProjectStore((s) => s.markClean);
   const openWizard = useUiStore((s) => s.openWizard);
+  const locale = useUiStore((s) => s.locale);
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = React.useState({ width: 800, height: 600 });
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
 
   // Update canvas size on container resize
   useEffect(() => {
@@ -67,54 +70,77 @@ export function DesignPage(): React.ReactElement {
   }
 
   return (
-    <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
-      {/* Canvas Toolbar */}
-      <div
-        data-testid="canvas-toolbar"
-        style={{
-          position: "absolute",
-          top: 64,
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          gap: 8,
-          background: "#fff",
-          border: "1px solid #e0e0e0",
-          borderRadius: 8,
-          padding: "6px 12px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          zIndex: 10,
+    <div style={{ display: "flex", height: "100%", overflow: "hidden", position: "relative" }}>
+      {/* Left: Asset Library Panel */}
+      <AssetLibraryPanel
+        locale={locale}
+        selectedAssetId={selectedAssetId}
+        onAssetSelect={(asset: AssetDefinition) => {
+          setSelectedAssetId((prev) => (prev === asset.id ? null : asset.id));
         }}
-      >
-        <button
-          onClick={undo}
-          title="Undo (Ctrl+Z)"
-          data-testid="toolbar-undo"
-          style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff" }}
-        >
-          ↩ Undo
-        </button>
-        <button
-          onClick={redo}
-          title="Redo (Ctrl+Shift+Z)"
-          data-testid="toolbar-redo"
-          style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff" }}
-        >
-          ↪ Redo
-        </button>
-        <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
-        <span style={{ fontSize: 13, color: isDirty ? "#f57c00" : "#4caf50", alignSelf: "center" }}>
-          {isDirty ? "● Unsaved" : "✓ Saved"}
-        </span>
-      </div>
+      />
 
-      {/* Canvas Area */}
-      <div ref={containerRef} style={{ flex: 1, overflow: "hidden", position: "relative" }} data-testid="canvas-area">
-        <GardenCanvas
-          project={project}
-          width={canvasSize.width}
-          height={canvasSize.height}
-        />
+      {/* Center: Canvas + Toolbar */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Canvas Toolbar */}
+        <div
+          data-testid="canvas-toolbar"
+          style={{
+            display: "flex",
+            gap: 8,
+            padding: "6px 12px",
+            background: "#fff",
+            borderBottom: "1px solid #e0e0e0",
+            alignItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          <button
+            onClick={undo}
+            title="Undo (Ctrl+Z)"
+            data-testid="toolbar-undo"
+            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff" }}
+          >
+            ↩ Undo
+          </button>
+          <button
+            onClick={redo}
+            title="Redo (Ctrl+Shift+Z)"
+            data-testid="toolbar-redo"
+            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff" }}
+          >
+            ↪ Redo
+          </button>
+          <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
+          <span style={{ fontSize: 13, color: isDirty ? "#f57c00" : "#4caf50" }}>
+            {isDirty ? "● Unsaved" : "✓ Saved"}
+          </span>
+          {selectedAssetId && (
+            <>
+              <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
+              <span style={{ fontSize: 12, color: "#1565c0", background: "#e3f2fd", padding: "2px 8px", borderRadius: 4 }}>
+                🖊 Click canvas to place asset
+              </span>
+              <button
+                onClick={() => setSelectedAssetId(null)}
+                style={{ padding: "2px 8px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff", fontSize: 12 }}
+              >
+                ✕ Cancel
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Canvas Area */}
+        <div ref={containerRef} style={{ flex: 1, overflow: "hidden", position: "relative" }} data-testid="canvas-area">
+          <GardenCanvas
+            project={project}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            pendingAssetId={selectedAssetId}
+            onAssetPlaced={() => setSelectedAssetId(null)}
+          />
+        </div>
       </div>
     </div>
   );

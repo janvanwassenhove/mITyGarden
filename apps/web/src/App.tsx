@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { I18nextProvider } from "react-i18next";
 import { getSharedI18n } from "@mity-garden/i18n";
@@ -7,6 +7,14 @@ import { DesignPage } from "./pages/DesignPage.js";
 import { AppShell } from "./layouts/AppShell.js";
 import { ProjectWizard } from "@mity-garden/shared-ui";
 import { useUiStore } from "@mity-garden/shared-ui";
+
+function LocaleSync(): null {
+  const locale = useUiStore((s) => s.locale);
+  useEffect(() => {
+    void getSharedI18n().changeLanguage(locale);
+  }, [locale]);
+  return null;
+}
 
 
 function WizardController(): React.ReactElement | null {
@@ -33,6 +41,7 @@ export function App(): React.ReactElement {
   return (
     <I18nextProvider i18n={i18n}>
       <BrowserRouter>
+        <LocaleSync />
         <WizardController />
         <Routes>
           <Route path="/" element={<AppShell />}>

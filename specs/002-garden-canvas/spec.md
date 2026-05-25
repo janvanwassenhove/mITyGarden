@@ -52,6 +52,14 @@
 - Elements snap to the nearest grid point during placement and movement
 - Default grid size is 1 metre
 
+### AC-009: Rename element
+- Given an element exists on the canvas
+- When the user double-clicks the element OR right-clicks and chooses "Rename"
+- Then an inline text input appears positioned over the element, pre-filled with the current label
+- When the user presses Enter or clicks away, the new label is saved as `customLabel` on the element
+- When the user presses Escape, the rename is cancelled and the original label is restored
+- When the input is left empty, `customLabel` is cleared and the asset's default name is shown
+
 ## Requirements
 
 - REQ-CNV-01: Canvas MUST use `react-konva` (web/desktop) or WebView wrapper (mobile)
@@ -59,6 +67,7 @@
 - REQ-CNV-03: All element mutations MUST go through `projectStore` actions
 - REQ-CNV-04: Undo/redo history MUST be capped at 100 actions
 - REQ-CNV-05: Canvas MUST support at least 200 simultaneous elements without frame drops
+- REQ-CNV-06: Rename MUST only be available when exactly one element is selected; the "Rename" context menu item MUST be disabled for multi-selections
 
 ## Test IDs (for E2E)
 
@@ -67,6 +76,8 @@
 | Canvas area | `canvas-area` |
 | Undo button | `toolbar-undo` |
 | Redo button | `toolbar-redo` |
+| Context menu rename item | `ctx-rename` |
+| Rename input overlay | `canvas-rename-input` |
 
 ## Success Metrics
 

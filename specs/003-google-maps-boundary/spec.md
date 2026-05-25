@@ -16,11 +16,12 @@
 - When I click "Next"
 - Then I am shown the Garden Boundary step (Step 2)
 
-### AC-003: Google Maps not configured
+### AC-003: Google Maps not configured — Leaflet satellite fallback
 - Given `GOOGLE_MAPS_API_KEY` is not set
 - When the Boundary step is shown
-- Then a clear message explains that boundary drawing requires a Google Maps API key
-- And the user can skip to the Dimensions step without drawing
+- Then a Leaflet map with free ESRI satellite imagery is displayed (no API key required)
+- And the user can click to place polygon vertices and close the shape
+- And dimensions are auto-calculated the same way as with the Google Maps version
 
 ### AC-004: Interactive boundary map
 - Given `GOOGLE_MAPS_API_KEY` is set

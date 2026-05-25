@@ -88,7 +88,227 @@ function loadGoogleMapsScript(apiKey: string): Promise<void> {
   });
 }
 
-// ─── Step: Dimensions ────────────────────────────────────────────────────────
+// ─── Leaflet minimal type declarations ────────────────────────────────────────
+
+interface LMap {
+  on(event: "click", handler: (e: { latlng: { lat: number; lng: number } }) => void): void;
+  remove(): void;
+  setView(center: [number, number], zoom: number): LMap;
+}
+interface LCircleMarker { addTo(map: LMap): LCircleMarker; remove(): void; }
+interface LPolyline { addTo(map: LMap): LPolyline; remove(): void; }
+interface LPolygon { addTo(map: LMap): LPolygon; remove(): void; }
+interface LTileLayer { addTo(map: LMap): LTileLayer; }
+interface LeafletStatic {
+  map(el: HTMLElement, opts?: object): LMap;
+  tileLayer(url: string, opts?: object): LTileLayer;
+  circleMarker(latlng: [number, number], opts?: object): LCircleMarker;
+  polyline(latlngs: [number, number][], opts?: object): LPolyline;
+  polygon(latlngs: [number, number][], opts?: object): LPolygon;
+}
+
+declare global {
+  interface Window {
+    google?: {
+      maps: {
+        Map: new (el: HTMLElement, opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }) => GmMap;
+        Polygon: new (opts: { paths?: { lat: number; lng: number }[]; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean }) => GmPolygon;
+        LatLngBounds: new () => GmLatLngBounds;
+        event: { addListener(target: GmDrawingManager, event: "polygoncomplete", handler: (polygon: GmPolygon) => void): unknown };
+        drawing: {
+          DrawingManager: new (opts: { drawingMode?: string; drawingControl?: boolean; drawingControlOptions?: { position: number; drawingModes: string[] }; polygonOptions?: { fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean } }) => GmDrawingManager;
+          OverlayType: { POLYGON: string };
+        };
+        ControlPosition: { TOP_CENTER: number };
+      };
+    };
+    L?: LeafletStatic;
+  }
+}
+
+// ─── Leaflet CDN loader ───────────────────────────────────────────────────────
+
+function loadLeafletScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.L) { resolve(); return; }
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css";
+      document.head.appendChild(link);
+    }
+    const existing = document.getElementById("leaflet-js") as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("Leaflet script failed")));
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = "leaflet-js";
+    script.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Leaflet"));
+    document.head.appendChild(script);
+  });
+}
+
+// ─── Leaflet boundary editor (no API key required) ────────────────────────────
+
+function LeafletBoundaryEditor({
+  center,
+  initialBoundary,
+  onBoundaryComplete,
+  onClear,
+}: {
+  center?: GeoCoordinates;
+  initialBoundary?: GeoCoordinates[];
+  onBoundaryComplete: (verts: GeoCoordinates[], width: number, height: number, areaM2: number) => void;
+  onClear: () => void;
+}): React.ReactElement {
+  const mapDivRef = React.useRef<HTMLDivElement>(null);
+  const mapRef = React.useRef<LMap | null>(null);
+  const vertsRef = React.useRef<GeoCoordinates[]>([]);
+  const markersRef = React.useRef<LCircleMarker[]>([]);
+  const polylineRef = React.useRef<LPolyline | null>(null);
+  const polygonRef = React.useRef<LPolygon | null>(null);
+
+  const [loaded, setLoaded] = React.useState(false);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [vertCount, setVertCount] = React.useState(0);
+  const [closed, setClosed] = React.useState(false);
+
+  React.useEffect(() => {
+    loadLeafletScript()
+      .then(() => setLoaded(true))
+      .catch(() => setLoadError("Could not load map. Check your connection."));
+  }, []);
+
+  React.useEffect(() => {
+    if (!loaded || !mapDivRef.current) return;
+    const L = window.L!;
+    const c: [number, number] = center ? [center.lat, center.lng] : [51.26, 4.40];
+    const map = L.map(mapDivRef.current, { zoomControl: true }).setView(c, center ? 18 : 13);
+    mapRef.current = map;
+
+    // ESRI World Imagery — free satellite tiles, no API key required
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { attribution: "Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP", maxZoom: 21 },
+    ).addTo(map);
+
+    // Restore existing boundary if present
+    if (initialBoundary && initialBoundary.length > 2) {
+      vertsRef.current = initialBoundary;
+      setVertCount(initialBoundary.length);
+      setClosed(true);
+      const latlngs = initialBoundary.map((v): [number, number] => [v.lat, v.lng]);
+      L.polygon(latlngs, { color: "#388e3c", fillColor: "#4caf50", fillOpacity: 0.25, weight: 2 }).addTo(map);
+    }
+
+    map.on("click", (e) => {
+      if (closed) return;
+      const latlng = { lat: e.latlng.lat, lng: e.latlng.lng };
+      vertsRef.current = [...vertsRef.current, latlng];
+      setVertCount(vertsRef.current.length);
+
+      // Vertex dot
+      const marker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: "#388e3c", fillColor: "#fff", fillOpacity: 1, weight: 2 });
+      marker.addTo(map);
+      markersRef.current.push(marker);
+
+      // Preview polyline
+      if (polylineRef.current) polylineRef.current.remove();
+      if (vertsRef.current.length > 1) {
+        polylineRef.current = L.polyline(
+          vertsRef.current.map((v): [number, number] => [v.lat, v.lng]),
+          { color: "#388e3c", weight: 2, dashArray: "6 4" },
+        ).addTo(map);
+      }
+    });
+
+    return () => { map.remove(); };
+  }, [loaded]);
+
+  function handleClose(): void {
+    if (vertsRef.current.length < 3) return;
+    const L = window.L!;
+    const map = mapRef.current!;
+    if (polylineRef.current) { polylineRef.current.remove(); polylineRef.current = null; }
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+    const latlngs = vertsRef.current.map((v): [number, number] => [v.lat, v.lng]);
+    polygonRef.current = L.polygon(latlngs, { color: "#388e3c", fillColor: "#4caf50", fillOpacity: 0.25, weight: 2 }).addTo(map);
+    setClosed(true);
+    const { width, height, areaM2 } = computeBoundingBox(vertsRef.current);
+    onBoundaryComplete(
+      vertsRef.current,
+      Math.max(1, Math.round(width * 10) / 10),
+      Math.max(1, Math.round(height * 10) / 10),
+      Math.round(areaM2),
+    );
+  }
+
+  function handleClearLocal(): void {
+    vertsRef.current = [];
+    setVertCount(0);
+    setClosed(false);
+    if (polylineRef.current) { polylineRef.current.remove(); polylineRef.current = null; }
+    if (polygonRef.current) { polygonRef.current.remove(); polygonRef.current = null; }
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+    onClear();
+  }
+
+  if (loadError) return <p style={{ color: "#c62828", fontSize: 13 }}>{loadError}</p>;
+
+  return (
+    <div>
+      {!loaded && (
+        <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
+          Loading map…
+        </div>
+      )}
+      <div
+        ref={mapDivRef}
+        style={{ height: loaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: loaded ? "2px solid #e0e0e0" : "none" }}
+      />
+      {loaded && !closed && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+          <span style={{ fontSize: 12, color: "#888", flex: 1 }}>
+            {vertCount === 0
+              ? "Click on the satellite map to start tracing your garden outline."
+              : vertCount < 3
+              ? `${vertCount} point${vertCount > 1 ? "s" : ""} — add at least 3 to close the shape.`
+              : `${vertCount} points — press "Close shape" when done.`}
+          </span>
+          <button
+            onClick={handleClose}
+            disabled={vertCount < 3}
+            style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: vertCount >= 3 ? "#4caf50" : "#e0e0e0", color: vertCount >= 3 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 12, cursor: vertCount >= 3 ? "pointer" : "not-allowed" }}
+          >
+            Close shape
+          </button>
+          {vertCount > 0 && (
+            <button onClick={handleClearLocal} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
+              Clear
+            </button>
+          )}
+        </div>
+      )}
+      {loaded && closed && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+          <button onClick={handleClearLocal} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+            Clear &amp; redraw
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Step: Dimensions ─────────────────────────────────────────────────────────
 
 function StepDimensions(): React.ReactElement {
   const wizard = useUiStore((s) => s.wizard);
@@ -281,15 +501,30 @@ function StepBoundary(): React.ReactElement {
     return (
       <div data-testid="wizard-step-boundary">
         <h2>Draw Your Garden</h2>
-        <div style={{ padding: "24px", background: "#f5f5f5", borderRadius: 8, border: "2px dashed #ccc", textAlign: "center" }}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>🗺️</div>
-          <p style={{ fontWeight: 600, color: "#555", margin: "0 0 6px" }}>Google Maps not configured</p>
-          <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
-            Set <code>GOOGLE_MAPS_API_KEY</code> to enable drawing your garden boundary on a satellite map and auto-calculating dimensions.
-          </p>
+        <p style={{ marginTop: 0 }}>
+          Trace your garden boundary on the satellite map. Works for any shape — rectangular, irregular, or curved.
+        </p>
+        <div style={{ fontSize: 12, color: "#666", marginBottom: 8, padding: "4px 8px", background: "#f5f5f5", borderRadius: 4, display: "inline-block" }}>
+          📡 Using free satellite imagery (no API key required)
         </div>
-        <p style={{ fontSize: 13, color: "#888", marginTop: 12 }}>
-          You can skip this step and enter your garden dimensions manually on the next step.
+        <LeafletBoundaryEditor
+          {...(coordinates ? { center: coordinates } : {})}
+          {...(boundary && boundary.length > 0 ? { initialBoundary: boundary } : {})}
+          onBoundaryComplete={(verts, width, height, areaM2) => {
+            setBoundary(verts);
+            setDimensions(width, height);
+            setArea(areaM2);
+          }}
+          onClear={() => { setBoundary([]); setArea(null); }}
+        />
+        {hasBoundary && area !== null && (
+          <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
+            <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
+          </div>
+        )}
+        <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
+          Use the polygon tool to trace the outline. Add extra points to approximate curves.
+          This step is optional — you can adjust dimensions on the next step.
         </p>
       </div>
     );

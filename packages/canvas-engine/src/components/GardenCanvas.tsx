@@ -97,6 +97,7 @@ function ElementShape({
   onClick,
   onDragEnd,
   onContextMenu,
+  onDblClick,
 }: {
   el: GardenElement;
   ppm: number;
@@ -104,6 +105,7 @@ function ElementShape({
   onClick: (id: UUID, evt: Konva.KonvaEventObject<MouseEvent>) => void;
   onDragEnd: (id: UUID, x: number, y: number) => void;
   onContextMenu: (id: UUID, evt: Konva.KonvaEventObject<MouseEvent>) => void;
+  onDblClick: (id: UUID) => void;
 }): React.ReactElement {
   const w = el.size.width * ppm;
   const h = el.size.height * ppm;
@@ -115,7 +117,8 @@ function ElementShape({
 
   // Fallback appearance (shown while SVG loads or if no asset found)
   const fill = FILL_BY_TYPE[el.type] ?? "#90a4ae";
-  const assetName = el.customLabel ?? asset?.labels.en.name ?? el.assetId.split("-").slice(1).join(" ");
+  // Use || so that an empty customLabel (reset) falls back to the asset default name
+  const assetName = el.customLabel || asset?.labels.en.name || el.assetId.split("-").slice(1).join(" ");
   const minDim = Math.min(w, h);
   const showLabel = minDim >= 40;
   const labelFontSize = Math.max(9, Math.min(13, minDim * 0.18));
@@ -129,6 +132,7 @@ function ElementShape({
       rotation={el.rotation}
       draggable
       onClick={(e) => onClick(el.id, e)}
+      onDblClick={() => onDblClick(el.id)}
       onContextMenu={(e) => onContextMenu(el.id, e)}
       onDragEnd={(e) => {
         onDragEnd(el.id, e.target.x() / ppm, e.target.y() / ppm);
@@ -266,6 +270,9 @@ export function GardenCanvas({
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
   // Clipboard for copy / paste
   const [clipboard, setClipboard] = useState<GardenElement[]>([]);
+  // Rename overlay
+  const [renameTarget, setRenameTarget] = useState<{ id: UUID; name: string } | null>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
 
   const ppm = BASE_PIXELS_PER_METER;
   const gardenW = project.dimensions.width * ppm;
@@ -380,6 +387,49 @@ export function GardenCanvas({
     clearSelection();
     setCtxMenu(null);
   }, [elementLayerMap, removeElement, clearSelection]);
+
+  // Start renaming: open the floating input pre-filled with the current label
+  const handleStartRename = useCallback(
+    (id: UUID) => {
+      const el = allElements.find((e) => e.id === id);
+      if (!el) return;
+      const asset = getAssetById(el.assetId);
+      const current = el.customLabel ?? asset?.labels.en.name ?? el.assetId.split("-").slice(1).join(" ");
+      setRenameTarget({ id, name: current });
+      setCtxMenu(null);
+    },
+    [allElements],
+  );
+
+  // Commit the rename: save customLabel, or store "" to reset to the asset default.
+  // Note: exactOptionalPropertyTypes prevents passing undefined here; the display
+  // uses || so an empty string falls through to the asset's built-in label.
+  const handleRenameCommit = useCallback(
+    (id: UUID, newName: string) => {
+      const layerId = elementLayerMap.get(id);
+      if (layerId) {
+        updateElement(layerId, id, { customLabel: newName.trim() });
+      }
+      setRenameTarget(null);
+    },
+    [elementLayerMap, updateElement],
+  );
+
+  // Focus + select-all the rename input whenever it mounts
+  useEffect(() => {
+    if (renameTarget) {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
+    }
+  }, [renameTarget]);
+
+  // Double-click on element → rename
+  const handleElementDblClick = useCallback(
+    (id: UUID) => {
+      handleStartRename(id);
+    },
+    [handleStartRename],
+  );
 
   // Pan: drag the stage background
   const handleStageDragEnd = useCallback(
@@ -548,6 +598,7 @@ export function GardenCanvas({
             onClick={handleElementClick}
             onDragEnd={handleElementDragEnd}
             onContextMenu={handleElementContextMenu}
+            onDblClick={handleElementDblClick}
           />
         ))}
         <Transformer
@@ -598,6 +649,16 @@ export function GardenCanvas({
           onClick={handlePaste}
           disabled={clipboard.length === 0}
         />
+        <CtxItem
+          icon="✏️"
+          label="Rename"
+          testId="ctx-rename"
+          onClick={() => {
+            const ids = canvasStore.getState().selectedElementIds;
+            if (ids.length === 1) handleStartRename(ids[0]!);
+          }}
+          disabled={selectedCount !== 1}
+        />
         <div style={{ height: 1, background: "#f0f0f0", margin: "4px 0" }} />
         <CtxItem
           icon="🗑"
@@ -608,6 +669,51 @@ export function GardenCanvas({
         />
       </div>
     )}
+
+    {/* Rename overlay — floats over the canvas element being renamed */}
+    {renameTarget && (() => {
+      const el = allElements.find((e) => e.id === renameTarget.id);
+      if (!el) return null;
+      const stageX = offsetX !== 0 ? offsetX : initOffsetX;
+      const stageY = offsetY !== 0 ? offsetY : initOffsetY;
+      const screenX = el.position.x * ppm * scale + stageX;
+      const screenY = el.position.y * ppm * scale + stageY;
+      const screenW = Math.max(80, el.size.width * ppm * scale);
+      const screenH = el.size.height * ppm * scale;
+      return (
+        <input
+          ref={renameInputRef}
+          data-testid="canvas-rename-input"
+          value={renameTarget.name}
+          onChange={(e) =>
+            setRenameTarget((r) => (r ? { ...r, name: e.target.value } : null))
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleRenameCommit(renameTarget.id, renameTarget.name);
+            if (e.key === "Escape") setRenameTarget(null);
+          }}
+          onBlur={() => handleRenameCommit(renameTarget.id, renameTarget.name)}
+          style={{
+            position: "absolute",
+            left: screenX,
+            top: screenY + screenH / 2 - 14,
+            width: screenW,
+            height: 28,
+            fontSize: 13,
+            fontFamily: "inherit",
+            textAlign: "center",
+            border: "2px solid #1565c0",
+            borderRadius: 4,
+            background: "rgba(255,255,255,0.97)",
+            outline: "none",
+            zIndex: 300,
+            padding: "0 6px",
+            boxSizing: "border-box",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+          }}
+        />
+      );
+    })()}
   </div>
   );
 }

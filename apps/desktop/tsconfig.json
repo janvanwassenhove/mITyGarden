@@ -1,10 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "outDir": "dist-electron",
-    "noEmit": false
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@mity-garden/domain": ["../../packages/domain/src/index.ts"],
+      "@mity-garden/domain/*": ["../../packages/domain/src/*"]
+    }
   },
   "include": ["src/main/**/*", "src/preload/**/*"],
   "exclude": ["node_modules", "dist", "dist-electron"]

@@ -2,10 +2,11 @@ import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GardenCanvas } from "@mity-garden/canvas-engine";
 import { useProjectStore, useUiStore, AssetLibraryPanel } from "@mity-garden/shared-ui";
-import { IndexedDBRepository } from "@mity-garden/persistence";
 import type { AssetDefinition } from "@mity-garden/domain";
+import { getRepoInstance } from "../repository.js";
+import { exportProjectAsJSON, exportProjectAsText } from "../export.js";
 
-const repo = new IndexedDBRepository();
+const repo = getRepoInstance();
 
 export function DesignPage(): React.ReactElement {
   const project = useProjectStore((s) => s.project);
@@ -20,6 +21,16 @@ export function DesignPage(): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = React.useState({ width: 800, height: 600 });
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+
+  // Wire up Electron File → Export JSON menu item
+  useEffect(() => {
+    const desktop = (window as { mityGardenDesktop?: { on?: (ch: string, cb: () => void) => void } }).mityGardenDesktop;
+    if (!desktop?.on || !project) return;
+    const handler = (): void => { void exportProjectAsJSON(project, repo); };
+    desktop.on("menu:export", handler);
+    // ipcRenderer.on returns a cleanup only in some versions; fall back gracefully
+    return undefined;
+  }, [project]);
 
   // Update canvas size on container resize
   useEffect(() => {
@@ -129,6 +140,23 @@ export function DesignPage(): React.ReactElement {
               </button>
             </>
           )}
+          <div style={{ flex: 1 }} />
+          <button
+            onClick={() => void exportProjectAsJSON(project, repo)}
+            title="Export project as JSON"
+            data-testid="toolbar-export-json"
+            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff", fontSize: 12 }}
+          >
+            ⬇ JSON
+          </button>
+          <button
+            onClick={() => exportProjectAsText(project)}
+            title="Export project proposal as text"
+            data-testid="toolbar-export-text"
+            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff", fontSize: 12 }}
+          >
+            📄 Proposal
+          </button>
         </div>
 
         {/* Canvas Area */}

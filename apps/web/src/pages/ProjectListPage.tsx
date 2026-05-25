@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IndexedDBRepository } from "@mity-garden/persistence";
 import type { ProjectSummary } from "@mity-garden/persistence";
 import { useProjectStore, useUiStore } from "@mity-garden/shared-ui";
+import { getRepoInstance } from "../repository.js";
 
-const repo = new IndexedDBRepository();
+const repo = getRepoInstance();
 
 export function ProjectListPage(): React.ReactElement {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);

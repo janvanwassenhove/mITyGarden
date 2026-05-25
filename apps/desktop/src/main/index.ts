@@ -1,6 +1,16 @@
 import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
+import {
+  listProjectsSQLite,
+  getProjectSQLite,
+  saveProjectSQLite,
+  deleteProjectSQLite,
+  exportProjectJSON,
+  importProjectJSON,
+  closeDb,
+} from "./db.js";
+import type { GardenProject } from "@mity-garden/domain";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env["NODE_ENV"] === "development";
@@ -130,6 +140,28 @@ ipcMain.handle("llm:complete", async (_event, messages: Array<{ role: string; co
   throw new Error("No LLM provider configured");
 });
 
+// ─── SQLite DB IPC handlers ───────────────────────────────────────────────────
+
+ipcMain.handle("db:list-projects", () => listProjectsSQLite());
+
+ipcMain.handle("db:get-project", (_event, id: string) => getProjectSQLite(id));
+
+ipcMain.handle("db:save-project", (_event, project: GardenProject) => {
+  saveProjectSQLite(project);
+  return true;
+});
+
+ipcMain.handle("db:delete-project", (_event, id: string) => {
+  deleteProjectSQLite(id);
+  return true;
+});
+
+ipcMain.handle("db:export-json", (_event, id: string) => exportProjectJSON(id));
+
+ipcMain.handle("db:import-json", (_event, json: string) => importProjectJSON(json));
+
+// ─── App lifecycle ────────────────────────────────────────────────────────────
+
 void app.whenReady().then(() => {
   createWindow();
   app.on("activate", () => {
@@ -138,5 +170,6 @@ void app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+  closeDb();
   if (process.platform !== "darwin") app.quit();
 });

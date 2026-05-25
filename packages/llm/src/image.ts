@@ -78,8 +78,9 @@ export class GardenImageService {
         ? "photorealistic bird's-eye overhead view, architectural plan perspective"
         : "photorealistic garden perspective view from ground level, standing inside the garden";
 
+    const styleName = style?.trim() || "natural";
     return (
-      `A ${viewDesc} of a ${style} style garden design, ` +
+      `A ${viewDesc} of a ${styleName} style garden design, ` +
       `${dimensions.width}${u} wide by ${dimensions.height}${u} deep. ` +
       `${goalList} ${elementList} ` +
       `Professional landscape architecture 3D visualisation. ` +

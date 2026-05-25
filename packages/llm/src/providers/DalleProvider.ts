@@ -10,6 +10,10 @@ interface DalleResponse {
   data: DalleImageData[];
 }
 
+interface DalleErrorResponse {
+  error?: { message?: string; code?: string; type?: string };
+}
+
 /**
  * OpenAI DALL-E 3 image generation provider.
  * Requires an OpenAI API key.
@@ -42,7 +46,10 @@ export class DalleProvider implements ImageGenerationProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`DALL-E API error: ${response.status} ${response.statusText}`);
+      const errBody = await response.json().catch(() => ({})) as DalleErrorResponse;
+      const msg = errBody.error?.message ?? response.statusText;
+      const code = errBody.error?.code ? ` [${errBody.error.code}]` : "";
+      throw new Error(`DALL-E ${response.status}${code}: ${msg}`);
     }
 
     const data = (await response.json()) as DalleResponse;

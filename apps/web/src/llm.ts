@@ -2,14 +2,14 @@ import type { LLMProvider } from "@mity-garden/llm";
 import type { ImageGenerationProvider } from "@mity-garden/llm";
 import { OpenAIProvider, AnthropicProvider, NoOpLLMProvider } from "@mity-garden/llm";
 import { DalleProvider, GeminiImageProvider, NoOpImageProvider } from "@mity-garden/llm";
-import { getApiKeys } from "./apiKeys.js";
+import { getEffectiveApiKeys } from "./apiKeys.js";
 
 // ─── Text LLM factory ─────────────────────────────────────────────────────────
 //
-// Priority: OpenAI → Anthropic → NoOp  (keys read from localStorage at call time)
+// Priority: env var (VITE_OPENAI_API_KEY) → localStorage → NoOp
 
 export function createLLMProvider(): LLMProvider {
-  const keys = getApiKeys();
+  const keys = getEffectiveApiKeys();
   if (keys.openai.length > 0) return new OpenAIProvider(keys.openai);
   if (keys.anthropic.length > 0) return new AnthropicProvider(keys.anthropic);
   return new NoOpLLMProvider();
@@ -17,10 +17,10 @@ export function createLLMProvider(): LLMProvider {
 
 // ─── Image generation factory ─────────────────────────────────────────────────
 //
-// Priority: OpenAI DALL-E 3 → Gemini/Imagen 3 → NoOp
+// Priority: env var (VITE_OPENAI_API_KEY) → localStorage → NoOp
 
 export function createImageProvider(): ImageGenerationProvider {
-  const keys = getApiKeys();
+  const keys = getEffectiveApiKeys();
   if (keys.openai.length > 0) return new DalleProvider(keys.openai);
   if (keys.gemini.length > 0) return new GeminiImageProvider(keys.gemini);
   return new NoOpImageProvider();

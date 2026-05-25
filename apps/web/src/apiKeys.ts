@@ -12,6 +12,7 @@ export interface ApiKeys {
   gemini: string;
 }
 
+/** Keys stored by the user in localStorage. */
 export function getApiKeys(): ApiKeys {
   return {
     openai: localStorage.getItem(LS_OPENAI) ?? "",
@@ -24,6 +25,35 @@ export function saveApiKeys(keys: ApiKeys): void {
   setOrRemove(LS_OPENAI, keys.openai);
   setOrRemove(LS_ANTHROPIC, keys.anthropic);
   setOrRemove(LS_GEMINI, keys.gemini);
+}
+
+/**
+ * Keys set as environment variables at build time (VITE_ prefix).
+ * Only the keys that are actually set are included in the returned object.
+ */
+export function getEnvApiKeys(): Partial<ApiKeys> {
+  const result: Partial<ApiKeys> = {};
+  const openai = import.meta.env["VITE_OPENAI_API_KEY"] as string | undefined;
+  if (openai && openai.length > 0) result.openai = openai;
+  const anthropic = import.meta.env["VITE_ANTHROPIC_API_KEY"] as string | undefined;
+  if (anthropic && anthropic.length > 0) result.anthropic = anthropic;
+  const gemini = import.meta.env["VITE_GEMINI_API_KEY"] as string | undefined;
+  if (gemini && gemini.length > 0) result.gemini = gemini;
+  return result;
+}
+
+/**
+ * Resolved keys for runtime use.
+ * Priority: environment variable → localStorage → empty string.
+ */
+export function getEffectiveApiKeys(): ApiKeys {
+  const env = getEnvApiKeys();
+  const local = getApiKeys();
+  return {
+    openai: env.openai ?? local.openai,
+    anthropic: env.anthropic ?? local.anthropic,
+    gemini: env.gemini ?? local.gemini,
+  };
 }
 
 function setOrRemove(key: string, value: string): void {

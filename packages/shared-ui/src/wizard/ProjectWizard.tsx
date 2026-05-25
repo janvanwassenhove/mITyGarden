@@ -416,6 +416,8 @@ function StepStyle(): React.ReactElement {
 
 // ─── Step: Boundary Drawing ───────────────────────────────────────────────────
 
+type BoundaryMode = "map" | "image";
+
 function StepBoundary(): React.ReactElement {
   const apiKey = React.useContext(GoogleMapsApiKeyContext);
   const coordinates = useUiStore((s) => s.wizard.mapCoordinates);
@@ -427,6 +429,7 @@ function StepBoundary(): React.ReactElement {
   const [mapsLoaded, setMapsLoaded] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [area, setArea] = React.useState<number | null>(null);
+  const [mode, setMode] = React.useState<BoundaryMode>("map");
 
   // Seed area from existing boundary on mount
   React.useEffect(() => {
@@ -436,16 +439,16 @@ function StepBoundary(): React.ReactElement {
   }, []);
 
   React.useEffect(() => {
-    if (!apiKey) return;
+    if (mode !== "map" || !apiKey) return;
     loadGoogleMapsScript(apiKey)
       .then(() => setMapsLoaded(true))
       .catch(() => setLoadError("Could not load Google Maps. Check your connection and API key."));
-  }, [apiKey]);
+  }, [apiKey, mode]);
 
   React.useEffect(() => {
-    if (!mapsLoaded || !mapDivRef.current) return;
+    if (mode !== "map" || !mapsLoaded || !mapDivRef.current) return;
     const gm = window.google!.maps;
-    const center = coordinates ?? { lat: 51.26, lng: 4.40 }; // default: Antwerp
+    const center = coordinates ?? { lat: 51.26, lng: 4.40 };
     const map = new gm.Map(mapDivRef.current, {
       center,
       zoom: coordinates ? 18 : 13,
@@ -467,7 +470,6 @@ function StepBoundary(): React.ReactElement {
       },
     });
     dm.setMap(map);
-    // Re-draw existing boundary
     if (boundary && boundary.length > 2) {
       const paths = boundary.map((p) => ({ lat: p.lat, lng: p.lng }));
       const poly = new gm.Polygon({ paths, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
@@ -485,81 +487,399 @@ function StepBoundary(): React.ReactElement {
       setDimensions(Math.max(1, Math.round(width * 10) / 10), Math.max(1, Math.round(height * 10) / 10));
       setArea(Math.round(areaM2));
     });
-  }, [mapsLoaded]);
+  }, [mapsLoaded, mode]);
 
   const hasBoundary = (boundary?.length ?? 0) > 2;
 
-  function handleClear(): void {
+  function handleClearGmaps(): void {
     setBoundary([]);
     setArea(null);
-    // Reset map by toggling mapsLoaded
     setMapsLoaded(false);
     setTimeout(() => setMapsLoaded(true), 20);
   }
 
-  if (!apiKey) {
-    return (
-      <div data-testid="wizard-step-boundary">
-        <h2>Draw Your Garden</h2>
-        <p style={{ marginTop: 0 }}>
-          Trace your garden boundary on the satellite map. Works for any shape — rectangular, irregular, or curved.
-        </p>
-        <div style={{ fontSize: 12, color: "#666", marginBottom: 8, padding: "4px 8px", background: "#f5f5f5", borderRadius: 4, display: "inline-block" }}>
-          📡 Using free satellite imagery (no API key required)
-        </div>
-        <LeafletBoundaryEditor
-          {...(coordinates ? { center: coordinates } : {})}
-          {...(boundary && boundary.length > 0 ? { initialBoundary: boundary } : {})}
-          onBoundaryComplete={(verts, width, height, areaM2) => {
-            setBoundary(verts);
-            setDimensions(width, height);
-            setArea(areaM2);
-          }}
-          onClear={() => { setBoundary([]); setArea(null); }}
-        />
-        {hasBoundary && area !== null && (
-          <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-            <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
-          </div>
-        )}
-        <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
-          Use the polygon tool to trace the outline. Add extra points to approximate curves.
-          This step is optional — you can adjust dimensions on the next step.
-        </p>
-      </div>
-    );
-  }
+  const modeTabStyle = (active: boolean): React.CSSProperties => ({
+    flex: 1, padding: "7px 4px", border: "none",
+    borderBottom: active ? "2px solid #4caf50" : "2px solid transparent",
+    background: "none", cursor: "pointer", fontSize: 13,
+    fontWeight: active ? 700 : 400,
+    color: active ? "#2e7d32" : "#666",
+  });
 
   return (
     <div data-testid="wizard-step-boundary">
       <h2>Draw Your Garden</h2>
-      <p style={{ marginTop: 0 }}>
-        Trace your garden boundary on the map. Works for any shape — rectangular, irregular, multi-sided or curved.
-      </p>
 
-      {loadError && <p style={{ color: "#c62828", fontSize: 13 }}>{loadError}</p>}
+      {/* Mode tabs */}
+      <div style={{ display: "flex", borderBottom: "1px solid #e0e0e0", marginBottom: 14 }}>
+        <button style={modeTabStyle(mode === "map")} onClick={() => setMode("map")}>
+          🗺️ Satellite Map
+        </button>
+        <button style={modeTabStyle(mode === "image")} onClick={() => setMode("image")}>
+          🖼️ Trace Image
+        </button>
+      </div>
 
-      {!mapsLoaded && !loadError && (
-        <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
-          Loading map…
+      {/* ── MAP MODE ── */}
+      {mode === "map" && (
+        <>
+          <p style={{ marginTop: 0 }}>
+            Trace your garden boundary on the satellite map. Works for any shape — rectangular, irregular, or curved.
+          </p>
+          {!apiKey && (
+            <div style={{ fontSize: 12, color: "#666", marginBottom: 8, padding: "4px 8px", background: "#f5f5f5", borderRadius: 4, display: "inline-block" }}>
+              📡 Free satellite imagery (no API key required)
+            </div>
+          )}
+
+          {apiKey ? (
+            <>
+              {loadError && <p style={{ color: "#c62828", fontSize: 13 }}>{loadError}</p>}
+              {!mapsLoaded && !loadError && (
+                <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
+                  Loading Google Maps…
+                </div>
+              )}
+              <div ref={mapDivRef} style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
+              {hasBoundary && area !== null && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
+                  <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
+                  <button onClick={handleClearGmaps} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+                    Clear &amp; redraw
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <LeafletBoundaryEditor
+                {...(coordinates ? { center: coordinates } : {})}
+                {...(boundary && boundary.length > 0 ? { initialBoundary: boundary } : {})}
+                onBoundaryComplete={(verts, width, height, areaM2) => {
+                  setBoundary(verts);
+                  setDimensions(width, height);
+                  setArea(areaM2);
+                }}
+                onClear={() => { setBoundary([]); setArea(null); }}
+              />
+              {hasBoundary && area !== null && (
+                <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
+                  <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
+                </div>
+              )}
+            </>
+          )}
+
+          <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
+            Use the polygon tool to trace the outline. Add extra points to approximate curves.
+            This step is optional — you can adjust dimensions on the next step.
+          </p>
+        </>
+      )}
+
+      {/* ── IMAGE TRACE MODE ── */}
+      {mode === "image" && (
+        <>
+          <p style={{ marginTop: 0 }}>
+            Upload any aerial photo, map screenshot, or garden plan. Trace the outline by clicking, then enter one known measurement to set the scale.
+          </p>
+          <ImageTraceBoundaryEditor
+            onBoundaryComplete={(widthM, heightM, areaM2) => {
+              // Store pixel-derived dimensions (no geo-coordinates in this mode)
+              setDimensions(widthM, heightM);
+              setArea(areaM2);
+            }}
+            onClear={() => { setDimensions(10, 10); setArea(null); }}
+          />
+          {area !== null && (
+            <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
+              <span style={{ fontSize: 13 }}>✅ Dimensions calculated — area ≈ <strong>{area} m²</strong></span>
+            </div>
+          )}
+          <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
+            Tip: for a Google Maps screenshot, zoom in until you can see a recognisable feature (car, door, path) whose real-world size you know.
+            This step is optional — you can adjust dimensions on the next step.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Image trace boundary editor ─────────────────────────────────────────────
+
+function ImageTraceBoundaryEditor({
+  onBoundaryComplete,
+  onClear,
+}: {
+  onBoundaryComplete: (widthM: number, heightM: number, areaM2: number) => void;
+  onClear: () => void;
+}): React.ReactElement {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const imgRef = React.useRef<HTMLImageElement | null>(null);
+
+  // pixel coordinates of traced polygon (relative to displayed image)
+  const vertsRef = React.useRef<Array<{ x: number; y: number }>>([]);
+  const [vertCount, setVertCount] = React.useState(0);
+  const [closed, setClosed] = React.useState(false);
+  const [imgLoaded, setImgLoaded] = React.useState(false);
+  const [canvasSize, setCanvasSize] = React.useState({ w: 0, h: 0 });
+
+  // Scale calibration
+  const [refWidthM, setRefWidthM] = React.useState("");
+  const [calculated, setCalculated] = React.useState(false);
+
+  // ── helpers ──────────────────────────────────────────────────────────────
+
+  function redraw(): void {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const verts = vertsRef.current;
+    if (verts.length === 0) return;
+
+    ctx.strokeStyle = "#388e3c";
+    ctx.fillStyle = "rgba(76,175,80,0.2)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+
+    ctx.beginPath();
+    const first = verts[0]!;
+    ctx.moveTo(first.x, first.y);
+    for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i]!.x, verts[i]!.y);
+    if (closed) { ctx.closePath(); ctx.fill(); ctx.setLineDash([]); }
+    ctx.stroke();
+
+    // Vertex dots
+    ctx.setLineDash([]);
+    verts.forEach((v, i) => {
+      ctx.beginPath();
+      ctx.arc(v.x, v.y, i === 0 ? 7 : 5, 0, Math.PI * 2);
+      ctx.fillStyle = i === 0 ? "#1b5e20" : "#fff";
+      ctx.strokeStyle = "#388e3c";
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      // Number labels
+      ctx.fillStyle = "#1b5e20";
+      ctx.font = "bold 10px sans-serif";
+      ctx.fillText(String(i + 1), v.x + 8, v.y - 4);
+    });
+  }
+
+  function pixelPolygonStats(): { widthPx: number; heightPx: number; areaPx: number } {
+    const verts = vertsRef.current;
+    const xs = verts.map((v) => v.x);
+    const ys = verts.map((v) => v.y);
+    const widthPx = Math.max(...xs) - Math.min(...xs);
+    const heightPx = Math.max(...ys) - Math.min(...ys);
+    // Shoelace
+    let area = 0;
+    for (let i = 0; i < verts.length; i++) {
+      const j = (i + 1) % verts.length;
+      area += verts[i]!.x * verts[j]!.y - verts[j]!.x * verts[i]!.y;
+    }
+    return { widthPx, heightPx, areaPx: Math.abs(area) / 2 };
+  }
+
+  // ── image upload ─────────────────────────────────────────────────────────
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      // Scale to max 640px wide
+      const maxW = Math.min(640, img.naturalWidth);
+      const scale = maxW / img.naturalWidth;
+      const dispW = Math.round(img.naturalWidth * scale);
+      const dispH = Math.round(img.naturalHeight * scale);
+      imgRef.current = img;
+      setCanvasSize({ w: dispW, h: dispH });
+      setImgLoaded(true);
+      // draw image on next tick after state update
+      requestAnimationFrame(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.drawImage(img, 0, 0, dispW, dispH);
+      });
+    };
+    img.src = url;
+    // reset state
+    vertsRef.current = [];
+    setVertCount(0);
+    setClosed(false);
+    setCalculated(false);
+    setRefWidthM("");
+  }
+
+  // ── canvas click ─────────────────────────────────────────────────────────
+
+  function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>): void {
+    if (closed) return;
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    vertsRef.current = [...vertsRef.current, { x, y }];
+    setVertCount(vertsRef.current.length);
+    redraw();
+  }
+
+  function handleClose(): void {
+    if (vertsRef.current.length < 3) return;
+    setClosed(true);
+    redraw();
+  }
+
+  function handleReset(): void {
+    vertsRef.current = [];
+    setVertCount(0);
+    setClosed(false);
+    setCalculated(false);
+    setRefWidthM("");
+    if (canvasRef.current && imgRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, canvasSize.w, canvasSize.h);
+        ctx.drawImage(imgRef.current, 0, 0, canvasSize.w, canvasSize.h);
+      }
+    }
+    onClear();
+  }
+
+  function handleCalculate(): void {
+    const widthM = parseFloat(refWidthM);
+    if (!isFinite(widthM) || widthM <= 0) return;
+    const { widthPx, heightPx, areaPx } = pixelPolygonStats();
+    if (widthPx === 0) return;
+    const mPerPx = widthM / widthPx;
+    const heightM = Math.max(0.1, Math.round(heightPx * mPerPx * 10) / 10);
+    const areaM2 = Math.round(areaPx * mPerPx * mPerPx);
+    setCalculated(true);
+    onBoundaryComplete(Math.max(0.1, Math.round(widthM * 10) / 10), heightM, areaM2);
+  }
+
+  // ── redraw when canvas size changes (image loaded) ────────────────────────
+
+  React.useEffect(() => {
+    if (!imgLoaded || !canvasRef.current || !imgRef.current) return;
+    const ctx = canvasRef.current.getContext("2d");
+    if (ctx) ctx.drawImage(imgRef.current, 0, 0, canvasSize.w, canvasSize.h);
+  }, [imgLoaded, canvasSize]);
+
+  const { widthPx, heightPx } = imgLoaded && closed ? pixelPolygonStats() : { widthPx: 0, heightPx: 0 };
+
+  return (
+    <div>
+      {/* Upload button */}
+      <label
+        style={{
+          display: "inline-block", padding: "8px 16px", borderRadius: 6,
+          border: "1px solid #ccc", background: "#fafafa", cursor: "pointer",
+          fontSize: 13, marginBottom: 10,
+        }}
+      >
+        📂 Upload image (photo, screenshot, plan…)
+        <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
+      </label>
+
+      {!imgLoaded && (
+        <div style={{ padding: "28px 0", background: "#f5f5f5", borderRadius: 8, border: "2px dashed #ccc", textAlign: "center", color: "#999", fontSize: 13 }}>
+          Upload an aerial photo, map screenshot, or garden plan to trace the boundary
         </div>
       )}
 
-      <div ref={mapDivRef} style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
+      {/* Canvas overlay on image */}
+      {imgLoaded && (
+        <div
+          ref={wrapperRef}
+          style={{ position: "relative", display: "inline-block", borderRadius: 8, overflow: "hidden", border: "2px solid #e0e0e0" }}
+        >
+          <canvas
+            ref={canvasRef}
+            width={canvasSize.w}
+            height={canvasSize.h}
+            onClick={handleCanvasClick}
+            style={{ display: "block", cursor: closed ? "default" : "crosshair" }}
+          />
+        </div>
+      )}
 
-      {hasBoundary && area !== null && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-          <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
-          <button onClick={handleClear} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+      {/* Controls row */}
+      {imgLoaded && !closed && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+          <span style={{ fontSize: 12, color: "#888", flex: 1 }}>
+            {vertCount === 0
+              ? "Click on the image to place vertices around your garden."
+              : vertCount < 3
+              ? `${vertCount} point${vertCount > 1 ? "s" : ""} placed — add at least 3 to close.`
+              : `${vertCount} points — press "Close shape" when the outline is complete.`}
+          </span>
+          <button
+            onClick={handleClose}
+            disabled={vertCount < 3}
+            style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: vertCount >= 3 ? "#4caf50" : "#e0e0e0", color: vertCount >= 3 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 12, cursor: vertCount >= 3 ? "pointer" : "not-allowed" }}
+          >
+            Close shape
+          </button>
+          {vertCount > 0 && (
+            <button onClick={handleReset} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
+              Clear
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Scale calibration */}
+      {imgLoaded && closed && !calculated && (
+        <div style={{ marginTop: 12, padding: "12px 14px", background: "#fff8e1", border: "1px solid #ffe082", borderRadius: 8 }}>
+          <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "#795548" }}>
+            📏 Set scale — how wide is your traced outline in real life?
+          </p>
+          <p style={{ margin: "0 0 10px", fontSize: 12, color: "#888" }}>
+            The width of your polygon is <strong>{widthPx.toFixed(0)} px</strong>. Enter the real-world width
+            (e.g. look up the width of a recognisable feature like a house or driveway).
+          </p>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="number"
+              min={0.1}
+              step={0.1}
+              placeholder="e.g. 15"
+              value={refWidthM}
+              onChange={(e) => setRefWidthM(e.target.value)}
+              style={{ width: 90, padding: "6px 8px", border: "1px solid #ccc", borderRadius: 6, fontSize: 13 }}
+            />
+            <span style={{ fontSize: 13, color: "#555" }}>meters wide</span>
+            <button
+              onClick={handleCalculate}
+              disabled={!refWidthM || parseFloat(refWidthM) <= 0}
+              style={{ padding: "7px 16px", borderRadius: 6, border: "none", background: refWidthM && parseFloat(refWidthM) > 0 ? "#4caf50" : "#e0e0e0", color: refWidthM && parseFloat(refWidthM) > 0 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+            >
+              Calculate
+            </button>
+          </div>
+          <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+            <button onClick={handleReset} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+              ← Redraw
+            </button>
+          </div>
+        </div>
+      )}
+
+      {imgLoaded && calculated && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+          <button onClick={handleReset} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
             Clear &amp; redraw
           </button>
         </div>
       )}
-
-      <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
-        Use the polygon tool to trace the outline. Add extra points to approximate curved edges.
-        This step is optional — you can adjust dimensions on the next step.
-      </p>
     </div>
   );
 }

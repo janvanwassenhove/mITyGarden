@@ -62,7 +62,45 @@
         "title": "Garden Location",
         "description": "Optionally find your garden on the map to help with sizing and positioning.",
         "searchPlaceholder": "Enter your address...",
+        "searching": "…",
+        "search": "Search",
+        "noResults": "No results found. Try a more specific address.",
+        "searchFailed": "Search failed. Please check your connection and try again.",
+        "mapPlaceholder": "Search for an address to see it on the map",
+        "optional": "This step is optional — you can skip it and configure dimensions manually on the canvas.",
         "skip": "Skip this step"
+      },
+      "boundary": {
+        "title": "Draw Your Garden",
+        "description": "Trace your garden boundary on the satellite map. Works for any shape — rectangular, irregular, or curved.",
+        "satelliteTab": "Satellite Map",
+        "traceTab": "Trace Image",
+        "freeImagery": "Free satellite imagery (no API key required)",
+        "loadingMap": "Loading map…",
+        "loadingGoogleMaps": "Loading Google Maps…",
+        "boundaryDrawn": "Boundary drawn — area ≈ {{area}} m²",
+        "dimensionsCalculated": "Dimensions calculated — area ≈ {{area}} m²",
+        "clearRedraw": "Clear & redraw",
+        "closeShape": "Close shape",
+        "clear": "Clear",
+        "hintStart": "Click on the satellite map to start tracing your garden outline.",
+        "hintNeedMore": "{{count}} point — add at least 3 to close the shape.",
+        "hintNeedMore_plural": "{{count}} points — add at least 3 to close the shape.",
+        "hintReady": "{{count}} points — press \"Close shape\" when done.",
+        "optional": "Use the polygon tool to trace the outline. Add extra points to approximate curves. This step is optional — you can adjust dimensions on the next step.",
+        "upload": "Upload image (photo, screenshot, plan…)",
+        "uploadHint": "Upload an aerial photo, map screenshot, or garden plan to trace the boundary",
+        "traceHintStart": "Click on the image to place vertices around your garden.",
+        "traceHintNeedMore": "{{count}} point placed — add at least 3 to close.",
+        "traceHintNeedMore_plural": "{{count}} points placed — add at least 3 to close.",
+        "traceHintReady": "{{count}} points — press \"Close shape\" when the outline is complete.",
+        "scaleTitle": "Set scale — how wide is your traced outline in real life?",
+        "scaleHint": "The width of your polygon is {{px}} px. Enter the real-world width (e.g. the width of a recognisable feature like a house or driveway).",
+        "metersWide": "meters wide",
+        "calculate": "Calculate",
+        "redraw": "← Redraw",
+        "traceTip": "Tip: for a Google Maps screenshot, zoom in until you can see a recognisable feature (car, door, path) whose real-world size you know. This step is optional — you can adjust dimensions on the next step.",
+        "loadError": "Could not load map. Check your connection."
       }
     }
   },
@@ -78,7 +116,23 @@
     "zoomOut": "Zoom Out",
     "resetView": "Reset View",
     "undo": "Undo",
-    "redo": "Redo"
+    "redo": "Redo",
+    "contextMenu": {
+      "copy": "Copy",
+      "paste": "Paste",
+      "pasteCount": "Paste ({{count}})",
+      "rename": "Rename",
+      "delete": "Delete",
+      "deleteCount": "Delete ({{count}})"
+    },
+    "status": {
+      "unsaved": "Unsaved",
+      "saved": "Saved"
+    },
+    "placement": {
+      "hint": "Click canvas to place asset",
+      "cancel": "Cancel"
+    }
   },
   "layers": {
     "title": "Layers",
@@ -123,11 +177,41 @@
     "dragHint": "Drag to place on canvas"
   },
   "project": {
+    "title": "My Garden Projects",
+    "newGarden": "+ New Garden",
+    "noGardens": "No gardens yet",
+    "noGardensHint": "Create your first garden design to get started.",
+    "createFirst": "Create First Garden",
+    "createNew": "Create New Garden",
+    "noGardenOpen": "No garden open",
+    "openProject": "Open Project",
+    "defaultName": "My Garden",
+    "namedAfterAddress": "Garden at {{address}}",
     "untitled": "Untitled Garden",
     "saved": "Project saved",
     "saving": "Saving...",
     "unsavedChanges": "You have unsaved changes",
     "confirmClose": "Close without saving?"
+  },
+  "llm": {
+    "title": "AI Assistant",
+    "tabs": {
+      "suggestions": "Suggestions",
+      "visualize": "Visualize"
+    },
+    "getSuggestions": "Get AI Suggestions",
+    "loading": "Thinking…",
+    "viewType": {
+      "aerial": "Aerial View",
+      "perspective": "Perspective View"
+    },
+    "generateImage": "Generate Image",
+    "generating": "Generating…",
+    "previewPrompt": "Preview Prompt",
+    "regenerate": "Regenerate",
+    "configureKeys": "Configure API Keys",
+    "notConfigured": "No LLM provider is configured. Enter an API key to enable AI suggestions.",
+    "imageNotConfigured": "No image provider is configured. Enter an OpenAI or Gemini API key to enable image generation."
   },
   "export": {
     "title": "Export",

@@ -62,7 +62,45 @@
         "title": "Tuinlocatie",
         "description": "Zoek optioneel uw tuin op de kaart op voor hulp bij maatvoering en positionering.",
         "searchPlaceholder": "Voer uw adres in...",
+        "searching": "…",
+        "search": "Zoeken",
+        "noResults": "Geen resultaten gevonden. Probeer een specifieker adres.",
+        "searchFailed": "Zoeken mislukt. Controleer uw verbinding en probeer opnieuw.",
+        "mapPlaceholder": "Zoek een adres om het op de kaart te zien",
+        "optional": "Deze stap is optioneel — u kunt de afmetingen handmatig instellen op het canvas.",
         "skip": "Deze stap overslaan"
+      },
+      "boundary": {
+        "title": "Teken uw tuin",
+        "description": "Teken de grens van uw tuin op de satellietkaart. Werkt voor elke vorm — rechthoekig, onregelmatig of gebogen.",
+        "satelliteTab": "Satellietkaart",
+        "traceTab": "Afbeelding natekenen",
+        "freeImagery": "Gratis satellietbeelden (geen API-sleutel vereist)",
+        "loadingMap": "Kaart laden…",
+        "loadingGoogleMaps": "Google Maps laden…",
+        "boundaryDrawn": "Grens getekend — oppervlak ≈ {{area}} m²",
+        "dimensionsCalculated": "Afmetingen berekend — oppervlak ≈ {{area}} m²",
+        "clearRedraw": "Wissen en opnieuw tekenen",
+        "closeShape": "Vorm sluiten",
+        "clear": "Wissen",
+        "hintStart": "Klik op de satellietkaart om de grens van uw tuin te tekenen.",
+        "hintNeedMore": "{{count}} punt — voeg minimaal 3 toe om de vorm te sluiten.",
+        "hintNeedMore_plural": "{{count}} punten — voeg minimaal 3 toe om de vorm te sluiten.",
+        "hintReady": "{{count}} punten — druk op \"Vorm sluiten\" als u klaar bent.",
+        "optional": "Gebruik het polygoongereedschap om de omtrek te tekenen. Voeg extra punten toe om curves te benaderen. Deze stap is optioneel — u kunt de afmetingen op de volgende stap aanpassen.",
+        "upload": "Afbeelding uploaden (foto, schermafbeelding, plan…)",
+        "uploadHint": "Upload een luchtfoto, schermafbeelding of tuinplan om de grens na te tekenen",
+        "traceHintStart": "Klik op de afbeelding om hoekpunten te plaatsen.",
+        "traceHintNeedMore": "{{count}} punt geplaatst — voeg minimaal 3 toe om te sluiten.",
+        "traceHintNeedMore_plural": "{{count}} punten geplaatst — voeg minimaal 3 toe om te sluiten.",
+        "traceHintReady": "{{count}} punten — druk op \"Vorm sluiten\" als de omtrek compleet is.",
+        "scaleTitle": "Schaal instellen — hoe breed is uw getekende omtrek in het echt?",
+        "scaleHint": "De breedte van uw polygoon is {{px}} px. Voer de werkelijke breedte in (bijv. de breedte van een herkenbaar element zoals een huis of oprit).",
+        "metersWide": "meter breed",
+        "calculate": "Berekenen",
+        "redraw": "← Opnieuw tekenen",
+        "traceTip": "Tip: zoom in op een Google Maps-schermafbeelding totdat u een herkenbaar element ziet waarvan u de werkelijke afmeting kent. Deze stap is optioneel.",
+        "loadError": "Kaart kon niet worden geladen. Controleer uw verbinding."
       }
     }
   },
@@ -78,7 +116,23 @@
     "zoomOut": "Uitzoomen",
     "resetView": "Weergave resetten",
     "undo": "Ongedaan maken",
-    "redo": "Opnieuw"
+    "redo": "Opnieuw",
+    "contextMenu": {
+      "copy": "Kopiëren",
+      "paste": "Plakken",
+      "pasteCount": "Plakken ({{count}})",
+      "rename": "Hernoemen",
+      "delete": "Verwijderen",
+      "deleteCount": "Verwijderen ({{count}})"
+    },
+    "status": {
+      "unsaved": "Niet opgeslagen",
+      "saved": "Opgeslagen"
+    },
+    "placement": {
+      "hint": "Klik op het canvas om een element te plaatsen",
+      "cancel": "Annuleren"
+    }
   },
   "layers": {
     "title": "Lagen",
@@ -123,11 +177,41 @@
     "dragHint": "Versleep naar het canvas"
   },
   "project": {
+    "title": "Mijn tuinprojecten",
+    "newGarden": "+ Nieuwe tuin",
+    "noGardens": "Nog geen tuinen",
+    "noGardensHint": "Maak uw eerste tuinontwerp om te beginnen.",
+    "createFirst": "Eerste tuin aanmaken",
+    "createNew": "Nieuwe tuin aanmaken",
+    "noGardenOpen": "Geen tuin geopend",
+    "openProject": "Project openen",
+    "defaultName": "Mijn tuin",
+    "namedAfterAddress": "Tuin bij {{address}}",
     "untitled": "Naamloze tuin",
     "saved": "Project opgeslagen",
     "saving": "Opslaan...",
     "unsavedChanges": "U heeft niet-opgeslagen wijzigingen",
     "confirmClose": "Sluiten zonder opslaan?"
+  },
+  "llm": {
+    "title": "AI-assistent",
+    "tabs": {
+      "suggestions": "Suggesties",
+      "visualize": "Visualiseren"
+    },
+    "getSuggestions": "AI-suggesties ophalen",
+    "loading": "Nadenken…",
+    "viewType": {
+      "aerial": "Bovenaanzicht",
+      "perspective": "Perspectiefweergave"
+    },
+    "generateImage": "Afbeelding genereren",
+    "generating": "Genereren…",
+    "previewPrompt": "Prompt bekijken",
+    "regenerate": "Opnieuw genereren",
+    "configureKeys": "API-sleutels instellen",
+    "notConfigured": "Geen LLM-provider geconfigureerd. Voer een API-sleutel in om AI-suggesties in te schakelen.",
+    "imageNotConfigured": "Geen beeldprovider geconfigureerd. Voer een OpenAI- of Gemini-API-sleutel in om beeldgeneratie in te schakelen."
   },
   "export": {
     "title": "Exporteren",

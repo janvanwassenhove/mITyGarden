@@ -62,7 +62,45 @@
         "title": "Emplacement du jardin",
         "description": "Trouvez optionnellement votre jardin sur la carte pour vous aider avec le dimensionnement.",
         "searchPlaceholder": "Entrez votre adresse...",
+        "searching": "…",
+        "search": "Rechercher",
+        "noResults": "Aucun résultat trouvé. Essayez une adresse plus précise.",
+        "searchFailed": "Échec de la recherche. Vérifiez votre connexion et réessayez.",
+        "mapPlaceholder": "Recherchez une adresse pour la voir sur la carte",
+        "optional": "Cette étape est optionnelle — vous pouvez configurer les dimensions manuellement sur le canvas.",
         "skip": "Ignorer cette étape"
+      },
+      "boundary": {
+        "title": "Dessinez votre jardin",
+        "description": "Tracez les contours de votre jardin sur la carte satellite. Fonctionne pour toute forme — rectangulaire, irrégulière ou courbée.",
+        "satelliteTab": "Carte satellite",
+        "traceTab": "Tracer une image",
+        "freeImagery": "Imagerie satellite gratuite (aucune clé API requise)",
+        "loadingMap": "Chargement de la carte…",
+        "loadingGoogleMaps": "Chargement de Google Maps…",
+        "boundaryDrawn": "Contour tracé — superficie ≈ {{area}} m²",
+        "dimensionsCalculated": "Dimensions calculées — superficie ≈ {{area}} m²",
+        "clearRedraw": "Effacer et redessiner",
+        "closeShape": "Fermer la forme",
+        "clear": "Effacer",
+        "hintStart": "Cliquez sur la carte satellite pour commencer à tracer votre jardin.",
+        "hintNeedMore": "{{count}} point — ajoutez au moins 3 pour fermer la forme.",
+        "hintNeedMore_plural": "{{count}} points — ajoutez au moins 3 pour fermer la forme.",
+        "hintReady": "{{count}} points — appuyez sur \"Fermer la forme\" lorsque vous avez terminé.",
+        "optional": "Utilisez l'outil polygone pour tracer le contour. Ajoutez des points supplémentaires pour approximer les courbes. Cette étape est optionnelle — vous pouvez ajuster les dimensions à l'étape suivante.",
+        "upload": "Télécharger une image (photo, capture d’écran, plan…)",
+        "uploadHint": "Téléchargez une photo aérienne, une capture d’écran ou un plan de jardin pour tracer les contours",
+        "traceHintStart": "Cliquez sur l'image pour placer des sommets autour de votre jardin.",
+        "traceHintNeedMore": "{{count}} point placé — ajoutez au moins 3 pour fermer.",
+        "traceHintNeedMore_plural": "{{count}} points placés — ajoutez au moins 3 pour fermer.",
+        "traceHintReady": "{{count}} points — appuyez sur \"Fermer la forme\" lorsque le contour est complet.",
+        "scaleTitle": "Définir l'échelle — quelle est la largeur réelle de votre contour tracé ?",
+        "scaleHint": "La largeur de votre polygone est {{px}} px. Entrez la largeur réelle (par ex. la largeur d'un élément reconnaissable comme une maison ou une allée).",
+        "metersWide": "mètres de large",
+        "calculate": "Calculer",
+        "redraw": "← Redessiner",
+        "traceTip": "Conseil : pour une capture d'écran Google Maps, zoomez jusqu'à voir un élément reconnaissable dont vous connaissez la taille réelle. Cette étape est optionnelle.",
+        "loadError": "Impossible de charger la carte. Vérifiez votre connexion."
       }
     }
   },
@@ -78,7 +116,23 @@
     "zoomOut": "Zoom arrière",
     "resetView": "Réinitialiser la vue",
     "undo": "Annuler",
-    "redo": "Rétablir"
+    "redo": "Rétablir",
+    "contextMenu": {
+      "copy": "Copier",
+      "paste": "Coller",
+      "pasteCount": "Coller ({{count}})",
+      "rename": "Renommer",
+      "delete": "Supprimer",
+      "deleteCount": "Supprimer ({{count}})"
+    },
+    "status": {
+      "unsaved": "Non enregistré",
+      "saved": "Enregistré"
+    },
+    "placement": {
+      "hint": "Cliquez sur le canvas pour placer un élément",
+      "cancel": "Annuler"
+    }
   },
   "layers": {
     "title": "Calques",
@@ -123,11 +177,41 @@
     "dragHint": "Glisser pour placer sur le canvas"
   },
   "project": {
+    "title": "Mes projets de jardin",
+    "newGarden": "+ Nouveau jardin",
+    "noGardens": "Pas encore de jardins",
+    "noGardensHint": "Créez votre premier design de jardin pour commencer.",
+    "createFirst": "Créer le premier jardin",
+    "createNew": "Créer un nouveau jardin",
+    "noGardenOpen": "Aucun jardin ouvert",
+    "openProject": "Ouvrir un projet",
+    "defaultName": "Mon jardin",
+    "namedAfterAddress": "Jardin à {{address}}",
     "untitled": "Jardin sans titre",
     "saved": "Projet enregistré",
     "saving": "Enregistrement...",
     "unsavedChanges": "Vous avez des modifications non enregistrées",
     "confirmClose": "Fermer sans enregistrer ?"
+  },
+  "llm": {
+    "title": "Assistant IA",
+    "tabs": {
+      "suggestions": "Suggestions",
+      "visualize": "Visualiser"
+    },
+    "getSuggestions": "Obtenir des suggestions IA",
+    "loading": "Réflexion…",
+    "viewType": {
+      "aerial": "Vue aérienne",
+      "perspective": "Vue en perspective"
+    },
+    "generateImage": "Générer une image",
+    "generating": "Génération…",
+    "previewPrompt": "Aperçu du prompt",
+    "regenerate": "Régénérer",
+    "configureKeys": "Configurer les clés API",
+    "notConfigured": "Aucun fournisseur LLM configuré. Entrez une clé API pour activer les suggestions IA.",
+    "imageNotConfigured": "Aucun fournisseur d'images configuré. Entrez une clé API OpenAI ou Gemini pour activer la génération d'images."
   },
   "export": {
     "title": "Exporter",

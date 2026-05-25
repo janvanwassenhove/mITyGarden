@@ -41,7 +41,6 @@ export class DalleProvider implements ImageGenerationProvider {
         n: 1,
         size: req.size ?? "1792x1024",
         quality: req.quality ?? "hd",
-        response_format: "url",
       }),
     });
 

@@ -5,11 +5,10 @@ import { useProjectStore, useUiStore, AssetLibraryPanel, LLMSuggestionsPanel } f
 import type { AssetDefinition } from "@mity-garden/domain";
 import { getRepoInstance } from "../repository.js";
 import { exportProjectAsJSON, exportProjectAsText } from "../export.js";
-import { getLLMProvider, getImageProvider } from "../llm.js";
+import { getLLMProvider, getImageProvider, resetProviders } from "../llm.js";
+import { ApiKeySettingsModal } from "../components/ApiKeySettingsModal.js";
 
 const repo = getRepoInstance();
-const llmProvider = getLLMProvider();
-const imageProvider = getImageProvider();
 
 export function DesignPage(): React.ReactElement {
   const project = useProjectStore((s) => s.project);
@@ -25,6 +24,16 @@ export function DesignPage(): React.ReactElement {
   const [canvasSize, setCanvasSize] = React.useState({ width: 800, height: 600 });
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [llmPanelOpen, setLlmPanelOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [llmProvider, setLlmProvider] = useState(() => getLLMProvider());
+  const [imageProvider, setImageProvider] = useState(() => getImageProvider());
+
+  function handleKeysSaved(): void {
+    resetProviders();
+    setLlmProvider(getLLMProvider());
+    setImageProvider(getImageProvider());
+    setShowSettings(false);
+  }
 
   // Wire up Electron File → Export JSON menu item
   useEffect(() => {
@@ -198,7 +207,13 @@ export function DesignPage(): React.ReactElement {
           project={project}
           llmProvider={llmProvider}
           imageProvider={imageProvider}
+          onOpenSettings={() => setShowSettings(true)}
         />
+      )}
+
+      {/* API Key Settings Modal */}
+      {showSettings && (
+        <ApiKeySettingsModal onSaved={handleKeysSaved} onClose={() => setShowSettings(false)} />
       )}
     </div>
   );

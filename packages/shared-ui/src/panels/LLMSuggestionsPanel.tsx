@@ -11,6 +11,7 @@ export interface LLMSuggestionsPanelProps {
   project: GardenProject;
   llmProvider: LLMProvider;
   imageProvider: ImageGenerationProvider;
+  onOpenSettings?: () => void;
 }
 
 type PanelTab = "suggestions" | "visualize";
@@ -22,6 +23,50 @@ function resolveImageSrc(img: GeneratedImage): string {
   if (img.url) return img.url;
   if (img.base64) return `data:${img.mimeType};base64,${img.base64}`;
   return "";
+}
+
+// ─── Not-configured banner ────────────────────────────────────────────────────
+
+function NotConfiguredBanner({
+  children,
+  onOpenSettings,
+}: {
+  children: React.ReactNode;
+  onOpenSettings?: () => void;
+}): React.ReactElement {
+  return (
+    <div
+      style={{
+        padding: 12,
+        background: "#fff3e0",
+        border: "1px solid #ffe0b2",
+        borderRadius: 8,
+        fontSize: 13,
+        color: "#e65100",
+        marginBottom: 12,
+      }}
+    >
+      <div>{children}</div>
+      {onOpenSettings && (
+        <button
+          onClick={onOpenSettings}
+          style={{
+            marginTop: 8,
+            padding: "4px 10px",
+            borderRadius: 4,
+            border: "1px solid #e65100",
+            background: "#fff",
+            color: "#e65100",
+            cursor: "pointer",
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          ⚙ Configure API Keys
+        </button>
+      )}
+    </div>
+  );
 }
 
 // ─── Suggestion card ──────────────────────────────────────────────────────────
@@ -60,6 +105,7 @@ export function LLMSuggestionsPanel({
   project,
   llmProvider,
   imageProvider,
+  onOpenSettings,
 }: LLMSuggestionsPanelProps): React.ReactElement {
   const [tab, setTab] = React.useState<PanelTab>("suggestions");
 
@@ -167,20 +213,10 @@ export function LLMSuggestionsPanel({
         {tab === "suggestions" && (
           <div>
             {!llmAvailable && (
-              <div
-                style={{
-                  padding: 12,
-                  background: "#fff3e0",
-                  border: "1px solid #ffe0b2",
-                  borderRadius: 8,
-                  fontSize: 13,
-                  color: "#e65100",
-                  marginBottom: 12,
-                }}
-              >
-                Set <code>VITE_OPENAI_API_KEY</code> or <code>VITE_ANTHROPIC_API_KEY</code> to
-                enable AI layout suggestions.
-              </div>
+              <NotConfiguredBanner {...(onOpenSettings ? { onOpenSettings } : {})}>
+                No AI provider configured. Add an OpenAI or Anthropic key to enable layout
+                suggestions.
+              </NotConfiguredBanner>
             )}
             <button
               onClick={() => void handleSuggest()}
@@ -220,20 +256,10 @@ export function LLMSuggestionsPanel({
         {tab === "visualize" && (
           <div>
             {!imageAvailable && (
-              <div
-                style={{
-                  padding: 12,
-                  background: "#fff3e0",
-                  border: "1px solid #ffe0b2",
-                  borderRadius: 8,
-                  fontSize: 13,
-                  color: "#e65100",
-                  marginBottom: 12,
-                }}
-              >
-                Set <code>VITE_OPENAI_API_KEY</code> (DALL-E&nbsp;3) or{" "}
-                <code>VITE_GEMINI_API_KEY</code> (Imagen&nbsp;3) to enable image generation.
-              </div>
+              <NotConfiguredBanner {...(onOpenSettings ? { onOpenSettings } : {})}>
+                No image provider configured. Add an OpenAI key (DALL-E&nbsp;3) or a Gemini key
+                (Imagen&nbsp;3) to enable image generation.
+              </NotConfiguredBanner>
             )}
 
             {/* View type selector */}

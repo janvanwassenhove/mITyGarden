@@ -1,0 +1,8 @@
+[commit]
+  gpgsign = false
+
+[core]
+  autocrlf = false
+
+[push]
+  autoSetupRemote = true

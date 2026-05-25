@@ -1,0 +1,150 @@
+{
+  "app": {
+    "name": "mITyGarden",
+    "tagline": "Ontwerp uw droomtuin"
+  },
+  "nav": {
+    "newProject": "Nieuw project",
+    "openProject": "Project openen",
+    "saveProject": "Opslaan",
+    "saveProjectAs": "Opslaan als...",
+    "exportProject": "Exporteren",
+    "settings": "Instellingen",
+    "help": "Help"
+  },
+  "wizard": {
+    "title": "Nieuw tuinproject",
+    "step": "Stap {{current}} van {{total}}",
+    "next": "Volgende",
+    "back": "Terug",
+    "finish": "Tuin aanmaken",
+    "cancel": "Annuleren",
+    "steps": {
+      "dimensions": {
+        "title": "Tuinafmetingen",
+        "description": "Geef de afmetingen van uw tuin op en kies uw voorkeursmaateenheid.",
+        "width": "Breedte",
+        "height": "Diepte",
+        "unit": "Maatsysteem",
+        "metric": "Metrisch (meter)",
+        "imperial": "Imperiaal (voet)"
+      },
+      "style": {
+        "title": "Tuinstijl",
+        "description": "Kies de algemene stijl die het best bij uw visie past.",
+        "modern": "Modern",
+        "classic": "Klassiek",
+        "japanese": "Japans",
+        "mediterranean": "Mediterraans",
+        "english": "Engels",
+        "minimal": "Minimalistisch",
+        "custom": "Aangepast / Gemengd"
+      },
+      "structures": {
+        "title": "Bestaande constructies",
+        "description": "Markeer bestaande gebouwen, muren of constructies in uw tuin.",
+        "hint": "U kunt polygonen direct op de kaart tekenen of deze stap overslaan.",
+        "skip": "Overslaan"
+      },
+      "goals": {
+        "title": "Tuindoelstellingen",
+        "description": "Wat wilt u bereiken met uw tuin? Selecteer alles dat van toepassing is.",
+        "pool": "Zwembad",
+        "playground": "Kinderspeelplaats",
+        "terrace": "Terras / Patio",
+        "plants": "Planten & Bloemen",
+        "low-maintenance": "Weinig onderhoud",
+        "vegetable-garden": "Moestuin",
+        "outdoor-dining": "Buiteneetkamer",
+        "other": "Andere"
+      },
+      "location": {
+        "title": "Tuinlocatie",
+        "description": "Zoek optioneel uw tuin op de kaart op voor hulp bij maatvoering en positionering.",
+        "searchPlaceholder": "Voer uw adres in...",
+        "skip": "Deze stap overslaan"
+      }
+    }
+  },
+  "canvas": {
+    "tools": {
+      "select": "Selecteren",
+      "pan": "Verschuiven",
+      "place": "Element plaatsen"
+    },
+    "grid": "Raster",
+    "snap": "Uitlijnen op raster",
+    "zoomIn": "Inzoomen",
+    "zoomOut": "Uitzoomen",
+    "resetView": "Weergave resetten",
+    "undo": "Ongedaan maken",
+    "redo": "Opnieuw"
+  },
+  "layers": {
+    "title": "Lagen",
+    "add": "Laag toevoegen",
+    "rename": "Hernoemen",
+    "delete": "Laag verwijderen",
+    "toggleVisibility": "Zichtbaarheid",
+    "toggleLock": "Vergrendelen",
+    "defaultName": "Nieuwe laag"
+  },
+  "properties": {
+    "title": "Eigenschappen",
+    "position": "Positie",
+    "size": "Grootte",
+    "rotation": "Rotatie",
+    "x": "X",
+    "y": "Y",
+    "width": "Breedte",
+    "height": "Hoogte",
+    "label": "Label",
+    "lock": "Element vergrendelen",
+    "visible": "Zichtbaar",
+    "delete": "Element verwijderen"
+  },
+  "assetLibrary": {
+    "title": "Tuinelementen",
+    "search": "Elementen zoeken...",
+    "categories": {
+      "pool": "Zwembaden",
+      "tree": "Bomen",
+      "plant": "Planten",
+      "terrace-tile": "Terrastegels",
+      "grass-zone": "Graszones",
+      "playground": "Speeltuin",
+      "path": "Paden",
+      "building": "Gebouwen & Constructies",
+      "fence-wall-border": "Hekken, muren & randen",
+      "furniture": "Tuinmeubilair",
+      "custom": "Aangepaste elementen"
+    },
+    "customSize": "Aangepaste afmeting",
+    "dragHint": "Versleep naar het canvas"
+  },
+  "project": {
+    "untitled": "Naamloze tuin",
+    "saved": "Project opgeslagen",
+    "saving": "Opslaan...",
+    "unsavedChanges": "U heeft niet-opgeslagen wijzigingen",
+    "confirmClose": "Sluiten zonder opslaan?"
+  },
+  "export": {
+    "title": "Exporteren",
+    "asImage": "Exporteren als afbeelding",
+    "asPDF": "Exporteren als PDF",
+    "asJSON": "Projectbestand exporteren",
+    "proposal": "Voorstel genereren"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "close": "Sluiten",
+    "loading": "Laden...",
+    "error": "Er is iets misgegaan",
+    "retry": "Opnieuw proberen"
+  }
+}

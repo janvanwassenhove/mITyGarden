@@ -1,0 +1,150 @@
+{
+  "app": {
+    "name": "mITyGarden",
+    "tagline": "Design your dream garden"
+  },
+  "nav": {
+    "newProject": "New Project",
+    "openProject": "Open Project",
+    "saveProject": "Save",
+    "saveProjectAs": "Save As...",
+    "exportProject": "Export",
+    "settings": "Settings",
+    "help": "Help"
+  },
+  "wizard": {
+    "title": "New Garden Project",
+    "step": "Step {{current}} of {{total}}",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Create Garden",
+    "cancel": "Cancel",
+    "steps": {
+      "dimensions": {
+        "title": "Garden Dimensions",
+        "description": "Enter the size of your garden and choose your preferred measurement unit.",
+        "width": "Width",
+        "height": "Depth",
+        "unit": "Unit system",
+        "metric": "Metric (meters)",
+        "imperial": "Imperial (feet)"
+      },
+      "style": {
+        "title": "Garden Style",
+        "description": "Choose the overall style that best reflects your vision.",
+        "modern": "Modern",
+        "classic": "Classic",
+        "japanese": "Japanese",
+        "mediterranean": "Mediterranean",
+        "english": "English",
+        "minimal": "Minimal",
+        "custom": "Custom / Mixed"
+      },
+      "structures": {
+        "title": "Existing Structures",
+        "description": "Mark any existing buildings, walls or structures in your garden.",
+        "hint": "You can draw polygons directly on the map or skip this step.",
+        "skip": "Skip"
+      },
+      "goals": {
+        "title": "Garden Goals",
+        "description": "What do you want to achieve with your garden? Select all that apply.",
+        "pool": "Swimming Pool",
+        "playground": "Children's Playground",
+        "terrace": "Terrace / Patio",
+        "plants": "Plants & Flowers",
+        "low-maintenance": "Low Maintenance",
+        "vegetable-garden": "Vegetable Garden",
+        "outdoor-dining": "Outdoor Dining Area",
+        "other": "Other"
+      },
+      "location": {
+        "title": "Garden Location",
+        "description": "Optionally find your garden on the map to help with sizing and positioning.",
+        "searchPlaceholder": "Enter your address...",
+        "skip": "Skip this step"
+      }
+    }
+  },
+  "canvas": {
+    "tools": {
+      "select": "Select",
+      "pan": "Pan",
+      "place": "Place Element"
+    },
+    "grid": "Grid",
+    "snap": "Snap to Grid",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "resetView": "Reset View",
+    "undo": "Undo",
+    "redo": "Redo"
+  },
+  "layers": {
+    "title": "Layers",
+    "add": "Add Layer",
+    "rename": "Rename",
+    "delete": "Delete Layer",
+    "toggleVisibility": "Toggle Visibility",
+    "toggleLock": "Toggle Lock",
+    "defaultName": "New Layer"
+  },
+  "properties": {
+    "title": "Properties",
+    "position": "Position",
+    "size": "Size",
+    "rotation": "Rotation",
+    "x": "X",
+    "y": "Y",
+    "width": "Width",
+    "height": "Height",
+    "label": "Label",
+    "lock": "Lock element",
+    "visible": "Visible",
+    "delete": "Delete element"
+  },
+  "assetLibrary": {
+    "title": "Garden Elements",
+    "search": "Search elements...",
+    "categories": {
+      "pool": "Pools",
+      "tree": "Trees",
+      "plant": "Plants",
+      "terrace-tile": "Terrace Tiles",
+      "grass-zone": "Grass Zones",
+      "playground": "Playground",
+      "path": "Paths",
+      "building": "Buildings & Structures",
+      "fence-wall-border": "Fences, Walls & Borders",
+      "furniture": "Outdoor Furniture",
+      "custom": "Custom Elements"
+    },
+    "customSize": "Custom Size",
+    "dragHint": "Drag to place on canvas"
+  },
+  "project": {
+    "untitled": "Untitled Garden",
+    "saved": "Project saved",
+    "saving": "Saving...",
+    "unsavedChanges": "You have unsaved changes",
+    "confirmClose": "Close without saving?"
+  },
+  "export": {
+    "title": "Export",
+    "asImage": "Export as Image",
+    "asPDF": "Export as PDF",
+    "asJSON": "Export Project File",
+    "proposal": "Generate Proposal"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry"
+  }
+}

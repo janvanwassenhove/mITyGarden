@@ -1,0 +1,60 @@
+{
+  "name": "@mity-garden/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist-electron/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "package": "electron-builder",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean": "rm -rf dist dist-electron"
+  },
+  "dependencies": {
+    "@mity-garden/domain": "workspace:*",
+    "@mity-garden/i18n": "workspace:*",
+    "@mity-garden/canvas-engine": "workspace:*",
+    "@mity-garden/asset-library": "workspace:*",
+    "@mity-garden/persistence": "workspace:*",
+    "@mity-garden/shared-ui": "workspace:*",
+    "@mity-garden/llm": "workspace:*",
+    "electron-store": "^10.0.0",
+    "i18next": "^24.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^15.0.0",
+    "react-router-dom": "^7.0.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-vite": "^3.0.0",
+    "typescript": "^5.8.0"
+  },
+  "build": {
+    "appId": "com.mitygarden.app",
+    "productName": "mITyGarden",
+    "directories": {
+      "output": "release"
+    },
+    "files": ["dist/**", "dist-electron/**"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "public/icon.ico"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "public/icon.icns"
+    },
+    "linux": {
+      "target": [{ "target": "AppImage", "arch": ["x64"] }],
+      "icon": "public/icon.png",
+      "category": "Graphics"
+    }
+  }
+}

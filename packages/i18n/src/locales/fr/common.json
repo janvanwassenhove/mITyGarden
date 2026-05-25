@@ -1,0 +1,150 @@
+{
+  "app": {
+    "name": "mITyGarden",
+    "tagline": "Concevez le jardin de vos rêves"
+  },
+  "nav": {
+    "newProject": "Nouveau projet",
+    "openProject": "Ouvrir un projet",
+    "saveProject": "Enregistrer",
+    "saveProjectAs": "Enregistrer sous...",
+    "exportProject": "Exporter",
+    "settings": "Paramètres",
+    "help": "Aide"
+  },
+  "wizard": {
+    "title": "Nouveau projet de jardin",
+    "step": "Étape {{current}} sur {{total}}",
+    "next": "Suivant",
+    "back": "Retour",
+    "finish": "Créer le jardin",
+    "cancel": "Annuler",
+    "steps": {
+      "dimensions": {
+        "title": "Dimensions du jardin",
+        "description": "Entrez les dimensions de votre jardin et choisissez votre unité de mesure préférée.",
+        "width": "Largeur",
+        "height": "Profondeur",
+        "unit": "Système de mesure",
+        "metric": "Métrique (mètres)",
+        "imperial": "Impérial (pieds)"
+      },
+      "style": {
+        "title": "Style du jardin",
+        "description": "Choisissez le style général qui reflète le mieux votre vision.",
+        "modern": "Moderne",
+        "classic": "Classique",
+        "japanese": "Japonais",
+        "mediterranean": "Méditerranéen",
+        "english": "Anglais",
+        "minimal": "Minimaliste",
+        "custom": "Personnalisé / Mixte"
+      },
+      "structures": {
+        "title": "Structures existantes",
+        "description": "Marquez les bâtiments, murs ou structures existants dans votre jardin.",
+        "hint": "Vous pouvez dessiner des polygones directement sur la carte ou ignorer cette étape.",
+        "skip": "Ignorer"
+      },
+      "goals": {
+        "title": "Objectifs du jardin",
+        "description": "Que souhaitez-vous réaliser dans votre jardin ? Sélectionnez tout ce qui s'applique.",
+        "pool": "Piscine",
+        "playground": "Aire de jeux pour enfants",
+        "terrace": "Terrasse / Patio",
+        "plants": "Plantes & Fleurs",
+        "low-maintenance": "Faible entretien",
+        "vegetable-garden": "Potager",
+        "outdoor-dining": "Espace repas extérieur",
+        "other": "Autre"
+      },
+      "location": {
+        "title": "Emplacement du jardin",
+        "description": "Trouvez optionnellement votre jardin sur la carte pour vous aider avec le dimensionnement.",
+        "searchPlaceholder": "Entrez votre adresse...",
+        "skip": "Ignorer cette étape"
+      }
+    }
+  },
+  "canvas": {
+    "tools": {
+      "select": "Sélectionner",
+      "pan": "Déplacer",
+      "place": "Placer un élément"
+    },
+    "grid": "Grille",
+    "snap": "Magnétisme",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "resetView": "Réinitialiser la vue",
+    "undo": "Annuler",
+    "redo": "Rétablir"
+  },
+  "layers": {
+    "title": "Calques",
+    "add": "Ajouter un calque",
+    "rename": "Renommer",
+    "delete": "Supprimer le calque",
+    "toggleVisibility": "Visibilité",
+    "toggleLock": "Verrouiller",
+    "defaultName": "Nouveau calque"
+  },
+  "properties": {
+    "title": "Propriétés",
+    "position": "Position",
+    "size": "Taille",
+    "rotation": "Rotation",
+    "x": "X",
+    "y": "Y",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "label": "Étiquette",
+    "lock": "Verrouiller l'élément",
+    "visible": "Visible",
+    "delete": "Supprimer l'élément"
+  },
+  "assetLibrary": {
+    "title": "Éléments de jardin",
+    "search": "Rechercher des éléments...",
+    "categories": {
+      "pool": "Piscines",
+      "tree": "Arbres",
+      "plant": "Plantes",
+      "terrace-tile": "Dalles de terrasse",
+      "grass-zone": "Zones de gazon",
+      "playground": "Aire de jeux",
+      "path": "Allées",
+      "building": "Bâtiments & Structures",
+      "fence-wall-border": "Clôtures, murs & bordures",
+      "furniture": "Mobilier de jardin",
+      "custom": "Éléments personnalisés"
+    },
+    "customSize": "Taille personnalisée",
+    "dragHint": "Glisser pour placer sur le canvas"
+  },
+  "project": {
+    "untitled": "Jardin sans titre",
+    "saved": "Projet enregistré",
+    "saving": "Enregistrement...",
+    "unsavedChanges": "Vous avez des modifications non enregistrées",
+    "confirmClose": "Fermer sans enregistrer ?"
+  },
+  "export": {
+    "title": "Exporter",
+    "asImage": "Exporter en image",
+    "asPDF": "Exporter en PDF",
+    "asJSON": "Exporter le fichier projet",
+    "proposal": "Générer une proposition"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer"
+  }
+}

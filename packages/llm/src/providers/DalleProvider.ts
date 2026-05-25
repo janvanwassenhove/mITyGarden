@@ -46,10 +46,19 @@ export class DalleProvider implements ImageGenerationProvider {
     });
 
     if (!response.ok) {
-      const errBody = await response.json().catch(() => ({})) as DalleErrorResponse;
-      const msg = errBody.error?.message ?? response.statusText;
-      const code = errBody.error?.code ? ` [${errBody.error.code}]` : "";
-      throw new Error(`DALL-E ${response.status}${code}: ${msg}`);
+      let detail = "";
+      try {
+        const text = await response.text();
+        const parsed = JSON.parse(text) as DalleErrorResponse;
+        const errMsg = parsed.error?.message;
+        const errCode = parsed.error?.code;
+        detail = errMsg
+          ? `${errCode ? `[${errCode}] ` : ""}${errMsg}`
+          : text.slice(0, 300);
+      } catch {
+        detail = response.statusText || "Unknown error";
+      }
+      throw new Error(`DALL-E ${response.status}: ${detail}`);
     }
 
     const data = (await response.json()) as DalleResponse;

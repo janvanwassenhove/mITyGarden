@@ -7,11 +7,25 @@ import type { GeneratedImage } from "@mity-garden/llm";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface ProviderOption {
+  id: string;
+  label: string;
+  available: boolean;
+}
+
 export interface LLMSuggestionsPanelProps {
   project: GardenProject;
   llmProvider: LLMProvider;
   imageProvider: ImageGenerationProvider;
   onOpenSettings?: () => void;
+  /** Available text-LLM providers for the chooser. */
+  llmProviderOptions?: ProviderOption[];
+  /** Available image providers for the chooser. */
+  imageProviderOptions?: ProviderOption[];
+  /** Called when the user selects a different text-LLM provider. */
+  onLLMProviderChange?: (id: string) => void;
+  /** Called when the user selects a different image provider. */
+  onImageProviderChange?: (id: string) => void;
 }
 
 type PanelTab = "suggestions" | "visualize";
@@ -106,6 +120,10 @@ export function LLMSuggestionsPanel({
   llmProvider,
   imageProvider,
   onOpenSettings,
+  llmProviderOptions,
+  imageProviderOptions,
+  onLLMProviderChange,
+  onImageProviderChange,
 }: LLMSuggestionsPanelProps): React.ReactElement {
   const [tab, setTab] = React.useState<PanelTab>("suggestions");
 
@@ -220,6 +238,23 @@ export function LLMSuggestionsPanel({
                 suggestions.
               </NotConfiguredBanner>
             )}
+
+            {/* Provider chooser */}
+            {llmProviderOptions && llmProviderOptions.filter((p) => p.available).length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 3 }}>Provider</label>
+                <select
+                  value={llmProvider.name}
+                  onChange={(e) => onLLMProviderChange?.(e.target.value)}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #ccc', fontSize: 12, background: '#fff' }}
+                >
+                  {llmProviderOptions.filter((p) => p.available).map((p) => (
+                    <option key={p.id} value={p.id}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <button
               onClick={() => void handleSuggest()}
               disabled={!llmAvailable || suggestLoading}
@@ -291,20 +326,19 @@ export function LLMSuggestionsPanel({
               </div>
             </div>
 
-            {/* Provider badge */}
-            {imageAvailable && (
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "#666",
-                  marginBottom: 12,
-                  padding: "4px 8px",
-                  background: "#f5f5f5",
-                  borderRadius: 4,
-                  display: "inline-block",
-                }}
-              >
-                Provider: <strong>{imageService.providerName()}</strong>
+            {/* Provider chooser */}
+            {imageProviderOptions && imageProviderOptions.filter((p) => p.available).length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 3 }}>Image provider</label>
+                <select
+                  value={imageProvider.name}
+                  onChange={(e) => onImageProviderChange?.(e.target.value)}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #ccc', fontSize: 12, background: '#fff' }}
+                >
+                  {imageProviderOptions.filter((p) => p.available).map((p) => (
+                    <option key={p.id} value={p.id}>{p.label}</option>
+                  ))}
+                </select>
               </div>
             )}
 

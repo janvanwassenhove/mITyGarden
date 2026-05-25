@@ -4,26 +4,82 @@ import { OpenAIProvider, AnthropicProvider, NoOpLLMProvider } from "@mity-garden
 import { DalleProvider, GeminiImageProvider, NoOpImageProvider } from "@mity-garden/llm";
 import { getEffectiveApiKeys } from "./apiKeys.js";
 
-// ─── Text LLM factory ─────────────────────────────────────────────────────────
-//
-// Priority: env var (OPENAI_API_KEY) → localStorage → NoOp
+// ─── Available provider definitions ───────────────────────────────────────────
 
-export function createLLMProvider(): LLMProvider {
+export type LLMProviderName = "openai" | "anthropic";
+export type ImageProviderName = "dall-e-3" | "imagen-3";
+
+export interface ProviderOption {
+  id: string;
+  label: string;
+  available: boolean;
+}
+
+/** Return which text-LLM providers have valid API keys. */
+export function getAvailableLLMProviders(): ProviderOption[] {
   const keys = getEffectiveApiKeys();
+  return [
+    { id: "openai", label: "OpenAI (GPT-4o-mini)", available: keys.openai.length > 0 },
+    { id: "anthropic", label: "Anthropic (Claude 3 Haiku)", available: keys.anthropic.length > 0 },
+  ];
+}
+
+/** Return which image providers have valid API keys. */
+export function getAvailableImageProviders(): ProviderOption[] {
+  const keys = getEffectiveApiKeys();
+  return [
+    { id: "dall-e-3", label: "DALL-E 3 (OpenAI)", available: keys.openai.length > 0 },
+    { id: "imagen-3", label: "Imagen 3 (Gemini)", available: keys.gemini.length > 0 },
+  ];
+}
+
+// ─── Text LLM factory ─────────────────────────────────────────────────────────
+
+export function createLLMProvider(name?: LLMProviderName): LLMProvider {
+  const keys = getEffectiveApiKeys();
+  if (name === "openai" && keys.openai.length > 0) return new OpenAIProvider(keys.openai);
+  if (name === "anthropic" && keys.anthropic.length > 0) return new AnthropicProvider(keys.anthropic);
+  // Auto-select first available
   if (keys.openai.length > 0) return new OpenAIProvider(keys.openai);
   if (keys.anthropic.length > 0) return new AnthropicProvider(keys.anthropic);
   return new NoOpLLMProvider();
 }
 
 // ─── Image generation factory ─────────────────────────────────────────────────
-//
-// Priority: env var (VITE_OPENAI_API_KEY) → localStorage → NoOp
 
-export function createImageProvider(): ImageGenerationProvider {
+export function createImageProvider(name?: ImageProviderName): ImageGenerationProvider {
   const keys = getEffectiveApiKeys();
+  if (name === "dall-e-3" && keys.openai.length > 0) return new DalleProvider(keys.openai);
+  if (name === "imagen-3" && keys.gemini.length > 0) return new GeminiImageProvider(keys.gemini);
+  // Auto-select first available
   if (keys.openai.length > 0) return new DalleProvider(keys.openai);
   if (keys.gemini.length > 0) return new GeminiImageProvider(keys.gemini);
   return new NoOpImageProvider();
+}
+
+// ─── Preference persistence ───────────────────────────────────────────────────
+
+const LS_LLM_PROVIDER = "mitygarden_llm_provider";
+const LS_IMAGE_PROVIDER = "mitygarden_image_provider";
+
+export function getDefaultLLMProviderName(): LLMProviderName | undefined {
+  const v = localStorage.getItem(LS_LLM_PROVIDER);
+  if (v === "openai" || v === "anthropic") return v;
+  return undefined;
+}
+
+export function setDefaultLLMProviderName(name: LLMProviderName): void {
+  localStorage.setItem(LS_LLM_PROVIDER, name);
+}
+
+export function getDefaultImageProviderName(): ImageProviderName | undefined {
+  const v = localStorage.getItem(LS_IMAGE_PROVIDER);
+  if (v === "dall-e-3" || v === "imagen-3") return v;
+  return undefined;
+}
+
+export function setDefaultImageProviderName(name: ImageProviderName): void {
+  localStorage.setItem(LS_IMAGE_PROVIDER, name);
 }
 
 // ─── Singletons + reset ───────────────────────────────────────────────────────
@@ -38,11 +94,11 @@ export function resetProviders(): void {
 }
 
 export function getLLMProvider(): LLMProvider {
-  if (!_llm) _llm = createLLMProvider();
+  if (!_llm) _llm = createLLMProvider(getDefaultLLMProviderName());
   return _llm;
 }
 
 export function getImageProvider(): ImageGenerationProvider {
-  if (!_img) _img = createImageProvider();
+  if (!_img) _img = createImageProvider(getDefaultImageProviderName());
   return _img;
 }

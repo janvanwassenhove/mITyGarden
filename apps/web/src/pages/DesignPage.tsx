@@ -5,7 +5,8 @@ import { useProjectStore, useUiStore, AssetLibraryPanel, LLMSuggestionsPanel } f
 import type { AssetDefinition } from "@mity-garden/domain";
 import { getRepoInstance } from "../repository.js";
 import { exportProjectAsJSON, exportProjectAsText } from "../export.js";
-import { getLLMProvider, getImageProvider, resetProviders } from "../llm.js";
+import { getLLMProvider, getImageProvider, resetProviders, createLLMProvider, createImageProvider, setDefaultLLMProviderName, setDefaultImageProviderName, getAvailableLLMProviders, getAvailableImageProviders } from "../llm.js";
+import type { LLMProviderName, ImageProviderName } from "../llm.js";
 import { ApiKeySettingsModal } from "../components/ApiKeySettingsModal.js";
 
 const repo = getRepoInstance();
@@ -33,6 +34,22 @@ export function DesignPage(): React.ReactElement {
     setLlmProvider(getLLMProvider());
     setImageProvider(getImageProvider());
     setShowSettings(false);
+  }
+
+  function handleLLMProviderChange(id: string): void {
+    const name = id as LLMProviderName;
+    setDefaultLLMProviderName(name);
+    resetProviders();
+    const provider = createLLMProvider(name);
+    setLlmProvider(provider);
+  }
+
+  function handleImageProviderChange(id: string): void {
+    const name = id as ImageProviderName;
+    setDefaultImageProviderName(name);
+    resetProviders();
+    const provider = createImageProvider(name);
+    setImageProvider(provider);
   }
 
   // Wire up Electron File → Export JSON menu item
@@ -208,6 +225,10 @@ export function DesignPage(): React.ReactElement {
           llmProvider={llmProvider}
           imageProvider={imageProvider}
           onOpenSettings={() => setShowSettings(true)}
+          llmProviderOptions={getAvailableLLMProviders()}
+          imageProviderOptions={getAvailableImageProviders()}
+          onLLMProviderChange={handleLLMProviderChange}
+          onImageProviderChange={handleImageProviderChange}
         />
       )}
 

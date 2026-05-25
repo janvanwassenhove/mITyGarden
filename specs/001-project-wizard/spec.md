@@ -9,32 +9,35 @@
 ### AC-001: Start wizard
 - Given I am on the home page
 - When I click "New Garden" or "Create My First Garden"
-- Then a modal wizard opens at Step 1 (Dimensions)
+- Then a modal wizard opens at Step 1 (Location)
 
-### AC-002: Step 1 — Dimensions
-- Width and height inputs are visible with default values (10m × 8m)
-- User can switch between metric (meters) and imperial (feet)
-- Inputs accept numeric values between 1 and 500
+### AC-002: Step 1 — Location (optional)
+- Address text input is shown with a search button
+- After searching, a map preview is displayed
 - Clicking "Next" advances to Step 2
 
-### AC-003: Step 2 — Garden Style
-- Six style options are displayed (Modern, Classic, Japanese, Mediterranean, English, Minimal, Custom)
-- Selected style is visually highlighted
+### AC-003: Step 2 — Garden Boundary (optional)
+- If `VITE_GOOGLE_MAPS_API_KEY` is configured, an interactive Google Maps view is shown
+- User can draw a polygon to trace their garden outline
+- After drawing, width/height (bounding box) and area are displayed
+- If no API key, a message explains the feature requires configuration
 - Clicking "Next" advances to Step 3
 
-### AC-004: Step 3 — Existing Structures (placeholder)
-- Step shows a placeholder map area with explanatory text
-- User can proceed without marking structures (optional step)
+### AC-004: Step 3 — Dimensions
+- Width and height inputs are visible (default 20m × 15m, or pre-filled from boundary)
+- If boundary was drawn, an info note indicates the values were auto-calculated
+- User can switch between metric (meters) and imperial (feet)
+- Inputs accept numeric values between 1 and 500
 - Clicking "Next" advances to Step 4
 
-### AC-005: Step 4 — Goals
-- Eight goal checkboxes are shown
-- Multiple goals can be selected simultaneously
+### AC-005: Step 4 — Garden Style
+- Seven style options are displayed (Modern, Classic, Japanese, Mediterranean, English, Minimal, Custom)
+- Selected style is visually highlighted
 - Clicking "Next" advances to Step 5
 
-### AC-006: Step 5 — Location (optional)
-- Address text input is shown
-- Map placeholder is displayed with explanatory text
+### AC-006: Step 5 — Goals
+- Eight goal checkboxes are shown
+- Multiple goals can be selected simultaneously
 - Clicking "Create Garden" creates the project and opens the canvas
 
 ### AC-007: Navigation

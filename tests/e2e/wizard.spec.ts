@@ -19,36 +19,35 @@ test.describe("Project Creation Wizard", () => {
     }
 
     await expect(page.getByTestId("project-wizard")).toBeVisible();
-    await expect(page.getByTestId("wizard-step-dimensions")).toBeVisible();
+    await expect(page.getByTestId("wizard-step-location")).toBeVisible();
   });
 
   test("completes full wizard flow and navigates to design canvas", async ({ page }) => {
     await page.getByTestId("new-project-btn").click();
     await expect(page.getByTestId("project-wizard")).toBeVisible();
 
-    // Step 1: Dimensions
+    // Step 1: Location (skip)
+    await expect(page.getByTestId("wizard-step-location")).toBeVisible();
+    await page.getByTestId("wizard-next").click();
+
+    // Step 2: Boundary (no API key in test env, skip)
+    await expect(page.getByTestId("wizard-step-boundary")).toBeVisible();
+    await page.getByTestId("wizard-next").click();
+
+    // Step 3: Dimensions
     await expect(page.getByTestId("wizard-step-dimensions")).toBeVisible();
     await page.getByTestId("wizard-width").fill("12");
     await page.getByTestId("wizard-height").fill("10");
     await page.getByTestId("wizard-next").click();
 
-    // Step 2: Style
+    // Step 4: Style
     await expect(page.getByTestId("wizard-step-style")).toBeVisible();
     await page.getByTestId("wizard-style-modern").click();
     await page.getByTestId("wizard-next").click();
 
-    // Step 3: Structures (skip)
-    await page.getByTestId("wizard-next").click();
-
-    // Step 4: Goals
+    // Step 5: Goals → finish
     await expect(page.getByTestId("wizard-step-goals")).toBeVisible();
     await page.getByTestId("wizard-goal-terrace").click();
-    await page.getByTestId("wizard-goal-plants").click();
-    await page.getByTestId("wizard-next").click();
-
-    // Step 5: Location
-    await expect(page.getByTestId("wizard-step-location")).toBeVisible();
-    await page.getByTestId("wizard-address-input").fill("Brussels, Belgium");
     await page.getByTestId("wizard-finish").click();
 
     // Should navigate to design canvas
@@ -58,16 +57,16 @@ test.describe("Project Creation Wizard", () => {
 
   test("back button is hidden on step 1", async ({ page }) => {
     await page.getByTestId("new-project-btn").click();
-    await expect(page.getByTestId("wizard-step-dimensions")).toBeVisible();
+    await expect(page.getByTestId("wizard-step-location")).toBeVisible();
     await expect(page.getByTestId("wizard-back")).not.toBeVisible();
   });
 
   test("back button navigates to previous step", async ({ page }) => {
     await page.getByTestId("new-project-btn").click();
     await page.getByTestId("wizard-next").click();
-    await expect(page.getByTestId("wizard-step-style")).toBeVisible();
+    await expect(page.getByTestId("wizard-step-boundary")).toBeVisible();
     await page.getByTestId("wizard-back").click();
-    await expect(page.getByTestId("wizard-step-dimensions")).toBeVisible();
+    await expect(page.getByTestId("wizard-step-location")).toBeVisible();
   });
 
   test("cancel dismisses wizard without creating project", async ({ page }) => {
@@ -91,12 +90,16 @@ test.describe("Project Creation Wizard", () => {
 
   test("wizard preserves dimension values across navigation", async ({ page }) => {
     await page.getByTestId("new-project-btn").click();
-    
+
+    // Navigate to Step 3 (Dimensions)
+    await page.getByTestId("wizard-next").click(); // Location → Boundary
+    await page.getByTestId("wizard-next").click(); // Boundary → Dimensions
+
     await page.getByTestId("wizard-width").fill("25");
     await page.getByTestId("wizard-height").fill("15");
-    await page.getByTestId("wizard-next").click();
-    await page.getByTestId("wizard-back").click();
-    
+    await page.getByTestId("wizard-next").click(); // Dimensions → Style
+    await page.getByTestId("wizard-back").click(); // Style → Dimensions
+
     // Values should be preserved
     await expect(page.getByTestId("wizard-width")).toHaveValue("25");
     await expect(page.getByTestId("wizard-height")).toHaveValue("15");

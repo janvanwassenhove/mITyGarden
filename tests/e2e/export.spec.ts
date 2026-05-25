@@ -16,16 +16,16 @@ test.describe("Export feature", () => {
     } else {
       await page.getByTestId("new-project-btn").click();
     }
-    // Step 1: Dimensions
-    await expect(page.getByTestId("wizard-step-dimensions")).toBeVisible();
+    // Step 1: Location (skip)
+    await expect(page.getByTestId("wizard-step-location")).toBeVisible();
     await page.getByTestId("wizard-next").click();
-    // Step 2: Style
+    // Step 2: Boundary (no API key in test env, skip)
     await page.getByTestId("wizard-next").click();
-    // Step 3: Structures
+    // Step 3: Dimensions
     await page.getByTestId("wizard-next").click();
-    // Step 4: Goals
+    // Step 4: Style
     await page.getByTestId("wizard-next").click();
-    // Step 5: Location → finish
+    // Step 5: Goals → finish
     await page.getByTestId("wizard-finish").click();
     await page.waitForURL("/design");
   });

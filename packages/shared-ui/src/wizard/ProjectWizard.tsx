@@ -1,26 +1,111 @@
 import React from "react";
 import { useUiStore } from "../hooks/useUiStore.js";
 import { useProjectStore } from "../hooks/useProjectStore.js";
-import type { GardenStyle, GardenGoal, UnitSystem } from "@mity-garden/domain";
+import type { GardenStyle, GardenGoal, UnitSystem, GeoCoordinates, MapData } from "@mity-garden/domain";
 import { GARDEN_STYLES, GARDEN_GOALS, WIZARD_TOTAL_STEPS } from "@mity-garden/domain";
 import type { MapsAdapter, PlaceSearchResult } from "@mity-garden/maps";
 import { NoOpMapsAdapter } from "@mity-garden/maps";
+
+// ─── Google Maps minimal type declarations ────────────────────────────────────
+
+interface GmLatLng { lat(): number; lng(): number; }
+interface GmLatLngBounds { extend(point: { lat: number; lng: number }): void; }
+interface GmMvcArray<T> { getArray(): T[]; }
+interface GmPolygon { getPath(): GmMvcArray<GmLatLng>; setMap(map: GmMap | null): void; }
+interface GmMap { fitBounds(bounds: GmLatLngBounds): void; }
+interface GmDrawingManager { setMap(map: GmMap | null): void; setDrawingMode(mode: string | null): void; }
+
+declare global {
+  interface Window {
+    google?: {
+      maps: {
+        Map: new (el: HTMLElement, opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }) => GmMap;
+        Polygon: new (opts: { paths?: { lat: number; lng: number }[]; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean }) => GmPolygon;
+        LatLngBounds: new () => GmLatLngBounds;
+        event: { addListener(target: GmDrawingManager, event: "polygoncomplete", handler: (polygon: GmPolygon) => void): unknown };
+        drawing: {
+          DrawingManager: new (opts: { drawingMode?: string; drawingControl?: boolean; drawingControlOptions?: { position: number; drawingModes: string[] }; polygonOptions?: { fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean } }) => GmDrawingManager;
+          OverlayType: { POLYGON: string };
+        };
+        ControlPosition: { TOP_CENTER: number };
+      };
+    };
+  }
+}
 
 // ─── Maps adapter context (consumed by StepLocation) ─────────────────────────
 
 const MapsAdapterContext = React.createContext<MapsAdapter>(new NoOpMapsAdapter());
 
-// ─── Step 1: Dimensions ───────────────────────────────────────────────────────
+// ─── Google Maps API key context (consumed by StepBoundary) ──────────────────
+
+const GoogleMapsApiKeyContext = React.createContext<string | undefined>(undefined);
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function computeBoundingBox(vertices: GeoCoordinates[]): { width: number; height: number; areaM2: number } {
+  const lats = vertices.map((v) => v.lat);
+  const lngs = vertices.map((v) => v.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const avgLatRad = ((minLat + maxLat) / 2) * (Math.PI / 180);
+  const mPerDegLat = 111_320;
+  const mPerDegLng = 111_320 * Math.cos(avgLatRad);
+  const height = (maxLat - minLat) * mPerDegLat;
+  const width = (maxLng - minLng) * mPerDegLng;
+  // Shoelace formula in local metric coordinates
+  const pts = vertices.map((v) => ({ x: v.lng * mPerDegLng, y: v.lat * mPerDegLat }));
+  let area = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const j = (i + 1) % pts.length;
+    const pi = pts[i];
+    const pj = pts[j];
+    if (pi !== undefined && pj !== undefined) {
+      area += pi.x * pj.y - pj.x * pi.y;
+    }
+  }
+  return { width, height, areaM2: Math.abs(area) / 2 };
+}
+
+function loadGoogleMapsScript(apiKey: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.google?.maps?.drawing) { resolve(); return; }
+    const existing = document.getElementById("gmaps-js") as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("Google Maps script failed")));
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = "gmaps-js";
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=drawing&loading=async`;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Google Maps API"));
+    document.head.appendChild(script);
+  });
+}
+
+// ─── Step: Dimensions ────────────────────────────────────────────────────────
 
 function StepDimensions(): React.ReactElement {
   const wizard = useUiStore((s) => s.wizard);
   const setDimensions = useUiStore((s) => s.wizardSetDimensions);
   const setUnit = useUiStore((s) => s.wizardSetUnit);
+  const hasBoundary = (wizard.mapBoundary?.length ?? 0) > 2;
 
   return (
     <div data-testid="wizard-step-dimensions">
       <h2>Garden Dimensions</h2>
-      <p>Enter the size of your garden and choose your measurement unit.</p>
+      {hasBoundary ? (
+        <p style={{ color: "#2e7d32", fontSize: 13, background: "#e8f5e9", borderRadius: 6, padding: "8px 12px", border: "1px solid #a5d6a7", marginBottom: 16 }}>
+          ✅ Dimensions auto-calculated from your drawn boundary (bounding box). You can fine-tune them below.
+        </p>
+      ) : (
+        <p>Enter the size of your garden and choose your measurement unit.</p>
+      )}
       <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
         <label>
           Width
@@ -109,33 +194,136 @@ function StepStyle(): React.ReactElement {
   );
 }
 
-// ─── Step 3: Existing Structures ──────────────────────────────────────────────
+// ─── Step: Boundary Drawing ───────────────────────────────────────────────────
 
-function StepStructures(): React.ReactElement {
-  const structureCount = useUiStore((s) => s.wizard.existingStructures.length);
+function StepBoundary(): React.ReactElement {
+  const apiKey = React.useContext(GoogleMapsApiKeyContext);
+  const coordinates = useUiStore((s) => s.wizard.mapCoordinates);
+  const boundary = useUiStore((s) => s.wizard.mapBoundary);
+  const setDimensions = useUiStore((s) => s.wizardSetDimensions);
+  const setBoundary = useUiStore((s) => s.wizardSetMapBoundary);
+
+  const mapDivRef = React.useRef<HTMLDivElement>(null);
+  const [mapsLoaded, setMapsLoaded] = React.useState(false);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [area, setArea] = React.useState<number | null>(null);
+
+  // Seed area from existing boundary on mount
+  React.useEffect(() => {
+    if (boundary && boundary.length > 2) {
+      setArea(Math.round(computeBoundingBox(boundary).areaM2));
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!apiKey) return;
+    loadGoogleMapsScript(apiKey)
+      .then(() => setMapsLoaded(true))
+      .catch(() => setLoadError("Could not load Google Maps. Check your connection and API key."));
+  }, [apiKey]);
+
+  React.useEffect(() => {
+    if (!mapsLoaded || !mapDivRef.current) return;
+    const gm = window.google!.maps;
+    const center = coordinates ?? { lat: 51.26, lng: 4.40 }; // default: Antwerp
+    const map = new gm.Map(mapDivRef.current, {
+      center,
+      zoom: coordinates ? 18 : 13,
+      mapTypeId: "satellite",
+    });
+    const dm = new gm.drawing.DrawingManager({
+      drawingMode: gm.drawing.OverlayType.POLYGON,
+      drawingControl: true,
+      drawingControlOptions: {
+        position: gm.ControlPosition.TOP_CENTER,
+        drawingModes: [gm.drawing.OverlayType.POLYGON],
+      },
+      polygonOptions: {
+        fillColor: "#4caf50",
+        fillOpacity: 0.25,
+        strokeColor: "#388e3c",
+        strokeWeight: 2,
+        editable: true,
+      },
+    });
+    dm.setMap(map);
+    // Re-draw existing boundary
+    if (boundary && boundary.length > 2) {
+      const paths = boundary.map((p) => ({ lat: p.lat, lng: p.lng }));
+      const poly = new gm.Polygon({ paths, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
+      poly.setMap(map);
+      dm.setDrawingMode(null);
+      const bounds = new gm.LatLngBounds();
+      paths.forEach((p) => bounds.extend(p));
+      map.fitBounds(bounds);
+    }
+    gm.event.addListener(dm, "polygoncomplete", (polygon) => {
+      dm.setDrawingMode(null);
+      const verts = polygon.getPath().getArray().map((ll) => ({ lat: ll.lat(), lng: ll.lng() }));
+      setBoundary(verts);
+      const { width, height, areaM2 } = computeBoundingBox(verts);
+      setDimensions(Math.max(1, Math.round(width * 10) / 10), Math.max(1, Math.round(height * 10) / 10));
+      setArea(Math.round(areaM2));
+    });
+  }, [mapsLoaded]);
+
+  const hasBoundary = (boundary?.length ?? 0) > 2;
+
+  function handleClear(): void {
+    setBoundary([]);
+    setArea(null);
+    // Reset map by toggling mapsLoaded
+    setMapsLoaded(false);
+    setTimeout(() => setMapsLoaded(true), 20);
+  }
+
+  if (!apiKey) {
+    return (
+      <div data-testid="wizard-step-boundary">
+        <h2>Draw Your Garden</h2>
+        <div style={{ padding: "24px", background: "#f5f5f5", borderRadius: 8, border: "2px dashed #ccc", textAlign: "center" }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>🗺️</div>
+          <p style={{ fontWeight: 600, color: "#555", margin: "0 0 6px" }}>Google Maps not configured</p>
+          <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
+            Set <code>VITE_GOOGLE_MAPS_API_KEY</code> to enable drawing your garden boundary on a satellite map and auto-calculating dimensions.
+          </p>
+        </div>
+        <p style={{ fontSize: 13, color: "#888", marginTop: 12 }}>
+          You can skip this step and enter your garden dimensions manually on the next step.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div data-testid="wizard-step-structures">
-      <h2>Existing Structures</h2>
-      <p>Mark any existing buildings, walls or structures in your garden.</p>
-      <div
-        style={{
-          height: 240,
-          background: "#e8f5e9",
-          border: "2px dashed #4caf50",
-          borderRadius: 8,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#666",
-        }}
-      >
-        {structureCount > 0
-          ? `${structureCount} structure(s) marked`
-          : "Google Maps integration available in Milestone 6.\nYou can skip this step for now."}
-      </div>
+    <div data-testid="wizard-step-boundary">
+      <h2>Draw Your Garden</h2>
+      <p style={{ marginTop: 0 }}>
+        Trace your garden boundary on the map. Works for any shape — rectangular, irregular, multi-sided or curved.
+      </p>
+
+      {loadError && <p style={{ color: "#c62828", fontSize: 13 }}>{loadError}</p>}
+
+      {!mapsLoaded && !loadError && (
+        <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
+          Loading map…
+        </div>
+      )}
+
+      <div ref={mapDivRef} style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
+
+      {hasBoundary && area !== null && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
+          <span style={{ fontSize: 13 }}>✅ Boundary drawn — area ≈ <strong>{area} m²</strong></span>
+          <button onClick={handleClear} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+            Clear &amp; redraw
+          </button>
+        </div>
+      )}
+
       <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
-        Full map integration available in a future update. You can draw structures manually on the canvas after creating your garden.
+        Use the polygon tool to trace the outline. Add extra points to approximate curved edges.
+        This step is optional — you can adjust dimensions on the next step.
       </p>
     </div>
   );
@@ -392,33 +580,44 @@ function StepLocation(): React.ReactElement {
 
 // ─── Wizard Shell ─────────────────────────────────────────────────────────────
 
-const STEPS = [StepDimensions, StepStyle, StepStructures, StepGoals, StepLocation];
+const STEPS = [StepLocation, StepBoundary, StepDimensions, StepStyle, StepGoals];
 
 export interface ProjectWizardProps {
   onComplete: () => void;
   onCancel: () => void;
   mapsAdapter?: MapsAdapter;
+  googleMapsApiKey?: string;
 }
 
-export function ProjectWizard({ onComplete, onCancel, mapsAdapter }: ProjectWizardProps): React.ReactElement {
+export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApiKey }: ProjectWizardProps): React.ReactElement {
   const wizard = useUiStore((s) => s.wizard);
   const nextStep = useUiStore((s) => s.wizardNextStep);
   const prevStep = useUiStore((s) => s.wizardPrevStep);
   const wizardReset = useUiStore((s) => s.wizardReset);
   const newProject = useProjectStore((s) => s.newProject);
-  const openWizard = useUiStore((s) => s.openWizard);
 
   const StepComponent = STEPS[wizard.step - 1] ?? StepDimensions;
   const isLastStep = wizard.step === WIZARD_TOTAL_STEPS;
   const isFirstStep = wizard.step === 1;
 
   function handleFinish(): void {
+    const mapData: MapData | undefined = wizard.mapCoordinates
+      ? {
+          address: wizard.mapAddress ?? "",
+          coordinates: wizard.mapCoordinates,
+          zoom: 18,
+          boundary: wizard.mapBoundary ?? [],
+          detectedStructures: [],
+          userCorrectedStructures: [],
+        }
+      : undefined;
     newProject({
       name: wizard.mapAddress ? `Garden at ${wizard.mapAddress}` : "My Garden",
       dimensions: wizard.dimensions,
       unit: wizard.unit,
       style: wizard.style,
       goals: wizard.goals,
+      ...(mapData !== undefined ? { mapData } : {}),
     });
     wizardReset();
     onComplete();
@@ -433,6 +632,7 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter }: ProjectWiza
 
   return (
     <MapsAdapterContext.Provider value={adapter}>
+    <GoogleMapsApiKeyContext.Provider value={googleMapsApiKey}>
     <div
       data-testid="project-wizard"
       style={{
@@ -506,6 +706,7 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter }: ProjectWiza
         </div>
       </div>
     </div>
+    </GoogleMapsApiKeyContext.Provider>
     </MapsAdapterContext.Provider>
   );
 }

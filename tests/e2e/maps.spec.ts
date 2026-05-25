@@ -15,11 +15,7 @@ test.describe("Wizard Location step", () => {
     } else {
       await page.getByTestId("new-project-btn").click();
     }
-    // Navigate to Step 5 (Location)
-    await page.getByTestId("wizard-next").click(); // → Step 2
-    await page.getByTestId("wizard-next").click(); // → Step 3
-    await page.getByTestId("wizard-next").click(); // → Step 4
-    await page.getByTestId("wizard-next").click(); // → Step 5
+    // Location is now Step 1 — no navigation needed
     await expect(page.getByTestId("wizard-step-location")).toBeVisible();
   });
 
@@ -38,6 +34,11 @@ test.describe("Wizard Location step", () => {
   });
 
   test("can complete wizard after skipping location search", async ({ page }) => {
+    // Skip location, boundary, dimensions, style, then finish on goals
+    await page.getByTestId("wizard-next").click(); // Location → Boundary
+    await page.getByTestId("wizard-next").click(); // Boundary → Dimensions
+    await page.getByTestId("wizard-next").click(); // Dimensions → Style
+    await page.getByTestId("wizard-next").click(); // Style → Goals
     await page.getByTestId("wizard-finish").click();
     await expect(page).toHaveURL(/\/design/);
   });

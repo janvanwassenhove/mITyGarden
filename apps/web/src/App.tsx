@@ -28,6 +28,7 @@ function WizardController(): React.ReactElement | null {
   return (
     <ProjectWizard
       mapsAdapter={getMapsAdapter()}
+      {...(import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? { googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string } : {})}
       onComplete={() => {
         closeWizard();
         void navigate("/design");

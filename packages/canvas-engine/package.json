@@ -20,6 +20,7 @@
   "dependencies": {
     "@mity-garden/asset-library": "workspace:*",
     "@mity-garden/domain": "workspace:*",
+    "@mity-garden/i18n": "workspace:*",
     "konva": "^9.3.0",
     "react-konva": "^19.2.4",
     "zustand": "^5.0.0"

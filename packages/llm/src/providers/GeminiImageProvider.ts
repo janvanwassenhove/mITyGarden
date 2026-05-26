@@ -32,6 +32,10 @@ export class GeminiImageProvider implements ImageGenerationProvider {
     return this.apiKey.length > 0;
   }
 
+  supportsReferenceImage(): boolean {
+    return false;
+  }
+
   async generateImage(req: ImageGenerationRequest): Promise<GeneratedImage> {
     const url =
       `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:predict` +

@@ -53,6 +53,7 @@ export type ElementType =
   | "building"
   | "fence-wall-border"
   | "furniture"
+  | "terrain"
   | "custom";
 
 // ─── Asset Definition ─────────────────────────────────────────────────────────
@@ -135,6 +136,14 @@ export interface MapData {
   userCorrectedStructures: Polygon[];
 }
 
+/** Axis-aligned bounding box of a garden boundary in geographic coordinates. */
+export interface MapBoundingBox {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
 // ─── Project Metadata ─────────────────────────────────────────────────────────
 
 export interface ProjectMetadata {
@@ -177,6 +186,10 @@ export interface GardenProject {
   mapData?: MapData;
   /** Polygon boundary vertices in metres, origin at top-left of bounding box. */
   boundaryVertices?: Position[];
+  /** Geographic bounding box of the garden boundary, used to fetch a satellite map layer. */
+  mapBoundingBox?: MapBoundingBox;
+  /** Image data URL used as canvas background (only set when boundary was traced from an uploaded image). */
+  mapImageUrl?: string;
   history: HistoryStack;
 }
 
@@ -194,6 +207,10 @@ export interface WizardState {
   mapBoundary?: Polygon;
   /** Polygon boundary in metres (computed from map or image trace). */
   boundaryVertices?: Position[];
+  /** Geographic bounding box captured from the map (Leaflet or Google Maps). */
+  mapBoundingBox?: MapBoundingBox;
+  /** Image data URL to use as canvas background (image-trace mode only). */
+  mapImageUrl?: string;
 }
 
 export const WIZARD_TOTAL_STEPS = 5;

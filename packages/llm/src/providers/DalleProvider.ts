@@ -74,6 +74,10 @@ export class DalleProvider implements ImageGenerationProvider {
     return this.apiKey.length > 0;
   }
 
+  supportsReferenceImage(): boolean {
+    return isGptImageModel(this.model);
+  }
+
   async generateImage(req: ImageGenerationRequest): Promise<GeneratedImage> {
     const model = this.model;
     const isGpt = isGptImageModel(model);

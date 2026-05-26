@@ -10,7 +10,8 @@
     "saveProjectAs": "Save As...",
     "exportProject": "Export",
     "settings": "Settings",
-    "help": "Help"
+    "help": "Help",
+    "editProjectName": "Edit project name"
   },
   "wizard": {
     "title": "New Garden Project",
@@ -131,6 +132,11 @@
     "placement": {
       "hint": "Click canvas to place asset",
       "cancel": "Cancel"
+    },
+    "mapLayer": {
+      "label": "Map Layer",
+      "toggle": "Toggle satellite map background layer",
+      "noImage": "No map image — draw a boundary in the wizard to enable"
     }
   },
   "layers": {
@@ -170,6 +176,7 @@
       "building": "Buildings & Structures",
       "fence-wall-border": "Fences, Walls & Borders",
       "furniture": "Outdoor Furniture",
+      "terrain": "Terrain",
       "custom": "Custom Elements"
     },
     "customSize": "Custom Size",
@@ -190,7 +197,9 @@
     "saved": "Project saved",
     "saving": "Saving...",
     "unsavedChanges": "You have unsaved changes",
-    "confirmClose": "Close without saving?"
+    "confirmClose": "Close without saving?",
+    "deleteGarden": "Delete",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This cannot be undone."
   },
   "llm": {
     "title": "AI Assistant",
@@ -210,7 +219,71 @@
     "regenerate": "Regenerate",
     "configureKeys": "Configure API Keys",
     "notConfigured": "No LLM provider is configured. Enter an API key to enable AI suggestions.",
-    "imageNotConfigured": "No image provider is configured. Enter an OpenAI or Gemini API key to enable image generation."
+    "imageNotConfigured": "No image provider is configured. Enter an OpenAI or Gemini API key to enable image generation.",
+    "aiRender": {
+      "steps": {
+        "view": "View",
+        "camera": "Camera",
+        "enhancements": "Details",
+        "generate": "Generate"
+      },
+      "viewMode": "View Mode",
+      "viewModes": {
+        "oblique_drone": "Drone",
+        "eye_level": "Eye Level",
+        "top_down": "Top Down",
+        "cinematic": "Cinematic"
+      },
+      "realism": "Realism",
+      "realismOptions": {
+        "photorealistic": "Photorealistic",
+        "architectural": "Architectural Viz",
+        "concept": "Concept Render"
+      },
+      "strictness": "Layout Strictness",
+      "strictnessOptions": {
+        "creative": "Creative — loose layout",
+        "balanced": "Balanced — respect main elements",
+        "strict": "Strict — keep positions",
+        "veryStrict": "Very Strict — exact layout"
+      },
+      "cameraHeight": "Camera Height",
+      "cameraAngle": "Camera Angle",
+      "direction": "Direction",
+      "lens": "Lens",
+      "lensOptions": {
+        "wide": "Wide Angle (16–24mm)",
+        "natural": "Natural (28–35mm)",
+        "telephoto": "Telephoto (70–100mm)"
+      },
+      "timeOfDay": "Time of Day",
+      "timeOptions": {
+        "morning": "Morning",
+        "afternoon": "Summer Afternoon",
+        "goldenHour": "Golden Hour",
+        "overcast": "Overcast"
+      },
+      "season": "Season",
+      "seasonOptions": {
+        "spring": "Spring",
+        "summer": "Summer",
+        "autumn": "Autumn",
+        "winter": "Winter"
+      },
+      "enhancements": {
+        "realisticGrass": "Realistic grass",
+        "realisticShadows": "Realistic shadows",
+        "realisticPlanting": "Realistic planting beds",
+        "stoneTerraceAroundPool": "Stone terrace around pool",
+        "addPeople": "Add people",
+        "addFurniture": "Add garden furniture",
+        "addExtraTrees": "Add extra trees"
+      },
+      "imageProvider": "Image Provider",
+      "generate": "Generate AI Render",
+      "previewReference": "Preview Reference Layout",
+      "referenceHint": "This simplified plan is sent to the AI as a spatial reference."
+    }
   },
   "export": {
     "title": "Export",
@@ -219,6 +292,33 @@
     "asJSON": "Export Project File",
     "proposal": "Generate Proposal"
   },
+  "settings": {
+    "language": {
+      "title": "Language",
+      "label": "Interface language — changes apply immediately"
+    },
+    "llm": {
+      "title": "LLM / AI Integration",
+      "description": "API keys for AI-powered garden layout suggestions.",
+      "openaiHint": "Layout suggestions (GPT-4o-mini) and image generation (GPT Image 1)",
+      "anthropicHint": "Layout suggestions (Claude 3 Haiku) — fallback when no OpenAI key is set",
+      "geminiHint": "Image generation (Imagen 3) — fallback when no OpenAI key is set"
+    },
+    "image": {
+      "title": "Image Generation",
+      "description": "AI-generated garden visualizations are powered by the same API keys as the LLM integration.",
+      "note": "🖼 GPT Image 1 (OpenAI key) and Imagen 3 (Gemini key) are both supported. Configure the keys in the LLM section above."
+    },
+    "maps": {
+      "title": "Google Maps",
+      "description": "Enables the Google Maps satellite view in the project wizard boundary step.",
+      "hint": "Optional — free satellite imagery is used when no key is provided"
+    },
+    "apiKey": {
+      "envNote": "Some keys are provided via environment variables and are active. They are shown read-only below.",
+      "savedNote": "Keys are stored in your browser's local storage. Environment variables take priority and cannot be overridden here."
+    }
+  },
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
@@ -226,6 +326,8 @@
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
+    "next": "Next",
+    "back": "Back",
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Retry"

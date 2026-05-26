@@ -104,4 +104,85 @@ test.describe("Project Creation Wizard", () => {
     await expect(page.getByTestId("wizard-width")).toHaveValue("25");
     await expect(page.getByTestId("wizard-height")).toHaveValue("15");
   });
+
+  test("Google Maps boundary step loads map when API key is present", async ({ page }) => {
+    // Intercept the Google Maps script to prevent real network request
+    await page.route("**/maps.googleapis.com/maps/api/js*", (route) =>
+      route.fulfill({ status: 200, contentType: "text/javascript", body: "/* mocked */" }),
+    );
+
+    // Set a fake API key in localStorage so the wizard shows the Google Maps branch
+    await page.evaluate(() => {
+      localStorage.setItem("mitygarden_google_maps_key", "FAKE_TEST_KEY");
+    });
+
+    // Reload so the app picks up the new localStorage key
+    await page.reload();
+
+    // Inject mock google.maps BEFORE opening the wizard (so loadGoogleMapsScript resolves)
+    await page.evaluate(() => {
+      const noop = (): void => {};
+      class FakeMap {
+        constructor(_el: HTMLElement, _opts: unknown) {}
+        fitBounds = noop;
+      }
+      class FakePolygon {
+        constructor(_opts: unknown) {}
+        setMap = noop;
+        getPath() {
+          return { getArray: () => [] };
+        }
+      }
+      class FakeLatLngBounds {
+        extend = noop;
+      }
+      class FakeDrawingManager {
+        constructor(_opts: unknown) {}
+        setMap = noop;
+        setDrawingMode = noop;
+      }
+      const mapsLib = {
+        Map: FakeMap,
+        Polygon: FakePolygon,
+        LatLngBounds: FakeLatLngBounds,
+        ControlPosition: { TOP_CENTER: 2 },
+      };
+      const drawingLib = {
+        DrawingManager: FakeDrawingManager,
+        OverlayType: { POLYGON: "polygon" },
+      };
+      const fakeEvent = { addListener: noop };
+
+      (window as any).google = {
+        maps: {
+          ...mapsLib,
+          drawing: drawingLib,
+          event: fakeEvent,
+          importLibrary: (name: string) => {
+            if (name === "maps") return Promise.resolve(mapsLib);
+            if (name === "drawing") return Promise.resolve(drawingLib);
+            return Promise.resolve({});
+          },
+        },
+      };
+    });
+
+    await page.getByTestId("new-project-btn").click();
+    await expect(page.getByTestId("project-wizard")).toBeVisible();
+
+    // Step 1: Location → Step 2: Boundary
+    await page.getByTestId("wizard-next").click();
+    await expect(page.getByTestId("wizard-step-boundary")).toBeVisible();
+
+    // The map div should render (Google Maps mode with apiKey)
+    const mapContainer = page.getByTestId("wizard-gmaps-container");
+    await expect(mapContainer).toBeVisible({ timeout: 5000 });
+
+    // Collect console errors to verify no "Map is not a constructor"
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+    await page.waitForTimeout(500);
+    const mapConstructorErrors = errors.filter((e) => e.includes("Map is not a constructor"));
+    expect(mapConstructorErrors).toHaveLength(0);
+  });
 });

@@ -51,6 +51,14 @@
 - User is navigated to the design canvas
 - The canvas shows the garden boundary with correct dimensions
 
+### AC-009: Delete project from overview
+- Given I am on the project overview page with at least one project
+- When I click the delete button on a project card
+- Then a confirmation dialog is shown with the project name
+- When I confirm, the project is permanently deleted from the repository
+- Then the card is removed from the overview without a page reload
+- When I cancel the confirmation, the project is not deleted
+
 ## Requirements
 
 - REQ-WIZ-01: Wizard MUST have exactly 5 steps: Location → Boundary → Dimensions → Style → Goals (see [spec 003](../003-google-maps-boundary/spec.md) for Boundary step detail)
@@ -58,6 +66,7 @@
 - REQ-WIZ-03: Project creation MUST call `projectStore.newProject()`
 - REQ-WIZ-04: Wizard MUST be accessible via keyboard (Tab, Enter, Escape)
 - REQ-WIZ-05: Wizard MUST render correctly in all three supported locales (en/nl/fr)
+- REQ-WIZ-06: Delete MUST require explicit user confirmation before calling `repo.deleteProject()`
 
 ## Test IDs (for E2E)
 
@@ -77,6 +86,7 @@
 | Back button | `wizard-back` |
 | Next button | `wizard-next` |
 | Finish button | `wizard-finish` |
+| Delete button (template) | `project-delete-{id}` |
 
 ## Success Metrics
 

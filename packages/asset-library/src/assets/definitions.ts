@@ -100,6 +100,36 @@ function hedgeSvg(): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="6" fill="#43a047" stroke="#1b5e20" stroke-width="0.5"/><circle cx="14" cy="26" r="14" fill="#4caf50"/><circle cx="32" cy="20" r="16" fill="#66bb6a"/><circle cx="50" cy="26" r="14" fill="#4caf50"/><circle cx="20" cy="44" r="14" fill="#4caf50"/><circle cx="44" cy="44" r="14" fill="#66bb6a"/></svg>`;
 }
 
+/** Wadi: sinuous dry-stream channel with pebbles */
+function wadiSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="4" fill="#a5d6a7" stroke="#388e3c" stroke-width="0.5"/><path d="M10,8 C18,20 46,16 54,28 C62,40 34,44 26,56" stroke="#5d4037" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.35"/><path d="M10,8 C18,20 46,16 54,28 C62,40 34,44 26,56" stroke="#8d6e63" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/><circle cx="20" cy="16" r="1.5" fill="#795548" opacity="0.5"/><circle cx="40" cy="22" r="2" fill="#8d6e63" opacity="0.4"/><circle cx="50" cy="34" r="1.5" fill="#795548" opacity="0.5"/><circle cx="34" cy="46" r="2" fill="#8d6e63" opacity="0.4"/></svg>`;
+}
+
+/** Slope: gradient hill side-view */
+function slopeSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="sl" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8bc34a"/><stop offset="100%" stop-color="#558b2f"/></linearGradient></defs><rect x="2" y="2" width="60" height="60" rx="4" fill="url(#sl)" stroke="#33691e" stroke-width="0.5"/><line x1="6" y1="16" x2="58" y2="16" stroke="#33691e" stroke-width="0.3" stroke-opacity="0.3"/><line x1="6" y1="28" x2="58" y2="28" stroke="#33691e" stroke-width="0.3" stroke-opacity="0.3"/><line x1="6" y1="40" x2="58" y2="40" stroke="#33691e" stroke-width="0.3" stroke-opacity="0.3"/><line x1="6" y1="52" x2="58" y2="52" stroke="#33691e" stroke-width="0.3" stroke-opacity="0.3"/><path d="M4,58 L4,32 Q32,20 60,32 L60,58 Z" fill="#689f38" opacity="0.3"/></svg>`;
+}
+
+/** Pond (vijver): organic water body */
+function pondSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="0.5"/><ellipse cx="32" cy="32" rx="26" ry="20" fill="#4fc3f7" stroke="#0277bd" stroke-width="0.5"/><ellipse cx="28" cy="30" rx="18" ry="13" fill="#81d4fa" opacity="0.5"/><circle cx="18" cy="22" r="3" fill="#66bb6a" opacity="0.6"/><circle cx="46" cy="24" r="2.5" fill="#66bb6a" opacity="0.5"/><circle cx="42" cy="42" r="2" fill="#81c784" opacity="0.5"/></svg>`;
+}
+
+/** Raised bed: elevated planting box */
+function raisedBedSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="2" fill="#efebe9" stroke="#795548" stroke-width="0.5"/><rect x="6" y="18" width="52" height="36" rx="2" fill="#a1887f" stroke="#5d4037" stroke-width="0.5"/><rect x="8" y="14" width="48" height="8" rx="1" fill="#8d6e63" stroke="#5d4037" stroke-width="0.3"/><rect x="10" y="22" width="44" height="28" rx="1" fill="#6d4c41" opacity="0.2"/><circle cx="20" cy="34" r="4" fill="#66bb6a" opacity="0.6"/><circle cx="32" cy="30" r="3.5" fill="#81c784" opacity="0.5"/><circle cx="44" cy="34" r="4" fill="#66bb6a" opacity="0.6"/></svg>`;
+}
+
+/** Sunken area: depressed garden zone */
+function sunkenAreaSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="4" fill="#c8e6c9" stroke="#388e3c" stroke-width="0.5"/><rect x="10" y="14" width="44" height="36" rx="6" fill="#a5d6a7" stroke="#2e7d32" stroke-width="0.5" stroke-dasharray="3,2"/><rect x="14" y="18" width="36" height="28" rx="4" fill="#81c784" opacity="0.5"/><line x1="10" y1="14" x2="14" y2="18" stroke="#2e7d32" stroke-width="0.3" opacity="0.4"/><line x1="54" y1="14" x2="50" y2="18" stroke="#2e7d32" stroke-width="0.3" opacity="0.4"/><line x1="10" y1="50" x2="14" y2="46" stroke="#2e7d32" stroke-width="0.3" opacity="0.4"/><line x1="54" y1="50" x2="50" y2="46" stroke="#2e7d32" stroke-width="0.3" opacity="0.4"/></svg>`;
+}
+
+/** Berm: mounded earth ridge */
+function bermSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="4" fill="#dcedc8" stroke="#558b2f" stroke-width="0.5"/><path d="M4,52 Q16,16 32,24 Q48,32 60,10" stroke="#689f38" stroke-width="0.5" fill="none" opacity="0.3"/><path d="M4,52 Q16,22 32,30 Q48,38 60,16 L60,52 Z" fill="#8bc34a" opacity="0.4"/><path d="M4,52 Q16,28 32,36 Q48,44 60,22 L60,52 Z" fill="#689f38" opacity="0.3"/><circle cx="22" cy="38" r="2" fill="#558b2f" opacity="0.3"/><circle cx="38" cy="34" r="2.5" fill="#558b2f" opacity="0.25"/><circle cx="50" cy="30" r="2" fill="#558b2f" opacity="0.3"/></svg>`;
+}
+
 /** Outdoor dining set: round table + 4 chairs */
 function diningSetSvg(): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="2" fill="#fff8e1" stroke="#e65100" stroke-width="0.5"/><circle cx="32" cy="32" r="13" fill="#ffb74d" stroke="#e65100" stroke-width="0.5"/><rect x="28" y="7" width="8" height="7" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/><rect x="28" y="50" width="8" height="7" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/><rect x="7" y="28" width="7" height="8" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/><rect x="50" y="28" width="7" height="8" rx="2" fill="#ff8f00" stroke="#e65100" stroke-width="0.3"/></svg>`;
@@ -807,6 +837,122 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
     },
     thumbnail: bbqSvg(),
     constraints: { snapToGrid: false, allowOverlap: false },
+  },
+
+  // ── Terrain ────────────────────────────────────────────────────────────────
+  {
+    id: "terrain-wadi",
+    type: "terrain",
+    category: "terrain",
+    defaultSize: { width: 8, height: 2 },
+    minSize: { width: 3, height: 1 },
+    maxSize: { width: 30, height: 6 },
+    customSizable: true,
+    resizable: true,
+    rotatable: true,
+    tags: ["terrain", "wadi", "drainage", "water", "dry-stream", "rain-garden"],
+    labels: {
+      en: { name: "Wadi", description: "Dry stream bed for rainwater drainage" },
+      nl: { name: "Wadi", description: "Droge bedding voor regenwaterafvoer" },
+      fr: { name: "Noue", description: "Lit de ruisseau sec pour le drainage des eaux pluviales" },
+    },
+    thumbnail: wadiSvg(),
+    constraints: { snapToGrid: true, allowOverlap: false },
+  },
+  {
+    id: "terrain-slope",
+    type: "terrain",
+    category: "terrain",
+    defaultSize: { width: 6, height: 4 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 30, height: 20 },
+    customSizable: true,
+    resizable: true,
+    rotatable: true,
+    tags: ["terrain", "slope", "hill", "incline", "gradient"],
+    labels: {
+      en: { name: "Slope", description: "Sloped terrain area with gradient" },
+      nl: { name: "Helling", description: "Hellend terrein met hoogteverschil" },
+      fr: { name: "Pente", description: "Zone de terrain en pente avec dénivelé" },
+    },
+    thumbnail: slopeSvg(),
+    constraints: { snapToGrid: true, allowOverlap: false },
+  },
+  {
+    id: "terrain-pond",
+    type: "terrain",
+    category: "terrain",
+    defaultSize: { width: 5, height: 4 },
+    minSize: { width: 2, height: 1.5 },
+    maxSize: { width: 15, height: 12 },
+    customSizable: true,
+    resizable: true,
+    rotatable: true,
+    tags: ["terrain", "pond", "vijver", "water", "natural"],
+    labels: {
+      en: { name: "Pond", description: "Natural garden pond or water feature" },
+      nl: { name: "Vijver", description: "Natuurlijke tuinvijver of waterpartij" },
+      fr: { name: "Étang", description: "Étang de jardin naturel ou pièce d'eau" },
+    },
+    thumbnail: pondSvg(),
+    constraints: { snapToGrid: false, allowOverlap: false },
+  },
+  {
+    id: "terrain-raised-bed",
+    type: "terrain",
+    category: "terrain",
+    defaultSize: { width: 4, height: 2 },
+    minSize: { width: 1, height: 0.5 },
+    maxSize: { width: 12, height: 6 },
+    customSizable: true,
+    resizable: true,
+    rotatable: true,
+    tags: ["terrain", "raised-bed", "planter", "elevated", "vegetable"],
+    labels: {
+      en: { name: "Raised Bed", description: "Elevated planting bed for vegetables or flowers" },
+      nl: { name: "Verhoogd bed", description: "Verhoogde plantenbak voor groenten of bloemen" },
+      fr: { name: "Bac surélevé", description: "Plate-bande surélevée pour légumes ou fleurs" },
+    },
+    thumbnail: raisedBedSvg(),
+    constraints: { snapToGrid: true, allowOverlap: false },
+  },
+  {
+    id: "terrain-sunken-area",
+    type: "terrain",
+    category: "terrain",
+    defaultSize: { width: 6, height: 5 },
+    minSize: { width: 3, height: 3 },
+    maxSize: { width: 20, height: 15 },
+    customSizable: true,
+    resizable: true,
+    rotatable: true,
+    tags: ["terrain", "sunken", "depressed", "lowered", "seating"],
+    labels: {
+      en: { name: "Sunken Area", description: "Depressed garden zone for seating or planting" },
+      nl: { name: "Verzonken zone", description: "Verlaagde tuinzone voor zitplaatsen of beplanting" },
+      fr: { name: "Zone en creux", description: "Zone de jardin en contrebas pour sièges ou plantation" },
+    },
+    thumbnail: sunkenAreaSvg(),
+    constraints: { snapToGrid: true, allowOverlap: false },
+  },
+  {
+    id: "terrain-berm",
+    type: "terrain",
+    category: "terrain",
+    defaultSize: { width: 8, height: 3 },
+    minSize: { width: 3, height: 1.5 },
+    maxSize: { width: 25, height: 8 },
+    customSizable: true,
+    resizable: true,
+    rotatable: true,
+    tags: ["terrain", "berm", "mound", "ridge", "earth", "privacy"],
+    labels: {
+      en: { name: "Berm", description: "Mounded earth ridge for privacy or drainage" },
+      nl: { name: "Berm", description: "Opgeworpen aarden wal voor privacy of afwatering" },
+      fr: { name: "Talus", description: "Butte de terre pour l'intimité ou le drainage" },
+    },
+    thumbnail: bermSvg(),
+    constraints: { snapToGrid: true, allowOverlap: false },
   },
 ];
 

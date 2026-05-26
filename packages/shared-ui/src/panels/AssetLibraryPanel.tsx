@@ -1,22 +1,7 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ASSET_LIBRARY, getAssetCategories, searchAssets } from "@mity-garden/asset-library";
 import type { AssetDefinition } from "@mity-garden/domain";
-
-// ─── Category display names ────────────────────────────────────────────────────
-
-const CATEGORY_LABELS: Record<string, string> = {
-  pool: "Pools",
-  tree: "Trees",
-  plant: "Plants",
-  "terrace-tile": "Terraces",
-  "grass-zone": "Grass & Meadow",
-  playground: "Playground",
-  path: "Paths",
-  building: "Buildings",
-  "fence-wall-border": "Fences & Walls",
-  furniture: "Furniture",
-  custom: "Custom",
-};
 
 // ─── AssetCard ─────────────────────────────────────────────────────────────────
 
@@ -91,6 +76,7 @@ export function AssetLibraryPanel({
   onAssetSelect,
   selectedAssetId = null,
 }: AssetLibraryPanelProps): React.ReactElement {
+  const { t } = useTranslation("common");
   const [query, setQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () => new Set(getAssetCategories().keys()),
@@ -121,6 +107,15 @@ export function AssetLibraryPanel({
   }
 
   const categories = Array.from(byCategory.keys());
+  const allExpanded = categories.length > 0 && categories.every((c) => expandedCategories.has(c));
+
+  function toggleAll(): void {
+    if (allExpanded) {
+      setExpandedCategories(new Set());
+    } else {
+      setExpandedCategories(new Set(categories));
+    }
+  }
 
   return (
     <div
@@ -143,12 +138,31 @@ export function AssetLibraryPanel({
           background: "#f9fbe7",
         }}
       >
-        <div style={{ fontWeight: 700, fontSize: 13, color: "#33691e", marginBottom: 8 }}>
-          🌱 Asset Library
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ fontWeight: 700, fontSize: 13, color: "#33691e" }}>
+            🌱 {t("assetLibrary.title")}
+          </div>
+          <button
+            onClick={toggleAll}
+            data-testid="asset-library-toggle-all"
+            title={allExpanded ? "Collapse all categories" : "Expand all categories"}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 11,
+              color: "#558b2f",
+              padding: "2px 4px",
+              borderRadius: 4,
+              lineHeight: 1,
+            }}
+          >
+            {allExpanded ? "−All" : "+All"}
+          </button>
         </div>
         <input
           type="search"
-          placeholder="Search assets…"
+          placeholder={t("assetLibrary.search")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           data-testid="asset-search-input"
@@ -174,7 +188,7 @@ export function AssetLibraryPanel({
           categories.map((cat) => {
             const assets = byCategory.get(cat) ?? [];
             const expanded = expandedCategories.has(cat);
-            const label = CATEGORY_LABELS[cat] ?? cat;
+            const label = t(`assetLibrary.categories.${cat}`, { defaultValue: cat });
 
             return (
               <div key={cat} data-testid={`asset-category-${cat}`}>

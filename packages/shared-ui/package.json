@@ -18,6 +18,7 @@
     "@mity-garden/domain": "workspace:*",
     "@mity-garden/i18n": "workspace:*",
     "@mity-garden/asset-library": "workspace:*",
+    "@mity-garden/canvas-engine": "workspace:*",
     "@mity-garden/maps": "workspace:*",
     "@mity-garden/llm": "workspace:*",
     "react-i18next": "^15.0.0",

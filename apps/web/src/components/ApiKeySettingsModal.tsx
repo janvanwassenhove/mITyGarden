@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getApiKeys, getEnvApiKeys, saveApiKeys } from "../apiKeys.js";
+import { getApiKeys, getEnvApiKeys, saveApiKeys, getGoogleMapsApiKey, saveGoogleMapsApiKey } from "../apiKeys.js";
 
 export interface ApiKeySettingsModalProps {
   onSaved: () => void;
@@ -12,10 +12,16 @@ export function ApiKeySettingsModal({ onSaved, onClose }: ApiKeySettingsModalPro
   const [openai, setOpenai] = useState(initial.openai);
   const [anthropic, setAnthropic] = useState(initial.anthropic);
   const [gemini, setGemini] = useState(initial.gemini);
+  const envGoogleMaps = import.meta.env.GOOGLE_MAPS_API_KEY;
+  const hasEnvGoogleMaps = Boolean(envGoogleMaps && envGoogleMaps.length > 0);
+  const [googleMaps, setGoogleMaps] = useState(
+    hasEnvGoogleMaps ? "" : (localStorage.getItem("mitygarden_google_maps_key") ?? ""),
+  );
 
   // Only save the keys that are not overridden by env vars
   function handleSave(): void {
     saveApiKeys({ openai, anthropic, gemini });
+    if (!hasEnvGoogleMaps) saveGoogleMapsApiKey(googleMaps);
     onSaved();
   }
 
@@ -101,6 +107,15 @@ export function ApiKeySettingsModal({ onSaved, onClose }: ApiKeySettingsModalPro
           onChange={setGemini}
           testId="api-key-gemini"
           {...(envKeys.gemini !== undefined ? { fromEnv: true, envValue: envKeys.gemini } : {})}
+        />
+        <KeyField
+          label="Google Maps API key"
+          hint="Enables the Google Maps satellite view in the project wizard boundary step"
+          placeholder="AIza..."
+          value={googleMaps}
+          onChange={setGoogleMaps}
+          testId="api-key-google-maps"
+          {...(hasEnvGoogleMaps ? { fromEnv: true, envValue: envGoogleMaps } : {})}
         />
 
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>

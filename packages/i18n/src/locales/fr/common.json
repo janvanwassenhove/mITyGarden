@@ -10,7 +10,8 @@
     "saveProjectAs": "Enregistrer sous...",
     "exportProject": "Exporter",
     "settings": "Paramètres",
-    "help": "Aide"
+    "help": "Aide",
+    "editProjectName": "Modifier le nom du projet"
   },
   "wizard": {
     "title": "Nouveau projet de jardin",
@@ -131,6 +132,11 @@
     "placement": {
       "hint": "Cliquez sur le canvas pour placer un élément",
       "cancel": "Annuler"
+    },
+    "mapLayer": {
+      "label": "Calque carte",
+      "toggle": "Afficher/masquer le fond de carte satellite",
+      "noImage": "Aucune image de carte — tracez une limite dans l'assistant pour l'activer"
     }
   },
   "layers": {
@@ -170,6 +176,7 @@
       "building": "Bâtiments & Structures",
       "fence-wall-border": "Clôtures, murs & bordures",
       "furniture": "Mobilier de jardin",
+      "terrain": "Terrain",
       "custom": "Éléments personnalisés"
     },
     "customSize": "Taille personnalisée",
@@ -190,7 +197,9 @@
     "saved": "Projet enregistré",
     "saving": "Enregistrement...",
     "unsavedChanges": "Vous avez des modifications non enregistrées",
-    "confirmClose": "Fermer sans enregistrer ?"
+    "confirmClose": "Fermer sans enregistrer ?",
+    "deleteGarden": "Supprimer",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Cette action est irréversible."
   },
   "llm": {
     "title": "Assistant IA",
@@ -210,7 +219,71 @@
     "regenerate": "Régénérer",
     "configureKeys": "Configurer les clés API",
     "notConfigured": "Aucun fournisseur LLM configuré. Entrez une clé API pour activer les suggestions IA.",
-    "imageNotConfigured": "Aucun fournisseur d'images configuré. Entrez une clé API OpenAI ou Gemini pour activer la génération d'images."
+    "imageNotConfigured": "Aucun fournisseur d'images configuré. Entrez une clé API OpenAI ou Gemini pour activer la génération d'images.",
+    "aiRender": {
+      "steps": {
+        "view": "Vue",
+        "camera": "Caméra",
+        "enhancements": "Détails",
+        "generate": "Générer"
+      },
+      "viewMode": "Mode de vue",
+      "viewModes": {
+        "oblique_drone": "Drone",
+        "eye_level": "Hauteur des yeux",
+        "top_down": "Vue du dessus",
+        "cinematic": "Cinématique"
+      },
+      "realism": "Réalisme",
+      "realismOptions": {
+        "photorealistic": "Photoréaliste",
+        "architectural": "Visualisation architecturale",
+        "concept": "Rendu conceptuel"
+      },
+      "strictness": "Fidélité à la disposition",
+      "strictnessOptions": {
+        "creative": "Créatif — disposition libre",
+        "balanced": "Équilibré — respecter les éléments principaux",
+        "strict": "Strict — garder les positions",
+        "veryStrict": "Très strict — disposition exacte"
+      },
+      "cameraHeight": "Hauteur de la caméra",
+      "cameraAngle": "Angle de la caméra",
+      "direction": "Direction",
+      "lens": "Objectif",
+      "lensOptions": {
+        "wide": "Grand angle (16–24mm)",
+        "natural": "Naturel (28–35mm)",
+        "telephoto": "Téléobjectif (70–100mm)"
+      },
+      "timeOfDay": "Moment de la journée",
+      "timeOptions": {
+        "morning": "Matin",
+        "afternoon": "Après-midi d'été",
+        "goldenHour": "Heure dorée",
+        "overcast": "Couvert"
+      },
+      "season": "Saison",
+      "seasonOptions": {
+        "spring": "Printemps",
+        "summer": "Été",
+        "autumn": "Automne",
+        "winter": "Hiver"
+      },
+      "enhancements": {
+        "realisticGrass": "Pelouse réaliste",
+        "realisticShadows": "Ombres réalistes",
+        "realisticPlanting": "Plantations réalistes",
+        "stoneTerraceAroundPool": "Terrasse en pierre autour de la piscine",
+        "addPeople": "Ajouter des personnes",
+        "addFurniture": "Ajouter du mobilier de jardin",
+        "addExtraTrees": "Ajouter des arbres supplémentaires"
+      },
+      "imageProvider": "Fournisseur d'images",
+      "generate": "Générer un rendu IA",
+      "previewReference": "Aperçu du plan de référence",
+      "referenceHint": "Ce plan simplifié est envoyé à l'IA comme référence spatiale."
+    }
   },
   "export": {
     "title": "Exporter",
@@ -219,6 +292,33 @@
     "asJSON": "Exporter le fichier projet",
     "proposal": "Générer une proposition"
   },
+  "settings": {
+    "language": {
+      "title": "Langue",
+      "label": "Langue de l'interface — les changements s'appliquent immédiatement"
+    },
+    "llm": {
+      "title": "Intégration LLM / IA",
+      "description": "Clés API pour les suggestions de conception de jardin alimentées par l'IA.",
+      "openaiHint": "Suggestions de disposition (GPT-4o-mini) et génération d'images (GPT Image 1)",
+      "anthropicHint": "Suggestions de disposition (Claude 3 Haiku) — utilisé si aucune clé OpenAI n'est définie",
+      "geminiHint": "Génération d'images (Imagen 3) — utilisé si aucune clé OpenAI n'est définie"
+    },
+    "image": {
+      "title": "Génération d'images",
+      "description": "Les visualisations de jardin générées par IA utilisent les mêmes clés API que l'intégration LLM.",
+      "note": "🖼 GPT Image 1 (clé OpenAI) et Imagen 3 (clé Gemini) sont tous deux pris en charge. Configurez les clés dans la section LLM ci-dessus."
+    },
+    "maps": {
+      "title": "Google Maps",
+      "description": "Active la vue satellite Google Maps dans l'étape de délimitation de l'assistant de projet.",
+      "hint": "Optionnel — des images satellite gratuites sont utilisées si aucune clé n'est fournie"
+    },
+    "apiKey": {
+      "envNote": "Certaines clés sont fournies via des variables d'environnement et sont actives. Elles sont affichées en lecture seule ci-dessous.",
+      "savedNote": "Les clés sont stockées dans le stockage local de votre navigateur. Les variables d'environnement ont la priorité et ne peuvent pas être remplacées ici."
+    }
+  },
   "common": {
     "ok": "OK",
     "cancel": "Annuler",
@@ -226,6 +326,8 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "close": "Fermer",
+    "next": "Suivant",
+    "back": "Retour",
     "loading": "Chargement...",
     "error": "Une erreur s'est produite",
     "retry": "Réessayer"

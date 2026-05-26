@@ -1,5 +1,5 @@
 import { createStore } from "zustand/vanilla";
-import type { Locale, WizardState, UnitSystem, GardenStyle, GardenGoal, Polygon, GeoCoordinates, Position } from "../models/types.js";
+import type { Locale, WizardState, UnitSystem, GardenStyle, GardenGoal, Polygon, GeoCoordinates, Position, MapBoundingBox } from "../models/types.js";
 import { WIZARD_TOTAL_STEPS } from "../models/types.js";
 
 // ─── UI Store ─────────────────────────────────────────────────────────────────
@@ -12,6 +12,7 @@ export interface UiState {
   layersPanelOpen: boolean;
   assetLibraryOpen: boolean;
   wizardOpen: boolean;
+  settingsOpen: boolean;
   wizard: WizardState;
 }
 
@@ -24,6 +25,8 @@ export interface UiActions {
   toggleAssetLibrary: () => void;
   openWizard: () => void;
   closeWizard: () => void;
+  openSettings: () => void;
+  closeSettings: () => void;
 
   // Wizard step actions
   wizardSetStep: (step: number) => void;
@@ -37,6 +40,8 @@ export interface UiActions {
   wizardSetMapCoordinates: (coords: GeoCoordinates) => void;
   wizardSetMapBoundary: (boundary: Polygon) => void;
   wizardSetBoundaryVertices: (vertices: Position[]) => void;
+  wizardSetMapImageUrl: (url: string) => void;
+  wizardSetMapBoundingBox: (bbox: MapBoundingBox | undefined) => void;
   wizardAddStructure: (polygon: Polygon) => void;
   wizardReset: () => void;
 }
@@ -60,6 +65,7 @@ export const uiStore = createStore<UiStore>()((set, get) => ({
   layersPanelOpen: true,
   assetLibraryOpen: true,
   wizardOpen: false,
+  settingsOpen: false,
   wizard: defaultWizard,
 
   setLocale: (locale) => set({ locale }),
@@ -70,6 +76,8 @@ export const uiStore = createStore<UiStore>()((set, get) => ({
   toggleAssetLibrary: () => set((s) => ({ assetLibraryOpen: !s.assetLibraryOpen })),
   openWizard: () => set({ wizardOpen: true }),
   closeWizard: () => set({ wizardOpen: false }),
+  openSettings: () => set({ settingsOpen: true }),
+  closeSettings: () => set({ settingsOpen: false }),
 
   wizardSetStep: (step) => {
     const clamped = Math.max(1, Math.min(WIZARD_TOTAL_STEPS, step));
@@ -114,6 +122,18 @@ export const uiStore = createStore<UiStore>()((set, get) => ({
   },
   wizardSetBoundaryVertices: (vertices) => {
     set((s) => ({ wizard: { ...s.wizard, boundaryVertices: vertices } }));
+  },
+  wizardSetMapImageUrl: (url) => {
+    set((s) => ({ wizard: { ...s.wizard, mapImageUrl: url } }));
+  },
+  wizardSetMapBoundingBox: (bbox) => {
+    set((s) => {
+      if (bbox === undefined) {
+        const { mapBoundingBox: _removed, ...wizardRest } = s.wizard;
+        return { wizard: wizardRest };
+      }
+      return { wizard: { ...s.wizard, mapBoundingBox: bbox } };
+    });
   },
   wizardAddStructure: (polygon) => {
     set((s) => ({

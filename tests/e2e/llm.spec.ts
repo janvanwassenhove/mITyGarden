@@ -59,10 +59,11 @@ test.describe("AI Suggestions Panel", () => {
   test("Visualize tab shows image generation UI", async ({ page }) => {
     await page.getByTestId("toolbar-ai-panel").click();
     await page.getByRole("button", { name: "Visualize" }).click();
-    // Button is always visible; enabled/disabled depends on API key availability
-    await expect(page.getByTestId("llm-generate-image-btn")).toBeVisible();
-    // View type buttons present
-    await expect(page.getByRole("button", { name: /aerial/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /perspective/i })).toBeVisible();
+    // The AIRenderPanel is always rendered in the Visualize tab
+    await expect(page.getByTestId("ai-render-panel")).toBeVisible();
+    // Navigate to the generate step using the step nav buttons
+    await page.getByRole("button", { name: /generate/i }).click();
+    // Generate button is visible on the generate step
+    await expect(page.getByTestId("ai-render-generate-btn")).toBeVisible();
   });
 });

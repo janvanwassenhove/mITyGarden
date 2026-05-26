@@ -8,6 +8,7 @@ import { AppShell } from "./layouts/AppShell.js";
 import { ProjectWizard } from "@mity-garden/shared-ui";
 import { useUiStore } from "@mity-garden/shared-ui";
 import { getMapsAdapter } from "./maps.js";
+import { getGoogleMapsApiKey } from "./apiKeys.js";
 
 function LocaleSync(): null {
   const locale = useUiStore((s) => s.locale);
@@ -28,7 +29,7 @@ function WizardController(): React.ReactElement | null {
   return (
     <ProjectWizard
       mapsAdapter={getMapsAdapter()}
-      {...(import.meta.env.GOOGLE_MAPS_API_KEY ? { googleMapsApiKey: import.meta.env.GOOGLE_MAPS_API_KEY } : {})}
+      {...(getGoogleMapsApiKey() ? { googleMapsApiKey: getGoogleMapsApiKey() } : {})}
       onComplete={() => {
         closeWizard();
         void navigate("/design");

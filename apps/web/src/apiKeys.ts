@@ -3,6 +3,7 @@
 const LS_OPENAI = "mitygarden_openai_key";
 const LS_ANTHROPIC = "mitygarden_anthropic_key";
 const LS_GEMINI = "mitygarden_gemini_key";
+const LS_GOOGLE_MAPS = "mitygarden_google_maps_key";
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -25,6 +26,22 @@ export function saveApiKeys(keys: ApiKeys): void {
   setOrRemove(LS_OPENAI, keys.openai);
   setOrRemove(LS_ANTHROPIC, keys.anthropic);
   setOrRemove(LS_GEMINI, keys.gemini);
+}
+
+// ─── Google Maps key ──────────────────────────────────────────────────────────
+
+/**
+ * Returns the effective Google Maps API key.
+ * Priority: env variable (build-time) → localStorage (user-entered).
+ */
+export function getGoogleMapsApiKey(): string {
+  const envKey = import.meta.env.GOOGLE_MAPS_API_KEY;
+  if (envKey && envKey.length > 0) return envKey;
+  return localStorage.getItem(LS_GOOGLE_MAPS) ?? "";
+}
+
+export function saveGoogleMapsApiKey(key: string): void {
+  setOrRemove(LS_GOOGLE_MAPS, key);
 }
 
 /**

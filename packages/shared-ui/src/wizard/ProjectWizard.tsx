@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../hooks/useUiStore.js";
 import { useProjectStore } from "../hooks/useProjectStore.js";
-import type { GardenStyle, GardenGoal, UnitSystem, GeoCoordinates, MapData } from "@mity-garden/domain";
+import type { GardenStyle, GardenGoal, UnitSystem, GeoCoordinates, MapData, MapBoundingBox } from "@mity-garden/domain";
 import { GARDEN_STYLES, GARDEN_GOALS, WIZARD_TOTAL_STEPS } from "@mity-garden/domain";
 import type { MapsAdapter, PlaceSearchResult } from "@mity-garden/maps";
 import { NoOpMapsAdapter } from "@mity-garden/maps";
@@ -15,24 +15,6 @@ interface GmMvcArray<T> { getArray(): T[]; }
 interface GmPolygon { getPath(): GmMvcArray<GmLatLng>; setMap(map: GmMap | null): void; }
 interface GmMap { fitBounds(bounds: GmLatLngBounds): void; }
 interface GmDrawingManager { setMap(map: GmMap | null): void; setDrawingMode(mode: string | null): void; }
-
-declare global {
-  interface Window {
-    google?: {
-      maps: {
-        Map: new (el: HTMLElement, opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }) => GmMap;
-        Polygon: new (opts: { paths?: { lat: number; lng: number }[]; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean }) => GmPolygon;
-        LatLngBounds: new () => GmLatLngBounds;
-        event: { addListener(target: GmDrawingManager, event: "polygoncomplete", handler: (polygon: GmPolygon) => void): unknown };
-        drawing: {
-          DrawingManager: new (opts: { drawingMode?: string; drawingControl?: boolean; drawingControlOptions?: { position: number; drawingModes: string[] }; polygonOptions?: { fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean } }) => GmDrawingManager;
-          OverlayType: { POLYGON: string };
-        };
-        ControlPosition: { TOP_CENTER: number };
-      };
-    };
-  }
-}
 
 // ─── Maps adapter context (consumed by StepLocation) ─────────────────────────
 
@@ -88,21 +70,90 @@ function geoToMeterVertices(vertices: GeoCoordinates[]): Array<{ x: number; y: n
 
 function loadGoogleMapsScript(apiKey: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (window.google?.maps?.drawing) { resolve(); return; }
-    const existing = document.getElementById("gmaps-js") as HTMLScriptElement | null;
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("Google Maps script failed")));
+    // Already bootstrapped
+    if (window.google?.maps) { resolve(); return; }
+
+    // Script tag already injected — poll until google.maps appears
+    if (document.getElementById("gmaps-js")) {
+      const poll = (): void => {
+        if (window.google?.maps) { resolve(); return; }
+        setTimeout(poll, 50);
+      };
+      poll();
       return;
     }
+
+    // Use a named callback so the Maps bootstrap signals readiness.
+    const cb = "__gmapsReady_" + Date.now().toString(36);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any)[cb] = (): void => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any)[cb];
+      resolve();
+    };
+
     const script = document.createElement("script");
     script.id = "gmaps-js";
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=drawing&loading=async`;
+    // Do NOT include `libraries=` here — libraries are loaded dynamically
+    // via `importLibrary()` which is the only reliable way to get real
+    // constructors (Map, Polygon, DrawingManager) since Maps JS API v3.56+.
+    script.src =
+      `https://maps.googleapis.com/maps/api/js` +
+      `?key=${encodeURIComponent(apiKey)}&callback=${cb}`;
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Google Maps API"));
+    script.onerror = (): void => reject(new Error("Failed to load Google Maps API"));
     document.head.appendChild(script);
   });
+}
+
+interface GoogleMapsLibraries {
+  Map: GmMapConstructor;
+  Polygon: GmPolygonConstructor;
+  LatLngBounds: GmLatLngBoundsConstructor;
+  DrawingManager: GmDrawingManagerConstructor;
+  OverlayType: { POLYGON: string };
+  ControlPosition: { TOP_CENTER: number };
+  event: { addListener(target: GmDrawingManager, event: "polygoncomplete", handler: (polygon: GmPolygon) => void): unknown };
+}
+
+/**
+ * Dynamically import Maps + Drawing libraries and return real constructors.
+ * Works with all API versions (v3.56+ dynamic and legacy).
+ */
+async function loadGoogleMapsLibraries(): Promise<GoogleMapsLibraries> {
+  const gm = window.google!.maps;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const importLib = (gm as any).importLibrary as ((name: string) => Promise<Record<string, unknown>>) | undefined;
+
+  if (typeof importLib === "function") {
+    // Modern API (v3.56+): ControlPosition, LatLngBounds and event live in
+    // "core"; Map/Polygon in "maps"; DrawingManager/OverlayType in "drawing".
+    const [coreLib, mapsLib, drawingLib] = await Promise.all([
+      importLib.call(gm, "core"),
+      importLib.call(gm, "maps"),
+      importLib.call(gm, "drawing"),
+    ]);
+    return {
+      Map: mapsLib["Map"] as GmMapConstructor,
+      Polygon: mapsLib["Polygon"] as unknown as GmPolygonConstructor,
+      LatLngBounds: coreLib["LatLngBounds"] as unknown as GmLatLngBoundsConstructor,
+      DrawingManager: drawingLib["DrawingManager"] as GmDrawingManagerConstructor,
+      OverlayType: drawingLib["OverlayType"] as { POLYGON: string },
+      ControlPosition: coreLib["ControlPosition"] as { TOP_CENTER: number },
+      event: coreLib["event"] as GoogleMapsLibraries["event"],
+    };
+  }
+
+  // Legacy fallback (v ≤ 3.55)
+  return {
+    Map: gm.Map,
+    Polygon: gm.Polygon,
+    LatLngBounds: gm.LatLngBounds,
+    DrawingManager: gm.drawing.DrawingManager,
+    OverlayType: gm.drawing.OverlayType,
+    ControlPosition: gm.ControlPosition,
+    event: gm.event,
+  };
 }
 
 // ─── Leaflet minimal type declarations ────────────────────────────────────────
@@ -124,16 +175,23 @@ interface LeafletStatic {
   polygon(latlngs: [number, number][], opts?: object): LPolygon;
 }
 
+// ─── Google Maps type helpers ─────────────────────────────────────────────────
+
+type GmMapConstructor = new (el: HTMLElement, opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }) => GmMap;
+type GmPolygonConstructor = new (opts: { paths?: { lat: number; lng: number }[]; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean }) => GmPolygon;
+type GmLatLngBoundsConstructor = new () => GmLatLngBounds;
+type GmDrawingManagerConstructor = new (opts: { drawingMode?: string | null; drawingControl?: boolean; drawingControlOptions?: { position: number; drawingModes: string[] }; polygonOptions?: { fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean } }) => GmDrawingManager;
+
 declare global {
   interface Window {
     google?: {
       maps: {
-        Map: new (el: HTMLElement, opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }) => GmMap;
-        Polygon: new (opts: { paths?: { lat: number; lng: number }[]; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean }) => GmPolygon;
-        LatLngBounds: new () => GmLatLngBounds;
+        Map: GmMapConstructor;
+        Polygon: GmPolygonConstructor;
+        LatLngBounds: GmLatLngBoundsConstructor;
         event: { addListener(target: GmDrawingManager, event: "polygoncomplete", handler: (polygon: GmPolygon) => void): unknown };
         drawing: {
-          DrawingManager: new (opts: { drawingMode?: string; drawingControl?: boolean; drawingControlOptions?: { position: number; drawingModes: string[] }; polygonOptions?: { fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean } }) => GmDrawingManager;
+          DrawingManager: GmDrawingManagerConstructor;
           OverlayType: { POLYGON: string };
         };
         ControlPosition: { TOP_CENTER: number };
@@ -181,7 +239,7 @@ function LeafletBoundaryEditor({
 }: {
   center?: GeoCoordinates;
   initialBoundary?: GeoCoordinates[];
-  onBoundaryComplete: (verts: GeoCoordinates[], width: number, height: number, areaM2: number) => void;
+  onBoundaryComplete: (verts: GeoCoordinates[], width: number, height: number, areaM2: number, bbox: MapBoundingBox) => void;
   onClear: () => void;
 }): React.ReactElement {
   const mapDivRef = React.useRef<HTMLDivElement>(null);
@@ -261,11 +319,18 @@ function LeafletBoundaryEditor({
     polygonRef.current = L.polygon(latlngs, { color: "#388e3c", fillColor: "#4caf50", fillOpacity: 0.25, weight: 2 }).addTo(map);
     setClosed(true);
     const { width, height, areaM2 } = computeBoundingBox(vertsRef.current);
+    // Build an ESRI World Imagery static export URL covering the boundary bounding box
+    const lats = vertsRef.current.map((v) => v.lat);
+    const lngs = vertsRef.current.map((v) => v.lng);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const bbox: MapBoundingBox = { minLat, maxLat, minLng, maxLng };
     onBoundaryComplete(
       vertsRef.current,
       Math.max(1, Math.round(width * 10) / 10),
       Math.max(1, Math.round(height * 10) / 10),
       Math.round(areaM2),
+      bbox,
     );
   }
 
@@ -436,6 +501,8 @@ function StepBoundary(): React.ReactElement {
   const setDimensions = useUiStore((s) => s.wizardSetDimensions);
   const setBoundary = useUiStore((s) => s.wizardSetMapBoundary);
   const setBoundaryVerts = useUiStore((s) => s.wizardSetBoundaryVertices);
+  const setMapImageUrl = useUiStore((s) => s.wizardSetMapImageUrl);
+  const setMapBoundingBox = useUiStore((s) => s.wizardSetMapBoundingBox);
   const { t } = useTranslation("common");
 
   const mapDivRef = React.useRef<HTMLDivElement>(null);
@@ -460,47 +527,62 @@ function StepBoundary(): React.ReactElement {
 
   React.useEffect(() => {
     if (mode !== "map" || !mapsLoaded || !mapDivRef.current) return;
-    const gm = window.google!.maps;
-    const center = coordinates ?? { lat: 51.26, lng: 4.40 };
-    const map = new gm.Map(mapDivRef.current, {
-      center,
-      zoom: coordinates ? 18 : 13,
-      mapTypeId: "satellite",
-    });
-    const dm = new gm.drawing.DrawingManager({
-      drawingMode: gm.drawing.OverlayType.POLYGON,
-      drawingControl: true,
-      drawingControlOptions: {
-        position: gm.ControlPosition.TOP_CENTER,
-        drawingModes: [gm.drawing.OverlayType.POLYGON],
-      },
-      polygonOptions: {
-        fillColor: "#4caf50",
-        fillOpacity: 0.25,
-        strokeColor: "#388e3c",
-        strokeWeight: 2,
-        editable: true,
-      },
-    });
-    dm.setMap(map);
-    if (boundary && boundary.length > 2) {
-      const paths = boundary.map((p) => ({ lat: p.lat, lng: p.lng }));
-      const poly = new gm.Polygon({ paths, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
-      poly.setMap(map);
-      dm.setDrawingMode(null);
-      const bounds = new gm.LatLngBounds();
-      paths.forEach((p) => bounds.extend(p));
-      map.fitBounds(bounds);
-    }
-    gm.event.addListener(dm, "polygoncomplete", (polygon) => {
-      dm.setDrawingMode(null);
-      const verts = polygon.getPath().getArray().map((ll) => ({ lat: ll.lat(), lng: ll.lng() }));
-      setBoundary(verts);
-      setBoundaryVerts(geoToMeterVertices(verts));
-      const { width, height, areaM2 } = computeBoundingBox(verts);
-      setDimensions(Math.max(1, Math.round(width * 10) / 10), Math.max(1, Math.round(height * 10) / 10));
-      setArea(Math.round(areaM2));
-    });
+    let cancelled = false;
+
+    void (async () => {
+      const libs = await loadGoogleMapsLibraries();
+      if (cancelled || !mapDivRef.current) return;
+
+      const center = coordinates ?? { lat: 51.26, lng: 4.40 };
+      const map = new libs.Map(mapDivRef.current, {
+        center,
+        zoom: coordinates ? 18 : 13,
+        mapTypeId: "satellite",
+      });
+      const dm = new libs.DrawingManager({
+        drawingMode: libs.OverlayType.POLYGON,
+        drawingControl: true,
+        drawingControlOptions: {
+          position: libs.ControlPosition.TOP_CENTER,
+          drawingModes: [libs.OverlayType.POLYGON],
+        },
+        polygonOptions: {
+          fillColor: "#4caf50",
+          fillOpacity: 0.25,
+          strokeColor: "#388e3c",
+          strokeWeight: 2,
+          editable: true,
+        },
+      });
+      dm.setMap(map);
+      if (boundary && boundary.length > 2) {
+        const paths = boundary.map((p) => ({ lat: p.lat, lng: p.lng }));
+        const poly = new libs.Polygon({ paths, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
+        poly.setMap(map);
+        dm.setDrawingMode(null);
+        const bounds = new libs.LatLngBounds();
+        paths.forEach((p) => bounds.extend(p));
+        map.fitBounds(bounds);
+      }
+      libs.event.addListener(dm, "polygoncomplete", (polygon) => {
+        dm.setDrawingMode(null);
+        const verts = polygon.getPath().getArray().map((ll) => ({ lat: ll.lat(), lng: ll.lng() }));
+        setBoundary(verts);
+        setBoundaryVerts(geoToMeterVertices(verts));
+        const { width, height, areaM2 } = computeBoundingBox(verts);
+        setDimensions(Math.max(1, Math.round(width * 10) / 10), Math.max(1, Math.round(height * 10) / 10));
+        setArea(Math.round(areaM2));
+        const lats = verts.map((v) => v.lat);
+        const lngs = verts.map((v) => v.lng);
+        const bbox: MapBoundingBox = {
+          minLat: Math.min(...lats), maxLat: Math.max(...lats),
+          minLng: Math.min(...lngs), maxLng: Math.max(...lngs),
+        };
+        setMapBoundingBox(bbox);
+      });
+    })();
+
+    return () => { cancelled = true; };
   }, [mapsLoaded, mode]);
 
   const hasBoundary = (boundary?.length ?? 0) > 2;
@@ -508,6 +590,7 @@ function StepBoundary(): React.ReactElement {
   function handleClearGmaps(): void {
     setBoundary([]);
     setBoundaryVerts([]);
+    setMapBoundingBox(undefined);
     setArea(null);
     setMapsLoaded(false);
     setTimeout(() => setMapsLoaded(true), 20);
@@ -555,7 +638,7 @@ function StepBoundary(): React.ReactElement {
                   {t("wizard.steps.boundary.loadingGoogleMaps")}
                 </div>
               )}
-              <div ref={mapDivRef} style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
+              <div ref={mapDivRef} data-testid="wizard-gmaps-container" style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
               {hasBoundary && area !== null && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
                   <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}</span>
@@ -570,13 +653,14 @@ function StepBoundary(): React.ReactElement {
               <LeafletBoundaryEditor
                 {...(coordinates ? { center: coordinates } : {})}
                 {...(boundary && boundary.length > 0 ? { initialBoundary: boundary } : {})}
-                onBoundaryComplete={(verts, width, height, areaM2) => {
+                onBoundaryComplete={(verts, width, height, areaM2, bbox) => {
                   setBoundary(verts);
                   setBoundaryVerts(geoToMeterVertices(verts));
                   setDimensions(width, height);
                   setArea(areaM2);
+                  setMapBoundingBox(bbox);
                 }}
-                onClear={() => { setBoundary([]); setBoundaryVerts([]); setArea(null); }}
+                onClear={() => { setBoundary([]); setBoundaryVerts([]); setMapBoundingBox(undefined); setArea(null); }}
               />
               {hasBoundary && area !== null && (
                 <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
@@ -599,12 +683,13 @@ function StepBoundary(): React.ReactElement {
             Upload any aerial photo, map screenshot, or garden plan. Trace the outline by clicking, then enter one known measurement to set the scale.
           </p>
           <ImageTraceBoundaryEditor
-            onBoundaryComplete={(widthM, heightM, areaM2, vertices) => {
+            onBoundaryComplete={(widthM, heightM, areaM2, vertices, mapImageUrl) => {
               setDimensions(widthM, heightM);
               setBoundaryVerts(vertices);
               setArea(areaM2);
+              if (mapImageUrl) setMapImageUrl(mapImageUrl);
             }}
-            onClear={() => { setDimensions(10, 10); setBoundaryVerts([]); setArea(null); }}
+            onClear={() => { setDimensions(10, 10); setBoundaryVerts([]); setMapImageUrl(""); setArea(null); }}
           />
           {area !== null && (
             <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
@@ -626,7 +711,7 @@ function ImageTraceBoundaryEditor({
   onBoundaryComplete,
   onClear,
 }: {
-  onBoundaryComplete: (widthM: number, heightM: number, areaM2: number, vertices: Array<{ x: number; y: number }>) => void;
+  onBoundaryComplete: (widthM: number, heightM: number, areaM2: number, vertices: Array<{ x: number; y: number }>, mapImageUrl: string) => void;
   onClear: () => void;
 }): React.ReactElement {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -783,12 +868,36 @@ function ImageTraceBoundaryEditor({
     const ys = verts.map((v) => v.y);
     const minX = Math.min(...xs);
     const minY = Math.min(...ys);
+    const maxX = Math.max(...xs);
+    const maxY = Math.max(...ys);
     const meterVerts = verts.map((v) => ({
       x: Math.round((v.x - minX) * mPerPx * 100) / 100,
       y: Math.round((v.y - minY) * mPerPx * 100) / 100,
     }));
+    // Crop the uploaded image to the boundary bounding box
+    let mapImageUrl = "";
+    const imgEl = imgRef.current;
+    if (imgEl) {
+      const scaleToNatural = imgEl.naturalWidth / canvasSize.w;
+      const cropX = Math.round(minX * scaleToNatural);
+      const cropY = Math.round(minY * scaleToNatural);
+      const cropW = Math.round((maxX - minX) * scaleToNatural);
+      const cropH = Math.round((maxY - minY) * scaleToNatural);
+      const outW = Math.min(640, cropW);
+      const outH = cropW > 0 ? Math.round(cropH * (outW / cropW)) : 0;
+      if (outW > 0 && outH > 0) {
+        const tmpCanvas = document.createElement("canvas");
+        tmpCanvas.width = outW;
+        tmpCanvas.height = outH;
+        const tmpCtx = tmpCanvas.getContext("2d");
+        if (tmpCtx) {
+          tmpCtx.drawImage(imgEl, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
+          mapImageUrl = tmpCanvas.toDataURL("image/jpeg", 0.75);
+        }
+      }
+    }
     setCalculated(true);
-    onBoundaryComplete(Math.max(0.1, Math.round(widthM * 10) / 10), heightM, areaM2, meterVerts);
+    onBoundaryComplete(Math.max(0.1, Math.round(widthM * 10) / 10), heightM, areaM2, meterVerts, mapImageUrl);
   }
 
   // ── redraw when canvas size changes (image loaded) ────────────────────────
@@ -1196,6 +1305,8 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApi
       ...(wizard.boundaryVertices && wizard.boundaryVertices.length >= 3
         ? { boundaryVertices: wizard.boundaryVertices }
         : {}),
+      ...(wizard.mapBoundingBox ? { mapBoundingBox: wizard.mapBoundingBox } : {}),
+      ...(wizard.mapImageUrl ? { mapImageUrl: wizard.mapImageUrl } : {}),
     });
     wizardReset();
     onComplete();

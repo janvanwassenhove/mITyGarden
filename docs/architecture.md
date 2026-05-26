@@ -12,10 +12,10 @@ mITyGarden/
 │   ├── domain/                # Core types, stores, business logic
 │   ├── i18n/                  # Internationalization (en/nl/fr)
 │   ├── canvas-engine/         # Konva-based 2D canvas component
-│   ├── asset-library/         # 30+ garden asset definitions
+│   ├── asset-library/         # 60+ garden asset definitions
 │   ├── persistence/           # Repository interfaces + IndexedDB adapter
 │   ├── maps/                  # Modular maps adapter interface
-│   ├── llm/                   # Multi-LLM provider abstraction
+│   ├── llm/                   # Multi-LLM provider abstraction + AI render pipeline
 │   └── shared-ui/             # Shared React components (wizard, hooks)
 ├── apps/
 │   ├── web/                   # Vite + React SPA
@@ -34,8 +34,8 @@ asset-library    ← domain
 canvas-engine    ← domain, react-konva
 persistence      ← domain
 maps             ← domain
-llm              ← (standalone, desktop-only)
-shared-ui        ← domain (wizard, hooks)
+llm              ← domain (AI render pipeline: scene builder, prompt builder, asset descriptions)
+shared-ui        ← domain, llm, canvas-engine (wizard, hooks, AI render panel)
 web              ← all packages
 desktop          ← web (renderer) + llm (main process)
 mobile           ← domain, i18n, asset-library, shared-ui

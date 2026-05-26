@@ -3,7 +3,8 @@ import { Stage, Layer, Rect, Line, Text, Group, Transformer, Image as KonvaImage
 import type Konva from "konva";
 import { useStore } from "zustand";
 import { getAssetById } from "@mity-garden/asset-library";
-import type { GardenProject, GardenElement, UUID } from "@mity-garden/domain";
+import { getSharedI18n } from "@mity-garden/i18n";
+import type { GardenProject, GardenElement, UUID, MapBoundingBox, ElementType } from "@mity-garden/domain";
 import {
   BASE_PIXELS_PER_METER,
   metersToPixels,
@@ -61,6 +62,42 @@ function GridLines({
   return <>{lines}</>;
 }
 
+// ─── Generic URL image loader hook ───────────────────────────────────────────
+//
+// Loads any image URL (https:// or data:) into an HTMLImageElement.
+// Sets crossOrigin="anonymous" for http(s) URLs so the image can be drawn
+// to a canvas without tainting it (ESRI/tile services support CORS).
+// Returns null while loading.
+
+function useUrlImage(url: string | undefined): HTMLImageElement | null {
+  const [img, setImg] = React.useState<HTMLImageElement | null>(null);
+
+  React.useEffect(() => {
+    if (!url) { setImg(null); return; }
+    let cancelled = false;
+    const image = new window.Image();
+    if (url.startsWith("http")) image.crossOrigin = "anonymous";
+    image.onload = () => { if (!cancelled) setImg(image); };
+    image.onerror = () => { if (!cancelled) setImg(null); };
+    image.src = url;
+    return () => { cancelled = true; };
+  }, [url]);
+
+  return img;
+}
+
+/** Build an ESRI World Imagery static export URL from a geographic bounding box. */
+function buildEsriMapUrl(bbox: MapBoundingBox): string {
+  const { minLat, maxLat, minLng, maxLng } = bbox;
+  const latBuf = (maxLat - minLat) * 0.05;
+  const lngBuf = (maxLng - minLng) * 0.05;
+  return [
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export",
+    `?bbox=${minLng - lngBuf},${minLat - latBuf},${maxLng + lngBuf},${maxLat + latBuf}`,
+    "&bboxSR=4326&size=800,800&imageSR=4326&format=jpg&f=image",
+  ].join("");
+}
+
 // ─── SVG image loader hook ────────────────────────────────────────────────────
 //
 // Converts an SVG string to an HTMLImageElement so Konva can render it.
@@ -98,6 +135,8 @@ function ElementShape({
   onDragEnd,
   onContextMenu,
   onDblClick,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   el: GardenElement;
   ppm: number;
@@ -106,6 +145,8 @@ function ElementShape({
   onDragEnd: (id: UUID, x: number, y: number) => void;
   onContextMenu: (id: UUID, evt: Konva.KonvaEventObject<MouseEvent>) => void;
   onDblClick: (id: UUID) => void;
+  onMouseEnter?: (id: UUID, e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onMouseLeave?: (id: UUID) => void;
 }): React.ReactElement {
   const w = el.size.width * ppm;
   const h = el.size.height * ppm;
@@ -137,6 +178,8 @@ function ElementShape({
       onDragEnd={(e) => {
         onDragEnd(el.id, e.target.x() / ppm, e.target.y() / ppm);
       }}
+      onMouseEnter={(e) => onMouseEnter?.(el.id, e)}
+      onMouseLeave={() => onMouseLeave?.(el.id)}
       id={el.id}
     >
       {thumbnailImg ? (
@@ -190,6 +233,18 @@ function ElementShape({
   );
 }
 
+/** Element types for which a surface-area tooltip is shown on hover. */
+const SURFACE_TYPES = new Set<ElementType>([
+  "pool",
+  "building",
+  "grass-zone",
+  "playground",
+  "path",
+  "furniture",
+  "terrain",
+  "terrace-tile",
+]);
+
 const FILL_BY_TYPE: Record<string, string> = {
   pool: "#81d4fa",
   tree: "#a5d6a7",
@@ -201,6 +256,7 @@ const FILL_BY_TYPE: Record<string, string> = {
   building: "#ef9a9a",
   "fence-wall-border": "#b0bec5",
   furniture: "#ffe0b2",
+  terrain: "#c5e1a5",
   custom: "#e1bee7",
 };
 
@@ -272,11 +328,20 @@ export function GardenCanvas({
   const [clipboard, setClipboard] = useState<GardenElement[]>([]);
   // Rename overlay
   const [renameTarget, setRenameTarget] = useState<{ id: UUID; name: string } | null>(null);
+  // Hover tooltip
+  const [hoveredEl, setHoveredEl] = useState<{ id: UUID; x: number; y: number } | null>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
   const ppm = BASE_PIXELS_PER_METER;
   const gardenW = project.dimensions.width * ppm;
   const gardenH = project.dimensions.height * ppm;
+
+  // Derive the map image URL: prefer geo-located ESRI export (from stored bounding box),
+  // fall back to a stored data URL (image-trace mode).
+  const mapUrl = project.mapBoundingBox
+    ? buildEsriMapUrl(project.mapBoundingBox)
+    : project.mapImageUrl;
+  const mapImage = useUrlImage(mapUrl);
 
   // Convert boundary vertices (in metres) to canvas pixel polygon points
   const boundaryPoints = React.useMemo<number[] | null>(() => {
@@ -297,6 +362,7 @@ export function GardenCanvas({
   const gridSize = useStore(canvasStore, (s) => s.gridSize);
   const snapEnabled = useStore(canvasStore, (s) => s.snapEnabled);
   const selectedElementIds = useStore(canvasStore, (s) => s.selectedElementIds);
+  const mapLayerVisible = useStore(canvasStore, (s) => s.mapLayerVisible);
   const { setOffset, setScale, selectElement, clearSelection } = canvasStore.getState();
 
   // Project actions
@@ -472,13 +538,14 @@ export function GardenCanvas({
     [scale, setScale, setOffset],
   );
 
-  // Click on stage background: clear selection OR place asset
+  // Click on stage background: clear selection OR place asset (keeps asset selected for repeat placements)
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       if (e.target !== stageRef.current) return; // clicked on an element
+      if (e.evt.button !== 0) return; // ignore right-click (handled by onContextMenu)
 
       if (pendingAssetId) {
-        // Place asset at clicked position
+        // Place asset at clicked position; stay in placement mode for the next click
         const stage = stageRef.current;
         if (!stage) return;
         const pointer = stage.getPointerPosition();
@@ -494,13 +561,26 @@ export function GardenCanvas({
         const asset = getAssetById(pendingAssetId);
         if (!asset) return;
         addElement(defaultLayerId, asset.id, asset.type, pos, asset.defaultSize);
-        onAssetPlaced?.();
+        // Do NOT call onAssetPlaced here — keep asset selected so the user can
+        // place more copies with additional left-clicks.
         return;
       }
 
       clearSelection();
     },
-    [pendingAssetId, scale, snapEnabled, gridSize, defaultLayerId, addElement, clearSelection, onAssetPlaced],
+    [pendingAssetId, scale, snapEnabled, gridSize, defaultLayerId, addElement, clearSelection],
+  );
+
+  // Right-click on stage background: cancel placement mode (or show nothing)
+  const handleStageContextMenu = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (e.target !== stageRef.current) return;
+      if (pendingAssetId) {
+        e.evt.preventDefault();
+        onAssetPlaced?.();
+      }
+    },
+    [pendingAssetId, onAssetPlaced],
   );
 
   // Click on element: select it
@@ -526,6 +606,21 @@ export function GardenCanvas({
     [elementLayerMap, snapEnabled, gridSize, updateElement],
   );
 
+  const handleElementMouseEnter = useCallback(
+    (id: UUID, e: Konva.KonvaEventObject<MouseEvent>) => {
+      const el = allElements.find((el) => el.id === id);
+      if (!el || !SURFACE_TYPES.has(el.type)) return;
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setHoveredEl({ id, x: e.evt.clientX - rect.left, y: e.evt.clientY - rect.top });
+    },
+    [allElements],
+  );
+
+  const handleElementMouseLeave = useCallback(() => {
+    setHoveredEl(null);
+  }, []);
+
   // Center view: start with garden centered
   const initOffsetX = (width - gardenW) / 2;
   const initOffsetY = (height - gardenH) / 2;
@@ -546,6 +641,7 @@ export function GardenCanvas({
       onDragEnd={handleStageDragEnd}
       onWheel={handleWheel}
       onClick={handleStageClick}
+      onContextMenu={handleStageContextMenu}
       style={{ background: "#e8f5e9", cursor: pendingAssetId ? "crosshair" : "default" }}
       data-testid="garden-canvas-stage"
     >
@@ -573,6 +669,21 @@ export function GardenCanvas({
           />
         )}
       </Layer>
+
+      {/* Map image layer — satellite/uploaded photo background */}
+      {mapImage && mapLayerVisible && (
+        <Layer listening={false}>
+          <KonvaImage
+            image={mapImage}
+            x={0}
+            y={0}
+            width={gardenW}
+            height={gardenH}
+            opacity={0.7}
+            listening={false}
+          />
+        </Layer>
+      )}
 
       {/* Garden area layer */}
       <Layer>
@@ -621,6 +732,8 @@ export function GardenCanvas({
             onDragEnd={handleElementDragEnd}
             onContextMenu={handleElementContextMenu}
             onDblClick={handleElementDblClick}
+            onMouseEnter={handleElementMouseEnter}
+            onMouseLeave={handleElementMouseLeave}
           />
         ))}
         <Transformer
@@ -663,17 +776,17 @@ export function GardenCanvas({
           userSelect: "none",
         }}
       >
-        <CtxItem icon="📋" label="Copy" testId="ctx-copy" onClick={handleCopy} />
+        <CtxItem icon="📋" label={getSharedI18n().t("canvas.contextMenu.copy")} testId="ctx-copy" onClick={handleCopy} />
         <CtxItem
           icon="📌"
-          label={clipboard.length > 0 ? `Paste (${clipboard.length})` : "Paste"}
+          label={clipboard.length > 0 ? getSharedI18n().t("canvas.contextMenu.pasteCount", { count: clipboard.length }) : getSharedI18n().t("canvas.contextMenu.paste")}
           testId="ctx-paste"
           onClick={handlePaste}
           disabled={clipboard.length === 0}
         />
         <CtxItem
           icon="✏️"
-          label="Rename"
+          label={getSharedI18n().t("canvas.contextMenu.rename")}
           testId="ctx-rename"
           onClick={() => {
             const ids = canvasStore.getState().selectedElementIds;
@@ -684,13 +797,76 @@ export function GardenCanvas({
         <div style={{ height: 1, background: "#f0f0f0", margin: "4px 0" }} />
         <CtxItem
           icon="🗑"
-          label={selectedCount > 1 ? `Delete (${selectedCount})` : "Delete"}
+          label={selectedCount > 1 ? getSharedI18n().t("canvas.contextMenu.deleteCount", { count: selectedCount }) : getSharedI18n().t("canvas.contextMenu.delete")}
           testId="ctx-delete"
           onClick={handleDeleteSelected}
           danger
         />
       </div>
     )}
+
+    {/* Canvas info overlay — address + total garden surface area */}
+    {(() => {
+      const address = project.metadata.address ?? project.mapData?.address;
+      const area = (project.dimensions.width * project.dimensions.height).toFixed(1);
+      return (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: 10,
+            background: "rgba(0,0,0,0.58)",
+            color: "#fff",
+            borderRadius: 6,
+            padding: "6px 12px",
+            fontSize: 12,
+            fontFamily: "inherit",
+            pointerEvents: "none",
+            zIndex: 100,
+            maxWidth: 360,
+          }}
+        >
+          <div style={{ fontWeight: 600 }}>
+            {project.dimensions.width}m × {project.dimensions.height}m &mdash; {area} m²
+          </div>
+          {address && (
+            <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {address}
+            </div>
+          )}
+        </div>
+      );
+    })()}
+
+    {/* Hover tooltip — shows element name + surface area */}
+    {hoveredEl && (() => {
+      const el = allElements.find((e) => e.id === hoveredEl.id);
+      if (!el) return null;
+      const asset = getAssetById(el.assetId);
+      const name = el.customLabel || asset?.labels.en.name || el.assetId.split("-").slice(1).join(" ");
+      const area = (el.size.width * el.size.height).toFixed(1);
+      return (
+        <div
+          style={{
+            position: "absolute",
+            left: hoveredEl.x + 14,
+            top: hoveredEl.y + 16,
+            background: "rgba(33,33,33,0.82)",
+            color: "#fff",
+            borderRadius: 6,
+            padding: "5px 10px",
+            fontSize: 12,
+            fontFamily: "inherit",
+            pointerEvents: "none",
+            zIndex: 150,
+            whiteSpace: "nowrap",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.22)",
+          }}
+        >
+          {name} — {area} m²
+        </div>
+      );
+    })()}
 
     {/* Rename overlay — floats over the canvas element being renamed */}
     {renameTarget && (() => {

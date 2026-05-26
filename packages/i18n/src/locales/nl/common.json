@@ -10,7 +10,8 @@
     "saveProjectAs": "Opslaan als...",
     "exportProject": "Exporteren",
     "settings": "Instellingen",
-    "help": "Help"
+    "help": "Hulp",
+    "editProjectName": "Projectnaam bewerken"
   },
   "wizard": {
     "title": "Nieuw tuinproject",
@@ -133,6 +134,11 @@
     "placement": {
       "hint": "Klik op het canvas om een element te plaatsen",
       "cancel": "Annuleren"
+    },
+    "mapLayer": {
+      "label": "Kaartlaag",
+      "toggle": "Satellietkaart achtergrondlaag in-/uitschakelen",
+      "noImage": "Geen kaartafbeelding — teken een grens in de wizard om dit in te schakelen"
     }
   },
   "layers": {
@@ -172,6 +178,7 @@
       "building": "Gebouwen & Constructies",
       "fence-wall-border": "Hekken, muren & randen",
       "furniture": "Tuinmeubilair",
+      "terrain": "Terrein",
       "custom": "Aangepaste elementen"
     },
     "customSize": "Aangepaste afmeting",
@@ -192,7 +199,9 @@
     "saved": "Project opgeslagen",
     "saving": "Opslaan...",
     "unsavedChanges": "U heeft niet-opgeslagen wijzigingen",
-    "confirmClose": "Sluiten zonder opslaan?"
+    "confirmClose": "Sluiten zonder opslaan?",
+    "deleteGarden": "Verwijderen",
+    "deleteConfirm": "Weet u zeker dat u \"{{name}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
   },
   "llm": {
     "title": "AI-assistent",
@@ -212,7 +221,71 @@
     "regenerate": "Opnieuw genereren",
     "configureKeys": "API-sleutels instellen",
     "notConfigured": "Geen LLM-provider geconfigureerd. Voer een API-sleutel in om AI-suggesties in te schakelen.",
-    "imageNotConfigured": "Geen beeldprovider geconfigureerd. Voer een OpenAI- of Gemini-API-sleutel in om beeldgeneratie in te schakelen."
+    "imageNotConfigured": "Geen beeldprovider geconfigureerd. Voer een OpenAI- of Gemini-API-sleutel in om beeldgeneratie in te schakelen.",
+    "aiRender": {
+      "steps": {
+        "view": "Weergave",
+        "camera": "Camera",
+        "enhancements": "Details",
+        "generate": "Genereren"
+      },
+      "viewMode": "Weergavemodus",
+      "viewModes": {
+        "oblique_drone": "Drone",
+        "eye_level": "Ooghoogte",
+        "top_down": "Bovenaanzicht",
+        "cinematic": "Cinematisch"
+      },
+      "realism": "Realisme",
+      "realismOptions": {
+        "photorealistic": "Fotorealistisch",
+        "architectural": "Architectuurvisualisatie",
+        "concept": "Conceptrender"
+      },
+      "strictness": "Indeling-strengheid",
+      "strictnessOptions": {
+        "creative": "Creatief — losse indeling",
+        "balanced": "Gebalanceerd — hoofdelementen respecteren",
+        "strict": "Strikt — posities behouden",
+        "veryStrict": "Zeer strikt — exacte indeling"
+      },
+      "cameraHeight": "Camerahoogte",
+      "cameraAngle": "Camerahoek",
+      "direction": "Richting",
+      "lens": "Lens",
+      "lensOptions": {
+        "wide": "Groothoek (16–24mm)",
+        "natural": "Natuurlijk (28–35mm)",
+        "telephoto": "Telelens (70–100mm)"
+      },
+      "timeOfDay": "Tijdstip",
+      "timeOptions": {
+        "morning": "Ochtend",
+        "afternoon": "Zomermiddag",
+        "goldenHour": "Gouden uur",
+        "overcast": "Bewolkt"
+      },
+      "season": "Seizoen",
+      "seasonOptions": {
+        "spring": "Lente",
+        "summer": "Zomer",
+        "autumn": "Herfst",
+        "winter": "Winter"
+      },
+      "enhancements": {
+        "realisticGrass": "Realistisch gras",
+        "realisticShadows": "Realistische schaduwen",
+        "realisticPlanting": "Realistische beplanting",
+        "stoneTerraceAroundPool": "Stenen terras rond zwembad",
+        "addPeople": "Mensen toevoegen",
+        "addFurniture": "Tuinmeubilair toevoegen",
+        "addExtraTrees": "Extra bomen toevoegen"
+      },
+      "imageProvider": "Beeldprovider",
+      "generate": "AI-render genereren",
+      "previewReference": "Referentie-indeling bekijken",
+      "referenceHint": "Dit vereenvoudigde plan wordt als ruimtelijke referentie naar de AI gestuurd."
+    }
   },
   "export": {
     "title": "Exporteren",
@@ -221,6 +294,33 @@
     "asJSON": "Projectbestand exporteren",
     "proposal": "Voorstel genereren"
   },
+  "settings": {
+    "language": {
+      "title": "Taal",
+      "label": "Interfacetaal — wijzigingen worden onmiddellijk toegepast"
+    },
+    "llm": {
+      "title": "LLM / AI-integratie",
+      "description": "API-sleutels voor AI-gestuurde tuinontwerp suggesties.",
+      "openaiHint": "Indelingssuggesties (GPT-4o-mini) en afbeeldingsgeneratie (GPT Image 1)",
+      "anthropicHint": "Indelingssuggesties (Claude 3 Haiku) — terugval als geen OpenAI-sleutel is ingesteld",
+      "geminiHint": "Afbeeldingsgeneratie (Imagen 3) — terugval als geen OpenAI-sleutel is ingesteld"
+    },
+    "image": {
+      "title": "Afbeeldingsgeneratie",
+      "description": "AI-gegenereerde tuinvisualisaties worden aangedreven door dezelfde API-sleutels als de LLM-integratie.",
+      "note": "🖼 GPT Image 1 (OpenAI-sleutel) en Imagen 3 (Gemini-sleutel) worden beide ondersteund. Stel de sleutels in de LLM-sectie hierboven in."
+    },
+    "maps": {
+      "title": "Google Maps",
+      "description": "Schakelt de Google Maps-satellietweergave in bij de grenstekenstap in de projectwizard.",
+      "hint": "Optioneel — gratis satellietbeelden worden gebruikt als er geen sleutel is opgegeven"
+    },
+    "apiKey": {
+      "envNote": "Sommige sleutels worden geleverd via omgevingsvariabelen en zijn actief. Ze worden hieronder alleen-lezen weergegeven.",
+      "savedNote": "Sleutels worden opgeslagen in de lokale opslag van uw browser. Omgevingsvariabelen hebben prioriteit en kunnen hier niet worden overschreven."
+    }
+  },
   "common": {
     "ok": "OK",
     "cancel": "Annuleren",
@@ -228,6 +328,8 @@
     "delete": "Verwijderen",
     "edit": "Bewerken",
     "close": "Sluiten",
+    "next": "Volgende",
+    "back": "Terug",
     "loading": "Laden...",
     "error": "Er is iets misgegaan",
     "retry": "Opnieuw proberen"

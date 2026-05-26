@@ -61,6 +61,38 @@ Selection priority in the web factory: OpenAI key present → Anthropic key pres
 
 `GardenImageService` (in `packages/llm/src/image.ts`) wraps an `ImageGenerationProvider` and provides the `generateGardenImage(project)` high-level method used by `LLMSuggestionsPanel`.
 
+## AI Render Pipeline
+
+The AI render pipeline (spec 006) provides a sophisticated image generation flow:
+
+```
+Garden JSON → SceneBuilder → ImageGenerationScene → PromptBuilder → Rich prompt
+                                                  → ReferenceRenderService → Reference PNG
+                                                  → ImageProvider → AI-generated image
+```
+
+### Pipeline stages
+
+| Stage | Module | Purpose |
+|-------|--------|---------|
+| Asset descriptions | `packages/llm/src/aiRender/assetDescriptions.ts` | Maps all 45 assets to rich visual descriptions |
+| Scene builder | `packages/llm/src/aiRender/SceneBuilder.ts` | Normalizes project into `ImageGenerationScene` |
+| Prompt builder | `packages/llm/src/aiRender/PromptBuilder.ts` | Converts scene to structured natural-language prompt |
+| Reference render | `packages/canvas-engine/src/services/ReferenceRenderService.ts` | Generates simplified top-down PNG using headless Konva |
+| AI render panel | `packages/shared-ui/src/panels/AIRenderPanel.tsx` | Multi-step wizard UI for render configuration |
+
+### Key types (in `packages/llm/src/aiRender/types.ts`)
+
+- `SceneView` — camera mode, height, angle, direction, lens, time of day, season, realism
+- `SceneEnhancements` — toggles for grass, shadows, planting, people, furniture
+- `StrictnessLevel` — creative / balanced / strict / very_strict
+- `ImageGenerationScene` — complete normalized scene model
+- `SceneOptions` — user-configurable overrides for view, enhancements, and strictness
+
+### Reference image support
+
+Providers that support `supportsReferenceImage()` (currently GPT Image 1 via `DalleProvider`) receive a reference layout PNG alongside the prompt. The reference image is auto-generated from the garden layout using headless Konva.
+
 ## Adding a New Text Provider
 
 1. Create `packages/llm/src/providers/MyProvider.ts` implementing `LLMProvider`.

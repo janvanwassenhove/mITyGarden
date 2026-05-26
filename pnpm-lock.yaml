@@ -234,6 +234,9 @@ importers:
       '@mity-garden/domain':
         specifier: workspace:*
         version: link:../domain
+      '@mity-garden/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       konva:
         specifier: ^9.3.0
         version: 9.3.22
@@ -295,6 +298,9 @@ importers:
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/debug@4.1.13)(@types/node@25.9.1)(lightningcss@1.27.0)(terser@5.48.0)
 
   packages/maps:
     dependencies:
@@ -327,6 +333,9 @@ importers:
       '@mity-garden/asset-library':
         specifier: workspace:*
         version: link:../asset-library
+      '@mity-garden/canvas-engine':
+        specifier: workspace:*
+        version: link:../canvas-engine
       '@mity-garden/domain':
         specifier: workspace:*
         version: link:../domain

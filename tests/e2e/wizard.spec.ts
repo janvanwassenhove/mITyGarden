@@ -125,6 +125,7 @@ test.describe("Project Creation Wizard", () => {
       class FakeMap {
         constructor(_el: HTMLElement, _opts: unknown) {}
         fitBounds = noop;
+        addListener = noop;
       }
       class FakePolygon {
         constructor(_opts: unknown) {}
@@ -133,34 +134,30 @@ test.describe("Project Creation Wizard", () => {
           return { getArray: () => [] };
         }
       }
-      class FakeLatLngBounds {
-        extend = noop;
-      }
-      class FakeDrawingManager {
+      class FakePolyline {
         constructor(_opts: unknown) {}
         setMap = noop;
-        setDrawingMode = noop;
+        setPath = noop;
+      }
+      class FakeLatLngBounds {
+        extend = noop;
       }
       const mapsLib = {
         Map: FakeMap,
         Polygon: FakePolygon,
+        Polyline: FakePolyline,
+      };
+      const coreLib = {
         LatLngBounds: FakeLatLngBounds,
-        ControlPosition: { TOP_CENTER: 2 },
       };
-      const drawingLib = {
-        DrawingManager: FakeDrawingManager,
-        OverlayType: { POLYGON: "polygon" },
-      };
-      const fakeEvent = { addListener: noop };
 
       (window as any).google = {
         maps: {
           ...mapsLib,
-          drawing: drawingLib,
-          event: fakeEvent,
+          LatLngBounds: FakeLatLngBounds,
           importLibrary: (name: string) => {
             if (name === "maps") return Promise.resolve(mapsLib);
-            if (name === "drawing") return Promise.resolve(drawingLib);
+            if (name === "core") return Promise.resolve(coreLib);
             return Promise.resolve({});
           },
         },

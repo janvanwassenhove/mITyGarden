@@ -13,8 +13,8 @@ interface GmLatLng { lat(): number; lng(): number; }
 interface GmLatLngBounds { extend(point: { lat: number; lng: number }): void; }
 interface GmMvcArray<T> { getArray(): T[]; }
 interface GmPolygon { getPath(): GmMvcArray<GmLatLng>; setMap(map: GmMap | null): void; }
-interface GmMap { fitBounds(bounds: GmLatLngBounds): void; }
-interface GmDrawingManager { setMap(map: GmMap | null): void; setDrawingMode(mode: string | null): void; }
+interface GmPolyline { setMap(map: GmMap | null): void; setPath(path: { lat: number; lng: number }[]): void; }
+interface GmMap { fitBounds(bounds: GmLatLngBounds): void; addListener(event: string, handler: (e: unknown) => void): unknown; }
 
 // ─── Maps adapter context (consumed by StepLocation) ─────────────────────────
 
@@ -109,16 +109,14 @@ function loadGoogleMapsScript(apiKey: string): Promise<void> {
 interface GoogleMapsLibraries {
   Map: GmMapConstructor;
   Polygon: GmPolygonConstructor;
+  Polyline: GmPolylineConstructor;
   LatLngBounds: GmLatLngBoundsConstructor;
-  DrawingManager: GmDrawingManagerConstructor;
-  OverlayType: { POLYGON: string };
-  ControlPosition: { TOP_CENTER: number };
-  event: { addListener(target: GmDrawingManager, event: "polygoncomplete", handler: (polygon: GmPolygon) => void): unknown };
 }
 
 /**
  * Dynamically import Maps + Drawing libraries and return real constructors.
- * Works with all API versions (v3.56+ dynamic and legacy).
+ * Only uses the stable "core" and "maps" libraries — the Drawing library was
+ * deprecated in August 2025 and polygon input is now handled via click events.
  */
 async function loadGoogleMapsLibraries(): Promise<GoogleMapsLibraries> {
   const gm = window.google!.maps;
@@ -126,21 +124,16 @@ async function loadGoogleMapsLibraries(): Promise<GoogleMapsLibraries> {
   const importLib = (gm as any).importLibrary as ((name: string) => Promise<Record<string, unknown>>) | undefined;
 
   if (typeof importLib === "function") {
-    // Modern API (v3.56+): ControlPosition, LatLngBounds and event live in
-    // "core"; Map/Polygon in "maps"; DrawingManager/OverlayType in "drawing".
-    const [coreLib, mapsLib, drawingLib] = await Promise.all([
+    // LatLngBounds is in "core"; Map/Polygon/Polyline are in "maps".
+    const [coreLib, mapsLib] = await Promise.all([
       importLib.call(gm, "core"),
       importLib.call(gm, "maps"),
-      importLib.call(gm, "drawing"),
     ]);
     return {
       Map: mapsLib["Map"] as GmMapConstructor,
       Polygon: mapsLib["Polygon"] as unknown as GmPolygonConstructor,
+      Polyline: mapsLib["Polyline"] as unknown as GmPolylineConstructor,
       LatLngBounds: coreLib["LatLngBounds"] as unknown as GmLatLngBoundsConstructor,
-      DrawingManager: drawingLib["DrawingManager"] as GmDrawingManagerConstructor,
-      OverlayType: drawingLib["OverlayType"] as { POLYGON: string },
-      ControlPosition: coreLib["ControlPosition"] as { TOP_CENTER: number },
-      event: coreLib["event"] as GoogleMapsLibraries["event"],
     };
   }
 
@@ -148,11 +141,8 @@ async function loadGoogleMapsLibraries(): Promise<GoogleMapsLibraries> {
   return {
     Map: gm.Map,
     Polygon: gm.Polygon,
+    Polyline: gm.Polyline as unknown as GmPolylineConstructor,
     LatLngBounds: gm.LatLngBounds,
-    DrawingManager: gm.drawing.DrawingManager,
-    OverlayType: gm.drawing.OverlayType,
-    ControlPosition: gm.ControlPosition,
-    event: gm.event,
   };
 }
 
@@ -179,8 +169,8 @@ interface LeafletStatic {
 
 type GmMapConstructor = new (el: HTMLElement, opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }) => GmMap;
 type GmPolygonConstructor = new (opts: { paths?: { lat: number; lng: number }[]; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean }) => GmPolygon;
+type GmPolylineConstructor = new (opts: { path?: { lat: number; lng: number }[]; strokeColor?: string; strokeWeight?: number; strokeOpacity?: number }) => GmPolyline;
 type GmLatLngBoundsConstructor = new () => GmLatLngBounds;
-type GmDrawingManagerConstructor = new (opts: { drawingMode?: string | null; drawingControl?: boolean; drawingControlOptions?: { position: number; drawingModes: string[] }; polygonOptions?: { fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean } }) => GmDrawingManager;
 
 declare global {
   interface Window {
@@ -188,13 +178,8 @@ declare global {
       maps: {
         Map: GmMapConstructor;
         Polygon: GmPolygonConstructor;
+        Polyline: GmPolylineConstructor;
         LatLngBounds: GmLatLngBoundsConstructor;
-        event: { addListener(target: GmDrawingManager, event: "polygoncomplete", handler: (polygon: GmPolygon) => void): unknown };
-        drawing: {
-          DrawingManager: GmDrawingManagerConstructor;
-          OverlayType: { POLYGON: string };
-        };
-        ControlPosition: { TOP_CENTER: number };
       };
     };
     L?: LeafletStatic;
@@ -510,6 +495,9 @@ function StepBoundary(): React.ReactElement {
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [area, setArea] = React.useState<number | null>(null);
   const [mode, setMode] = React.useState<BoundaryMode>("map");
+  const [drawingVertCount, setDrawingVertCount] = React.useState(0);
+  // Holds the "close polygon" function set up inside the async map effect
+  const closeShapeRef = React.useRef<(() => void) | null>(null);
 
   // Seed area from existing boundary on mount
   React.useEffect(() => {
@@ -539,50 +527,65 @@ function StepBoundary(): React.ReactElement {
         zoom: coordinates ? 18 : 13,
         mapTypeId: "satellite",
       });
-      const dm = new libs.DrawingManager({
-        drawingMode: libs.OverlayType.POLYGON,
-        drawingControl: true,
-        drawingControlOptions: {
-          position: libs.ControlPosition.TOP_CENTER,
-          drawingModes: [libs.OverlayType.POLYGON],
-        },
-        polygonOptions: {
-          fillColor: "#4caf50",
-          fillOpacity: 0.25,
-          strokeColor: "#388e3c",
-          strokeWeight: 2,
-          editable: true,
-        },
-      });
-      dm.setMap(map);
+
+      // Mutable drawing state — lives in the async closure, updated imperatively
+      const drawnVerts: { lat: number; lng: number }[] = [];
+      let previewPolyline: GmPolyline | null = null;
+      let completedPolygon: GmPolygon | null = null;
+
+      // Restore existing boundary on map re-init (e.g. after mode switch)
       if (boundary && boundary.length > 2) {
         const paths = boundary.map((p) => ({ lat: p.lat, lng: p.lng }));
-        const poly = new libs.Polygon({ paths, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
-        poly.setMap(map);
-        dm.setDrawingMode(null);
+        completedPolygon = new libs.Polygon({ paths, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
+        completedPolygon.setMap(map);
         const bounds = new libs.LatLngBounds();
         paths.forEach((p) => bounds.extend(p));
         map.fitBounds(bounds);
       }
-      libs.event.addListener(dm, "polygoncomplete", (polygon) => {
-        dm.setDrawingMode(null);
-        const verts = polygon.getPath().getArray().map((ll) => ({ lat: ll.lat(), lng: ll.lng() }));
-        setBoundary(verts);
-        setBoundaryVerts(geoToMeterVertices(verts));
-        const { width, height, areaM2 } = computeBoundingBox(verts);
+
+      // Click handler — adds vertices and updates preview polyline
+      map.addListener("click", (e: unknown) => {
+        if (completedPolygon !== null) return; // polygon already finalised
+        const ev = e as { latLng: GmLatLng };
+        const lat = ev.latLng.lat();
+        const lng = ev.latLng.lng();
+        drawnVerts.push({ lat, lng });
+
+        if (drawnVerts.length >= 2) {
+          if (previewPolyline) {
+            previewPolyline.setPath(drawnVerts);
+          } else {
+            previewPolyline = new libs.Polyline({ path: drawnVerts, strokeColor: "#388e3c", strokeWeight: 2, strokeOpacity: 0.8 });
+            previewPolyline.setMap(map);
+          }
+        }
+        setDrawingVertCount(drawnVerts.length);
+      });
+
+      // Exposed to the Close Shape button in JSX
+      closeShapeRef.current = () => {
+        if (drawnVerts.length < 3 || completedPolygon !== null) return;
+        if (previewPolyline) { previewPolyline.setMap(null); previewPolyline = null; }
+        const finalVerts = [...drawnVerts];
+        completedPolygon = new libs.Polygon({ paths: finalVerts, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
+        completedPolygon.setMap(map);
+
+        setBoundary(finalVerts);
+        setBoundaryVerts(geoToMeterVertices(finalVerts));
+        const { width, height, areaM2 } = computeBoundingBox(finalVerts);
         setDimensions(Math.max(1, Math.round(width * 10) / 10), Math.max(1, Math.round(height * 10) / 10));
         setArea(Math.round(areaM2));
-        const lats = verts.map((v) => v.lat);
-        const lngs = verts.map((v) => v.lng);
+        const lats = finalVerts.map((v) => v.lat);
+        const lngs = finalVerts.map((v) => v.lng);
         const bbox: MapBoundingBox = {
           minLat: Math.min(...lats), maxLat: Math.max(...lats),
           minLng: Math.min(...lngs), maxLng: Math.max(...lngs),
         };
         setMapBoundingBox(bbox);
-      });
+      };
     })();
 
-    return () => { cancelled = true; };
+    return () => { cancelled = true; closeShapeRef.current = null; };
   }, [mapsLoaded, mode]);
 
   const hasBoundary = (boundary?.length ?? 0) > 2;
@@ -592,6 +595,8 @@ function StepBoundary(): React.ReactElement {
     setBoundaryVerts([]);
     setMapBoundingBox(undefined);
     setArea(null);
+    setDrawingVertCount(0);
+    closeShapeRef.current = null;
     setMapsLoaded(false);
     setTimeout(() => setMapsLoaded(true), 20);
   }
@@ -639,6 +644,31 @@ function StepBoundary(): React.ReactElement {
                 </div>
               )}
               <div ref={mapDivRef} data-testid="wizard-gmaps-container" style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
+              {/* Click-to-draw instructions */}
+              {mapsLoaded && !hasBoundary && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+                  <span style={{ fontSize: 13, color: "#555", flex: 1 }}>
+                    {drawingVertCount === 0
+                      ? t("wizard.steps.boundary.traceHintStart")
+                      : drawingVertCount < 3
+                      ? t("wizard.steps.boundary.traceHintNeedMore", { count: drawingVertCount })
+                      : t("wizard.steps.boundary.traceHintReady", { count: drawingVertCount })}
+                  </span>
+                  {drawingVertCount >= 3 && (
+                    <button
+                      onClick={() => closeShapeRef.current?.()}
+                      style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: "#4caf50", color: "#fff", fontWeight: 600, fontSize: 12, cursor: "pointer" }}
+                    >
+                      {t("wizard.steps.boundary.closeShape")}
+                    </button>
+                  )}
+                  {drawingVertCount > 0 && (
+                    <button onClick={handleClearGmaps} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
+                      {t("wizard.steps.boundary.clear")}
+                    </button>
+                  )}
+                </div>
+              )}
               {hasBoundary && area !== null && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
                   <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}</span>

@@ -35,11 +35,12 @@ export function buildShortPrompt(scene: ImageGenerationScene): string {
   if (scene.enhancements.realisticShadows) enhancementList.push("realistic shadows");
   if (scene.enhancements.stoneTerraceAroundPool) enhancementList.push("stone terrace around pool");
 
-  const style = scene.view.realism === "photorealistic"
-    ? "professional landscape architecture visualization"
-    : scene.view.realism === "architectural_visualization"
-      ? "architectural visualization render"
-      : "concept render";
+  const style =
+    scene.view.realism === "photorealistic"
+      ? "professional landscape architecture visualization"
+      : scene.view.realism === "architectural_visualization"
+        ? "architectural visualization render"
+        : "concept render";
 
   const parts = [
     `Photorealistic ${viewDesc}`,
@@ -100,9 +101,7 @@ function buildCameraSection(view: SceneView): string {
 
 function buildSiteSection(scene: ImageGenerationScene): string {
   const styleLabel = scene.style.charAt(0).toUpperCase() + scene.style.slice(1);
-  const goalsDesc = scene.goals.length > 0
-    ? `Design goals: ${scene.goals.join(", ")}.`
-    : "";
+  const goalsDesc = scene.goals.length > 0 ? `Design goals: ${scene.goals.join(", ")}.` : "";
 
   return (
     "Garden style:\n" +
@@ -113,10 +112,7 @@ function buildSiteSection(scene: ImageGenerationScene): string {
   );
 }
 
-function buildStrictnessSection(
-  strictness: StrictnessLevel,
-  boundaryDesc: string,
-): string {
+function buildStrictnessSection(strictness: StrictnessLevel, boundaryDesc: string): string {
   const header = "Strict layout:";
 
   const constraintMap: Record<StrictnessLevel, string> = {
@@ -143,9 +139,8 @@ function buildElementsSection(scene: ImageGenerationScene): string {
   if (scene.elements.length === 0) return "";
 
   const lines = scene.elements.map((e) => {
-    const rotation = e.rotation > 0
-      ? `, rotated approximately ${Math.round(e.rotation)} degrees`
-      : "";
+    const rotation =
+      e.rotation > 0 ? `, rotated approximately ${Math.round(e.rotation)} degrees` : "";
     return (
       `- A ${e.visualDescription}, placed in the ${e.positionDescription} of the garden` +
       `, ${e.sizeDescription}${rotation}.`
@@ -160,7 +155,8 @@ function buildMaterialsSection(scene: ImageGenerationScene): string {
   const details: string[] = [];
 
   if (scene.enhancements.realisticGrass) details.push("realistic grass");
-  if (scene.enhancements.stoneTerraceAroundPool) details.push("stone paving around the house and pool");
+  if (scene.enhancements.stoneTerraceAroundPool)
+    details.push("stone paving around the house and pool");
   details.push("natural planting beds");
   if (scene.enhancements.realisticShadows) details.push("soft shadows");
   details.push("accurate scale");
@@ -168,8 +164,8 @@ function buildMaterialsSection(scene: ImageGenerationScene): string {
 
   parts.push(
     `Use ${details.join(", ")}. ` +
-    "The result should resemble a professional landscape architecture visualization " +
-    "or real drone photograph after construction.",
+      "The result should resemble a professional landscape architecture visualization " +
+      "or real drone photograph after construction."
   );
 
   return parts.join("\n");

@@ -8,12 +8,12 @@ import type { ImageGenerationProvider, ImageGenerationRequest, GeneratedImage } 
  * GPT Image models return base64 data; DALL-E models return short-lived URLs.
  */
 export declare class DalleProvider implements ImageGenerationProvider {
-    private readonly apiKey;
-    private readonly model;
-    readonly name: string;
-    constructor(apiKey: string, model?: string);
-    isConfigured(): boolean;
-    supportsReferenceImage(): boolean;
-    generateImage(req: ImageGenerationRequest): Promise<GeneratedImage>;
+  private readonly apiKey;
+  private readonly model;
+  readonly name: string;
+  constructor(apiKey: string, model?: string);
+  isConfigured(): boolean;
+  supportsReferenceImage(): boolean;
+  generateImage(req: ImageGenerationRequest): Promise<GeneratedImage>;
 }
 //# sourceMappingURL=DalleProvider.d.ts.map

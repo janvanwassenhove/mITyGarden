@@ -53,7 +53,7 @@ function getElementColors(type: string): { fill: string; stroke: string } {
  */
 export async function generateReferenceImage(
   project: GardenProject,
-  options: ReferenceRenderOptions = {},
+  options: ReferenceRenderOptions = {}
 ): Promise<Blob> {
   const ppm = options.ppm ?? BASE_PIXELS_PER_METER;
   const pixelRatio = options.pixelRatio ?? 2;
@@ -83,7 +83,7 @@ export async function generateReferenceImage(
       width: stageW,
       height: stageH,
       fill: "#f5f5f0",
-    }),
+    })
   );
 
   // Garden boundary
@@ -144,7 +144,7 @@ function drawBoundary(
   layer: Konva.Layer,
   project: GardenProject,
   ppm: number,
-  padding: number,
+  padding: number
 ): void {
   const verts = project.boundaryVertices;
   if (verts && verts.length >= 3) {
@@ -157,7 +157,7 @@ function drawBoundary(
         stroke: COLORS["boundary"]?.stroke ?? "#2e7d32",
         strokeWidth: 2,
         opacity: 0.8,
-      }),
+      })
     );
   } else {
     layer.add(
@@ -170,7 +170,7 @@ function drawBoundary(
         stroke: COLORS["boundary"]?.stroke ?? "#2e7d32",
         strokeWidth: 2,
         opacity: 0.8,
-      }),
+      })
     );
   }
 }
@@ -180,7 +180,7 @@ function drawElement(
   el: GardenElement,
   ppm: number,
   padding: number,
-  showLabels: boolean,
+  showLabels: boolean
 ): void {
   const x = el.position.x * ppm + padding;
   const y = el.position.y * ppm + padding;
@@ -208,7 +208,7 @@ function drawElement(
         stroke: colors.stroke,
         strokeWidth: 1.5,
         opacity: 0.85,
-      }),
+      })
     );
   } else if (el.type === "pool") {
     // Draw as rounded rectangle
@@ -223,7 +223,7 @@ function drawElement(
         stroke: colors.stroke,
         strokeWidth: 1.5,
         opacity: 0.9,
-      }),
+      })
     );
   } else {
     // Default rectangle
@@ -237,7 +237,7 @@ function drawElement(
         stroke: colors.stroke,
         strokeWidth: 1.5,
         opacity: 0.85,
-      }),
+      })
     );
   }
 
@@ -252,7 +252,7 @@ function drawElement(
         fontSize: 9,
         fill: "#333",
         align: "center",
-      }),
+      })
     );
   }
 
@@ -271,7 +271,7 @@ function drawNorthArrow(layer: Konva.Layer, stageW: number): void {
       fill: "#333",
       stroke: "#333",
       strokeWidth: 1.5,
-    }),
+    })
   );
   layer.add(
     new Konva.Text({
@@ -281,7 +281,7 @@ function drawNorthArrow(layer: Konva.Layer, stageW: number): void {
       fontSize: 12,
       fill: "#333",
       fontStyle: "bold",
-    }),
+    })
   );
 }
 
@@ -295,18 +295,16 @@ function drawScaleBar(layer: Konva.Layer, ppm: number, stageH: number): void {
       points: [x, y, x + barLength, y],
       stroke: "#333",
       strokeWidth: 2,
-    }),
+    })
   );
   // End caps
-  layer.add(
-    new Konva.Line({ points: [x, y - 4, x, y + 4], stroke: "#333", strokeWidth: 1.5 }),
-  );
+  layer.add(new Konva.Line({ points: [x, y - 4, x, y + 4], stroke: "#333", strokeWidth: 1.5 }));
   layer.add(
     new Konva.Line({
       points: [x + barLength, y - 4, x + barLength, y + 4],
       stroke: "#333",
       strokeWidth: 1.5,
-    }),
+    })
   );
   layer.add(
     new Konva.Text({
@@ -315,7 +313,7 @@ function drawScaleBar(layer: Konva.Layer, ppm: number, stageH: number): void {
       text: "10 m",
       fontSize: 10,
       fill: "#333",
-    }),
+    })
   );
 }
 
@@ -323,7 +321,7 @@ function drawCameraMarker(
   layer: Konva.Layer,
   camera: { x: number; y: number; targetX: number; targetY: number },
   ppm: number,
-  padding: number,
+  padding: number
 ): void {
   const cx = camera.x * ppm + padding;
   const cy = camera.y * ppm + padding;
@@ -339,7 +337,7 @@ function drawCameraMarker(
       fill: "#d32f2f",
       stroke: "#b71c1c",
       strokeWidth: 1.5,
-    }),
+    })
   );
 
   // Direction arrow
@@ -352,7 +350,7 @@ function drawCameraMarker(
       stroke: "#d32f2f",
       strokeWidth: 1.5,
       dash: [4, 3],
-    }),
+    })
   );
 
   // Target crosshair
@@ -363,6 +361,6 @@ function drawCameraMarker(
       radius: 4,
       stroke: "#d32f2f",
       strokeWidth: 1,
-    }),
+    })
   );
 }

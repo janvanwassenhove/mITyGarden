@@ -2,7 +2,13 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "@mity-garden/shared-ui";
 import type { Locale } from "@mity-garden/domain";
-import { getApiKeys, getEnvApiKeys, saveApiKeys, getGoogleMapsApiKey, saveGoogleMapsApiKey } from "../apiKeys.js";
+import {
+  getApiKeys,
+  getEnvApiKeys,
+  saveApiKeys,
+  getGoogleMapsApiKey,
+  saveGoogleMapsApiKey,
+} from "../apiKeys.js";
 
 // ─── Lined cog icon (outline / "lined" style) ─────────────────────────────────
 
@@ -65,7 +71,7 @@ export function SettingsPanel({ onSaved }: SettingsPanelProps): React.ReactEleme
   const envGoogleMaps = import.meta.env.GOOGLE_MAPS_API_KEY;
   const hasEnvGoogleMaps = Boolean(envGoogleMaps && envGoogleMaps.length > 0);
   const [googleMaps, setGoogleMaps] = useState(
-    hasEnvGoogleMaps ? "" : (localStorage.getItem("mitygarden_google_maps_key") ?? ""),
+    hasEnvGoogleMaps ? "" : (localStorage.getItem("mitygarden_google_maps_key") ?? "")
   );
 
   const hasEnvKeys = Object.keys(envKeys).length > 0 || hasEnvGoogleMaps;
@@ -212,7 +218,9 @@ export function SettingsPanel({ onSaved }: SettingsPanelProps): React.ReactEleme
             value={anthropic}
             onChange={setAnthropic}
             testId="settings-key-anthropic"
-            {...(envKeys.anthropic !== undefined ? { fromEnv: true, envValue: envKeys.anthropic } : {})}
+            {...(envKeys.anthropic !== undefined
+              ? { fromEnv: true, envValue: envKeys.anthropic }
+              : {})}
           />
           <KeyField
             label="Gemini"
@@ -351,7 +359,9 @@ function KeyField(props: {
             letterSpacing: "0.05em",
           }}
         >
-          {envValue ? `${envValue.slice(0, 6)}${"•".repeat(Math.max(0, envValue.length - 6))}` : "—"}
+          {envValue
+            ? `${envValue.slice(0, 6)}${"•".repeat(Math.max(0, envValue.length - 6))}`
+            : "—"}
         </div>
       ) : (
         <input

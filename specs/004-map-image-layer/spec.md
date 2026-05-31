@@ -7,26 +7,31 @@
 ## Acceptance Criteria
 
 ### AC-001: Map image captured on project creation
+
 - Given the user draws a boundary on the satellite map (Leaflet ESRI or Google Maps) in the wizard
 - When the polygon is completed and "Finish" is clicked
 - Then the project stores a URL pointing to a static satellite image of the boundary area
 
 ### AC-002: Uploaded image captured on project creation
+
 - Given the user uploads an image and traces a boundary on it in the wizard
 - When the scale is calculated and "Finish" is clicked
 - Then the project stores the uploaded image (cropped to the traced bounding box) as a Base64 data URL
 
 ### AC-003: Map image layer shown on canvas
+
 - Given a project has a stored map image
 - When the design canvas is opened
 - Then the map image is displayed as a background layer below all garden elements, stretched to fit the garden dimensions
 
 ### AC-004: Map layer visible by default
+
 - Given a project has a stored map image
 - When the canvas first loads
 - Then the map layer is visible (default: on)
 
 ### AC-005: Toggle map layer visibility
+
 - Given a project has a stored map image
 - When the user clicks the "Map Layer" toggle button in the canvas toolbar
 - Then the map image layer is hidden
@@ -35,6 +40,7 @@
 - Then the map layer becomes visible again
 
 ### AC-006: No map layer when no image stored
+
 - Given a project has no stored map image (created manually without wizard boundary)
 - When the design canvas is opened
 - Then the map layer toggle button is absent or disabled
@@ -51,8 +57,8 @@
 
 ## Test IDs
 
-| Element | data-testid |
-|---------|-------------|
+| Element                 | data-testid                |
+| ----------------------- | -------------------------- |
 | Map layer toggle button | `toolbar-toggle-map-layer` |
 
 ## Success Metrics

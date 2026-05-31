@@ -15,15 +15,17 @@ _What was decided? Be specific._
 ## Alternatives considered
 
 | Alternative | Reason rejected |
-|-------------|----------------|
-| … | … |
+| ----------- | --------------- |
+| …           | …               |
 
 ## Consequences
 
 **Positive:**
+
 - …
 
 **Negative / trade-offs:**
+
 - …
 
 ## References

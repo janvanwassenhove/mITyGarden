@@ -18,7 +18,6 @@ function LocaleSync(): null {
   return null;
 }
 
-
 function WizardController(): React.ReactElement | null {
   const wizardOpen = useUiStore((s) => s.wizardOpen);
   const closeWizard = useUiStore((s) => s.closeWizard);

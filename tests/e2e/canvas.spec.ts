@@ -10,14 +10,14 @@ test.describe("Garden Design Canvas", () => {
     // Create a project via wizard first
     await page.goto("/");
     await page.getByTestId("new-project-btn").click();
-    
+
     // Complete wizard quickly
     await page.getByTestId("wizard-next").click(); // dimensions → style
     await page.getByTestId("wizard-next").click(); // style → structures
     await page.getByTestId("wizard-next").click(); // structures → goals
     await page.getByTestId("wizard-next").click(); // goals → location
     await page.getByTestId("wizard-finish").click(); // create
-    
+
     await page.waitForURL(/\/design/);
   });
 

@@ -23,7 +23,9 @@
     "steps": {
       "dimensions": {
         "title": "Dimensions du jardin",
-        "description": "Entrez les dimensions de votre jardin et choisissez votre unité de mesure préférée.",        "autocalcNote": "Dimensions calcul\u00e9es automatiquement \u00e0 partir de votre contour trac\u00e9. Vous pouvez les ajuster ci-dessous.",        "width": "Largeur",
+        "description": "Entrez les dimensions de votre jardin et choisissez votre unité de mesure préférée.",
+        "autocalcNote": "Dimensions calcul\u00e9es automatiquement \u00e0 partir de votre contour trac\u00e9. Vous pouvez les ajuster ci-dessous.",
+        "width": "Largeur",
         "height": "Profondeur",
         "unit": "Système de mesure",
         "metric": "Métrique (mètres)",

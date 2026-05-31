@@ -56,14 +56,20 @@ export class GardenLLMService {
 
   async suggestLayout(
     project: GardenProject,
-    availableAssets?: Array<{ id: string; type: string; name: string; defaultSize: { width: number; height: number } }>
+    availableAssets?: Array<{
+      id: string;
+      type: string;
+      name: string;
+      defaultSize: { width: number; height: number };
+    }>
   ): Promise<GardenLayoutSuggestion> {
     // Exclude history stack to keep the payload compact
     const { history: _history, ...projectContext } = project;
 
-    const assetSection = availableAssets && availableAssets.length > 0
-      ? `\n\nAvailable assets for placements (use exact assetId values):\n${JSON.stringify(availableAssets, null, 2)}`
-      : "";
+    const assetSection =
+      availableAssets && availableAssets.length > 0
+        ? `\n\nAvailable assets for placements (use exact assetId values):\n${JSON.stringify(availableAssets, null, 2)}`
+        : "";
 
     // Build location-aware system prompt
     let locationContext = "";
@@ -74,20 +80,18 @@ export class GardenLLMService {
       }
       if (project.mapData.coordinates) {
         parts.push(
-          `GPS coordinates: ${project.mapData.coordinates.lat.toFixed(5)}, ${project.mapData.coordinates.lng.toFixed(5)}.`,
+          `GPS coordinates: ${project.mapData.coordinates.lat.toFixed(5)}, ${project.mapData.coordinates.lng.toFixed(5)}.`
         );
       }
       if (project.mapData.boundary && project.mapData.boundary.length >= 3) {
-        parts.push(
-          `The property has a ${project.mapData.boundary.length}-sided polygon boundary.`,
-        );
+        parts.push(`The property has a ${project.mapData.boundary.length}-sided polygon boundary.`);
       }
       const structures = project.mapData.userCorrectedStructures?.length
         ? project.mapData.userCorrectedStructures
         : project.mapData.detectedStructures;
       if (structures && structures.length > 0) {
         parts.push(
-          `There ${structures.length === 1 ? "is 1 existing structure" : `are ${structures.length} existing structures`} on the property that should be accounted for.`,
+          `There ${structures.length === 1 ? "is 1 existing structure" : `are ${structures.length} existing structures`} on the property that should be accounted for.`
         );
       }
       if (parts.length > 0) {
@@ -166,6 +170,8 @@ export class NoOpLLMProvider implements LLMProvider {
     return false;
   }
   async complete(_messages: LLMMessage[]): Promise<LLMResponse> {
-    throw new Error("No LLM provider configured. Set MITY_GARDEN_LLM_API_KEY environment variable.");
+    throw new Error(
+      "No LLM provider configured. Set MITY_GARDEN_LLM_API_KEY environment variable."
+    );
   }
 }

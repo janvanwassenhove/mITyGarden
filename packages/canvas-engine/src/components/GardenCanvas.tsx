@@ -1,10 +1,25 @@
 import React, { useRef, useCallback, useEffect, useState } from "react";
-import { Stage, Layer, Rect, Line, Text, Group, Transformer, Image as KonvaImage } from "react-konva";
+import {
+  Stage,
+  Layer,
+  Rect,
+  Line,
+  Text,
+  Group,
+  Transformer,
+  Image as KonvaImage,
+} from "react-konva";
 import type Konva from "konva";
 import { useStore } from "zustand";
 import { getAssetById } from "@mity-garden/asset-library";
 import { getSharedI18n } from "@mity-garden/i18n";
-import type { GardenProject, GardenElement, UUID, MapBoundingBox, ElementType } from "@mity-garden/domain";
+import type {
+  GardenProject,
+  GardenElement,
+  UUID,
+  MapBoundingBox,
+  ElementType,
+} from "@mity-garden/domain";
 import {
   BASE_PIXELS_PER_METER,
   metersToPixels,
@@ -51,12 +66,12 @@ function GridLines({
 
   for (let x = startX; x < stageW + cellPx; x += cellPx) {
     lines.push(
-      <Rect key={`vg-${x}`} x={x} y={0} width={0.5} height={stageH} fill="rgba(0,0,0,0.08)" />,
+      <Rect key={`vg-${x}`} x={x} y={0} width={0.5} height={stageH} fill="rgba(0,0,0,0.08)" />
     );
   }
   for (let y = startY; y < stageH + cellPx; y += cellPx) {
     lines.push(
-      <Rect key={`hg-${y}`} x={0} y={y} width={stageW} height={0.5} fill="rgba(0,0,0,0.08)" />,
+      <Rect key={`hg-${y}`} x={0} y={y} width={stageW} height={0.5} fill="rgba(0,0,0,0.08)" />
     );
   }
   return <>{lines}</>;
@@ -73,14 +88,23 @@ function useUrlImage(url: string | undefined): HTMLImageElement | null {
   const [img, setImg] = React.useState<HTMLImageElement | null>(null);
 
   React.useEffect(() => {
-    if (!url) { setImg(null); return; }
+    if (!url) {
+      setImg(null);
+      return;
+    }
     let cancelled = false;
     const image = new window.Image();
     if (url.startsWith("http")) image.crossOrigin = "anonymous";
-    image.onload = () => { if (!cancelled) setImg(image); };
-    image.onerror = () => { if (!cancelled) setImg(null); };
+    image.onload = () => {
+      if (!cancelled) setImg(image);
+    };
+    image.onerror = () => {
+      if (!cancelled) setImg(null);
+    };
     image.src = url;
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [url]);
 
   return img;
@@ -159,7 +183,8 @@ function ElementShape({
   // Fallback appearance (shown while SVG loads or if no asset found)
   const fill = FILL_BY_TYPE[el.type] ?? "#90a4ae";
   // Use || so that an empty customLabel (reset) falls back to the asset default name
-  const assetName = el.customLabel || asset?.labels.en.name || el.assetId.split("-").slice(1).join(" ");
+  const assetName =
+    el.customLabel || asset?.labels.en.name || el.assetId.split("-").slice(1).join(" ");
   const minDim = Math.min(w, h);
   const showLabel = minDim >= 40;
   const labelFontSize = Math.max(9, Math.min(13, minDim * 0.18));
@@ -395,7 +420,10 @@ export function GardenCanvas({
   // Delete key removes selected elements
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent): void {
-      if (e.key === "Escape") { setCtxMenu(null); return; }
+      if (e.key === "Escape") {
+        setCtxMenu(null);
+        return;
+      }
       if (e.key !== "Delete" && e.key !== "Backspace") return;
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
@@ -412,7 +440,9 @@ export function GardenCanvas({
   // Dismiss context menu on outside click
   useEffect(() => {
     if (!ctxMenu) return;
-    function onOutsideClick(): void { setCtxMenu(null); }
+    function onOutsideClick(): void {
+      setCtxMenu(null);
+    }
     window.addEventListener("mousedown", onOutsideClick);
     return () => window.removeEventListener("mousedown", onOutsideClick);
   }, [ctxMenu]);
@@ -431,7 +461,7 @@ export function GardenCanvas({
       if (!rect) return;
       setCtxMenu({ x: e.evt.clientX - rect.left, y: e.evt.clientY - rect.top });
     },
-    [selectElement],
+    [selectElement]
   );
 
   // Copy selected elements to clipboard
@@ -471,11 +501,12 @@ export function GardenCanvas({
       const el = allElements.find((e) => e.id === id);
       if (!el) return;
       const asset = getAssetById(el.assetId);
-      const current = el.customLabel ?? asset?.labels.en.name ?? el.assetId.split("-").slice(1).join(" ");
+      const current =
+        el.customLabel ?? asset?.labels.en.name ?? el.assetId.split("-").slice(1).join(" ");
       setRenameTarget({ id, name: current });
       setCtxMenu(null);
     },
-    [allElements],
+    [allElements]
   );
 
   // Commit the rename: save customLabel, or store "" to reset to the asset default.
@@ -489,7 +520,7 @@ export function GardenCanvas({
       }
       setRenameTarget(null);
     },
-    [elementLayerMap, updateElement],
+    [elementLayerMap, updateElement]
   );
 
   // Focus + select-all the rename input whenever it mounts
@@ -505,7 +536,7 @@ export function GardenCanvas({
     (id: UUID) => {
       handleStartRename(id);
     },
-    [handleStartRename],
+    [handleStartRename]
   );
 
   // Pan: drag the stage background
@@ -514,7 +545,7 @@ export function GardenCanvas({
       if (e.target !== stageRef.current) return;
       setOffset(e.target.x(), e.target.y());
     },
-    [setOffset],
+    [setOffset]
   );
 
   // Zoom: mouse wheel
@@ -535,7 +566,7 @@ export function GardenCanvas({
       setScale(newScale);
       setOffset(pointer.x - mousePointTo.x * newScale, pointer.y - mousePointTo.y * newScale);
     },
-    [scale, setScale, setOffset],
+    [scale, setScale, setOffset]
   );
 
   // Click on stage background: clear selection OR place asset (keeps asset selected for repeat placements)
@@ -568,7 +599,7 @@ export function GardenCanvas({
 
       clearSelection();
     },
-    [pendingAssetId, scale, snapEnabled, gridSize, defaultLayerId, addElement, clearSelection],
+    [pendingAssetId, scale, snapEnabled, gridSize, defaultLayerId, addElement, clearSelection]
   );
 
   // Right-click on stage background: cancel placement mode (or show nothing)
@@ -580,7 +611,7 @@ export function GardenCanvas({
         onAssetPlaced?.();
       }
     },
-    [pendingAssetId, onAssetPlaced],
+    [pendingAssetId, onAssetPlaced]
   );
 
   // Click on element: select it
@@ -590,7 +621,7 @@ export function GardenCanvas({
       setCtxMenu(null);
       selectElement(id, e.evt.shiftKey);
     },
-    [selectElement],
+    [selectElement]
   );
 
   // Drag element: update position
@@ -603,7 +634,7 @@ export function GardenCanvas({
         : { x: worldX, y: worldY };
       updateElement(layerId, id, { position: snapped });
     },
-    [elementLayerMap, snapEnabled, gridSize, updateElement],
+    [elementLayerMap, snapEnabled, gridSize, updateElement]
   );
 
   const handleElementMouseEnter = useCallback(
@@ -614,7 +645,7 @@ export function GardenCanvas({
       if (!rect) return;
       setHoveredEl({ id, x: e.evt.clientX - rect.left, y: e.evt.clientY - rect.top });
     },
-    [allElements],
+    [allElements]
   );
 
   const handleElementMouseLeave = useCallback(() => {
@@ -629,289 +660,315 @@ export function GardenCanvas({
 
   return (
     <div ref={containerRef} style={{ position: "relative", width, height, flexShrink: 0 }}>
-    <Stage
-      ref={stageRef}
-      width={width}
-      height={height}
-      x={offsetX !== 0 ? offsetX : initOffsetX}
-      y={offsetY !== 0 ? offsetY : initOffsetY}
-      scaleX={scale}
-      scaleY={scale}
-      draggable
-      onDragEnd={handleStageDragEnd}
-      onWheel={handleWheel}
-      onClick={handleStageClick}
-      onContextMenu={handleStageContextMenu}
-      style={{ background: "#e8f5e9", cursor: pendingAssetId ? "crosshair" : "default" }}
-      data-testid="garden-canvas-stage"
-    >
-      {/* Background / grid layer */}
-      <Layer>
-        {/* Outer background */}
-        <Rect
-          x={-width}
-          y={-height}
-          width={width * 3}
-          height={height * 3}
-          fill="#f0f4e8"
-          listening={false}
-        />
-        {/* Grid */}
-        {gridEnabled && (
-          <GridLines
-            offsetX={offsetX !== 0 ? offsetX : initOffsetX}
-            offsetY={offsetY !== 0 ? offsetY : initOffsetY}
-            scale={scale}
-            gridSize={gridSize}
-            ppm={ppm}
-            stageW={width / scale}
-            stageH={height / scale}
+      <Stage
+        ref={stageRef}
+        width={width}
+        height={height}
+        x={offsetX !== 0 ? offsetX : initOffsetX}
+        y={offsetY !== 0 ? offsetY : initOffsetY}
+        scaleX={scale}
+        scaleY={scale}
+        draggable
+        onDragEnd={handleStageDragEnd}
+        onWheel={handleWheel}
+        onClick={handleStageClick}
+        onContextMenu={handleStageContextMenu}
+        style={{ background: "#e8f5e9", cursor: pendingAssetId ? "crosshair" : "default" }}
+        data-testid="garden-canvas-stage"
+      >
+        {/* Background / grid layer */}
+        <Layer>
+          {/* Outer background */}
+          <Rect
+            x={-width}
+            y={-height}
+            width={width * 3}
+            height={height * 3}
+            fill="#f0f4e8"
+            listening={false}
           />
-        )}
-      </Layer>
+          {/* Grid */}
+          {gridEnabled && (
+            <GridLines
+              offsetX={offsetX !== 0 ? offsetX : initOffsetX}
+              offsetY={offsetY !== 0 ? offsetY : initOffsetY}
+              scale={scale}
+              gridSize={gridSize}
+              ppm={ppm}
+              stageW={width / scale}
+              stageH={height / scale}
+            />
+          )}
+        </Layer>
 
-      {/* Map image layer — satellite/uploaded photo background */}
-      {mapImage && mapLayerVisible && (
-        <Layer listening={false}>
-          <KonvaImage
-            image={mapImage}
-            x={0}
-            y={0}
-            width={gardenW}
-            height={gardenH}
-            opacity={0.7}
+        {/* Map image layer — satellite/uploaded photo background */}
+        {mapImage && mapLayerVisible && (
+          <Layer listening={false}>
+            <KonvaImage
+              image={mapImage}
+              x={0}
+              y={0}
+              width={gardenW}
+              height={gardenH}
+              opacity={0.7}
+              listening={false}
+            />
+          </Layer>
+        )}
+
+        {/* Garden area layer */}
+        <Layer>
+          {/* Garden boundary fill */}
+          {boundaryPoints ? (
+            <Line
+              points={boundaryPoints}
+              closed
+              fill="#c8e6c9"
+              stroke="#4caf50"
+              strokeWidth={2 / scale}
+              listening={false}
+            />
+          ) : (
+            <Rect
+              x={0}
+              y={0}
+              width={gardenW}
+              height={gardenH}
+              fill="#c8e6c9"
+              stroke="#4caf50"
+              strokeWidth={2 / scale}
+              listening={false}
+            />
+          )}
+          {/* Garden name label */}
+          <Text
+            x={8 / scale}
+            y={8 / scale}
+            text={`${project.name}  ${project.dimensions.width}m × ${project.dimensions.height}m`}
+            fontSize={Math.max(10, 14 / scale)}
+            fill="#2e7d32"
             listening={false}
           />
         </Layer>
+
+        {/* Elements layer */}
+        <Layer>
+          {allElements.map((el) => (
+            <ElementShape
+              key={el.id}
+              el={el}
+              ppm={ppm}
+              selected={selectedElementIds.includes(el.id)}
+              onClick={handleElementClick}
+              onDragEnd={handleElementDragEnd}
+              onContextMenu={handleElementContextMenu}
+              onDblClick={handleElementDblClick}
+              onMouseEnter={handleElementMouseEnter}
+              onMouseLeave={handleElementMouseLeave}
+            />
+          ))}
+          <Transformer
+            ref={transformerRef}
+            rotateEnabled
+            keepRatio={false}
+            onTransformEnd={(e) => {
+              const node = e.target;
+              const id = node.id() as UUID;
+              const layerId = elementLayerMap.get(id);
+              if (!layerId) return;
+              updateElement(layerId, id, {
+                position: { x: node.x() / ppm, y: node.y() / ppm },
+                size: {
+                  width: (node.width() * node.scaleX()) / ppm,
+                  height: (node.height() * node.scaleY()) / ppm,
+                },
+                rotation: node.rotation(),
+              });
+              node.scaleX(1);
+              node.scaleY(1);
+            }}
+          />
+        </Layer>
+      </Stage>
+
+      {/* Context menu — HTML overlay so it can overflow the canvas */}
+      {ctxMenu && (
+        <div
+          data-testid="canvas-context-menu"
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            left: ctxMenu.x,
+            top: ctxMenu.y,
+            background: "#fff",
+            border: "1px solid #e0e0e0",
+            borderRadius: 8,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+            padding: "4px 0",
+            zIndex: 200,
+            minWidth: 160,
+            userSelect: "none",
+          }}
+        >
+          <CtxItem
+            icon="📋"
+            label={getSharedI18n().t("canvas.contextMenu.copy")}
+            testId="ctx-copy"
+            onClick={handleCopy}
+          />
+          <CtxItem
+            icon="📌"
+            label={
+              clipboard.length > 0
+                ? getSharedI18n().t("canvas.contextMenu.pasteCount", { count: clipboard.length })
+                : getSharedI18n().t("canvas.contextMenu.paste")
+            }
+            testId="ctx-paste"
+            onClick={handlePaste}
+            disabled={clipboard.length === 0}
+          />
+          <CtxItem
+            icon="✏️"
+            label={getSharedI18n().t("canvas.contextMenu.rename")}
+            testId="ctx-rename"
+            onClick={() => {
+              const ids = canvasStore.getState().selectedElementIds;
+              if (ids.length === 1) handleStartRename(ids[0]!);
+            }}
+            disabled={selectedCount !== 1}
+          />
+          <div style={{ height: 1, background: "#f0f0f0", margin: "4px 0" }} />
+          <CtxItem
+            icon="🗑"
+            label={
+              selectedCount > 1
+                ? getSharedI18n().t("canvas.contextMenu.deleteCount", { count: selectedCount })
+                : getSharedI18n().t("canvas.contextMenu.delete")
+            }
+            testId="ctx-delete"
+            onClick={handleDeleteSelected}
+            danger
+          />
+        </div>
       )}
 
-      {/* Garden area layer */}
-      <Layer>
-        {/* Garden boundary fill */}
-        {boundaryPoints ? (
-          <Line
-            points={boundaryPoints}
-            closed
-            fill="#c8e6c9"
-            stroke="#4caf50"
-            strokeWidth={2 / scale}
-            listening={false}
-          />
-        ) : (
-          <Rect
-            x={0}
-            y={0}
-            width={gardenW}
-            height={gardenH}
-            fill="#c8e6c9"
-            stroke="#4caf50"
-            strokeWidth={2 / scale}
-            listening={false}
-          />
-        )}
-        {/* Garden name label */}
-        <Text
-          x={8 / scale}
-          y={8 / scale}
-          text={`${project.name}  ${project.dimensions.width}m × ${project.dimensions.height}m`}
-          fontSize={Math.max(10, 14 / scale)}
-          fill="#2e7d32"
-          listening={false}
-        />
-      </Layer>
-
-      {/* Elements layer */}
-      <Layer>
-        {allElements.map((el) => (
-          <ElementShape
-            key={el.id}
-            el={el}
-            ppm={ppm}
-            selected={selectedElementIds.includes(el.id)}
-            onClick={handleElementClick}
-            onDragEnd={handleElementDragEnd}
-            onContextMenu={handleElementContextMenu}
-            onDblClick={handleElementDblClick}
-            onMouseEnter={handleElementMouseEnter}
-            onMouseLeave={handleElementMouseLeave}
-          />
-        ))}
-        <Transformer
-          ref={transformerRef}
-          rotateEnabled
-          keepRatio={false}
-          onTransformEnd={(e) => {
-            const node = e.target;
-            const id = node.id() as UUID;
-            const layerId = elementLayerMap.get(id);
-            if (!layerId) return;
-            updateElement(layerId, id, {
-              position: { x: node.x() / ppm, y: node.y() / ppm },
-              size: { width: (node.width() * node.scaleX()) / ppm, height: (node.height() * node.scaleY()) / ppm },
-              rotation: node.rotation(),
-            });
-            node.scaleX(1);
-            node.scaleY(1);
-          }}
-        />
-      </Layer>
-    </Stage>
-
-    {/* Context menu — HTML overlay so it can overflow the canvas */}
-    {ctxMenu && (
-      <div
-        data-testid="canvas-context-menu"
-        onMouseDown={(e) => e.stopPropagation()}
-        style={{
-          position: "absolute",
-          left: ctxMenu.x,
-          top: ctxMenu.y,
-          background: "#fff",
-          border: "1px solid #e0e0e0",
-          borderRadius: 8,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-          padding: "4px 0",
-          zIndex: 200,
-          minWidth: 160,
-          userSelect: "none",
-        }}
-      >
-        <CtxItem icon="📋" label={getSharedI18n().t("canvas.contextMenu.copy")} testId="ctx-copy" onClick={handleCopy} />
-        <CtxItem
-          icon="📌"
-          label={clipboard.length > 0 ? getSharedI18n().t("canvas.contextMenu.pasteCount", { count: clipboard.length }) : getSharedI18n().t("canvas.contextMenu.paste")}
-          testId="ctx-paste"
-          onClick={handlePaste}
-          disabled={clipboard.length === 0}
-        />
-        <CtxItem
-          icon="✏️"
-          label={getSharedI18n().t("canvas.contextMenu.rename")}
-          testId="ctx-rename"
-          onClick={() => {
-            const ids = canvasStore.getState().selectedElementIds;
-            if (ids.length === 1) handleStartRename(ids[0]!);
-          }}
-          disabled={selectedCount !== 1}
-        />
-        <div style={{ height: 1, background: "#f0f0f0", margin: "4px 0" }} />
-        <CtxItem
-          icon="🗑"
-          label={selectedCount > 1 ? getSharedI18n().t("canvas.contextMenu.deleteCount", { count: selectedCount }) : getSharedI18n().t("canvas.contextMenu.delete")}
-          testId="ctx-delete"
-          onClick={handleDeleteSelected}
-          danger
-        />
-      </div>
-    )}
-
-    {/* Canvas info overlay — address + total garden surface area */}
-    {(() => {
-      const address = project.metadata.address ?? project.mapData?.address;
-      const area = (project.dimensions.width * project.dimensions.height).toFixed(1);
-      return (
-        <div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            left: 10,
-            background: "rgba(0,0,0,0.58)",
-            color: "#fff",
-            borderRadius: 6,
-            padding: "6px 12px",
-            fontSize: 12,
-            fontFamily: "inherit",
-            pointerEvents: "none",
-            zIndex: 100,
-            maxWidth: 360,
-          }}
-        >
-          <div style={{ fontWeight: 600 }}>
-            {project.dimensions.width}m × {project.dimensions.height}m &mdash; {area} m²
-          </div>
-          {address && (
-            <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {address}
+      {/* Canvas info overlay — address + total garden surface area */}
+      {(() => {
+        const address = project.metadata.address ?? project.mapData?.address;
+        const area = (project.dimensions.width * project.dimensions.height).toFixed(1);
+        return (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 10,
+              left: 10,
+              background: "rgba(0,0,0,0.58)",
+              color: "#fff",
+              borderRadius: 6,
+              padding: "6px 12px",
+              fontSize: 12,
+              fontFamily: "inherit",
+              pointerEvents: "none",
+              zIndex: 100,
+              maxWidth: 360,
+            }}
+          >
+            <div style={{ fontWeight: 600 }}>
+              {project.dimensions.width}m × {project.dimensions.height}m &mdash; {area} m²
             </div>
-          )}
-        </div>
-      );
-    })()}
+            {address && (
+              <div
+                style={{
+                  fontSize: 11,
+                  opacity: 0.85,
+                  marginTop: 2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {address}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
-    {/* Hover tooltip — shows element name + surface area */}
-    {hoveredEl && (() => {
-      const el = allElements.find((e) => e.id === hoveredEl.id);
-      if (!el) return null;
-      const asset = getAssetById(el.assetId);
-      const name = el.customLabel || asset?.labels.en.name || el.assetId.split("-").slice(1).join(" ");
-      const area = (el.size.width * el.size.height).toFixed(1);
-      return (
-        <div
-          style={{
-            position: "absolute",
-            left: hoveredEl.x + 14,
-            top: hoveredEl.y + 16,
-            background: "rgba(33,33,33,0.82)",
-            color: "#fff",
-            borderRadius: 6,
-            padding: "5px 10px",
-            fontSize: 12,
-            fontFamily: "inherit",
-            pointerEvents: "none",
-            zIndex: 150,
-            whiteSpace: "nowrap",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.22)",
-          }}
-        >
-          {name} — {area} m²
-        </div>
-      );
-    })()}
+      {/* Hover tooltip — shows element name + surface area */}
+      {hoveredEl &&
+        (() => {
+          const el = allElements.find((e) => e.id === hoveredEl.id);
+          if (!el) return null;
+          const asset = getAssetById(el.assetId);
+          const name =
+            el.customLabel || asset?.labels.en.name || el.assetId.split("-").slice(1).join(" ");
+          const area = (el.size.width * el.size.height).toFixed(1);
+          return (
+            <div
+              style={{
+                position: "absolute",
+                left: hoveredEl.x + 14,
+                top: hoveredEl.y + 16,
+                background: "rgba(33,33,33,0.82)",
+                color: "#fff",
+                borderRadius: 6,
+                padding: "5px 10px",
+                fontSize: 12,
+                fontFamily: "inherit",
+                pointerEvents: "none",
+                zIndex: 150,
+                whiteSpace: "nowrap",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.22)",
+              }}
+            >
+              {name} — {area} m²
+            </div>
+          );
+        })()}
 
-    {/* Rename overlay — floats over the canvas element being renamed */}
-    {renameTarget && (() => {
-      const el = allElements.find((e) => e.id === renameTarget.id);
-      if (!el) return null;
-      const stageX = offsetX !== 0 ? offsetX : initOffsetX;
-      const stageY = offsetY !== 0 ? offsetY : initOffsetY;
-      const screenX = el.position.x * ppm * scale + stageX;
-      const screenY = el.position.y * ppm * scale + stageY;
-      const screenW = Math.max(80, el.size.width * ppm * scale);
-      const screenH = el.size.height * ppm * scale;
-      return (
-        <input
-          ref={renameInputRef}
-          data-testid="canvas-rename-input"
-          value={renameTarget.name}
-          onChange={(e) =>
-            setRenameTarget((r) => (r ? { ...r, name: e.target.value } : null))
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleRenameCommit(renameTarget.id, renameTarget.name);
-            if (e.key === "Escape") setRenameTarget(null);
-          }}
-          onBlur={() => handleRenameCommit(renameTarget.id, renameTarget.name)}
-          style={{
-            position: "absolute",
-            left: screenX,
-            top: screenY + screenH / 2 - 14,
-            width: screenW,
-            height: 28,
-            fontSize: 13,
-            fontFamily: "inherit",
-            textAlign: "center",
-            border: "2px solid #1565c0",
-            borderRadius: 4,
-            background: "rgba(255,255,255,0.97)",
-            outline: "none",
-            zIndex: 300,
-            padding: "0 6px",
-            boxSizing: "border-box",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-          }}
-        />
-      );
-    })()}
-  </div>
+      {/* Rename overlay — floats over the canvas element being renamed */}
+      {renameTarget &&
+        (() => {
+          const el = allElements.find((e) => e.id === renameTarget.id);
+          if (!el) return null;
+          const stageX = offsetX !== 0 ? offsetX : initOffsetX;
+          const stageY = offsetY !== 0 ? offsetY : initOffsetY;
+          const screenX = el.position.x * ppm * scale + stageX;
+          const screenY = el.position.y * ppm * scale + stageY;
+          const screenW = Math.max(80, el.size.width * ppm * scale);
+          const screenH = el.size.height * ppm * scale;
+          return (
+            <input
+              ref={renameInputRef}
+              data-testid="canvas-rename-input"
+              value={renameTarget.name}
+              onChange={(e) => setRenameTarget((r) => (r ? { ...r, name: e.target.value } : null))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleRenameCommit(renameTarget.id, renameTarget.name);
+                if (e.key === "Escape") setRenameTarget(null);
+              }}
+              onBlur={() => handleRenameCommit(renameTarget.id, renameTarget.name)}
+              style={{
+                position: "absolute",
+                left: screenX,
+                top: screenY + screenH / 2 - 14,
+                width: screenW,
+                height: 28,
+                fontSize: 13,
+                fontFamily: "inherit",
+                textAlign: "center",
+                border: "2px solid #1565c0",
+                borderRadius: 4,
+                background: "rgba(255,255,255,0.97)",
+                outline: "none",
+                zIndex: 300,
+                padding: "0 6px",
+                boxSizing: "border-box",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+              }}
+            />
+          );
+        })()}
+    </div>
   );
 }

@@ -80,10 +80,7 @@ export function AIRenderPanel({
   onOpenSettings,
 }: AIRenderPanelProps): React.ReactElement {
   const { t } = useTranslation("common");
-  const imageService = React.useMemo(
-    () => new GardenImageService(imageProvider),
-    [imageProvider],
-  );
+  const imageService = React.useMemo(() => new GardenImageService(imageProvider), [imageProvider]);
 
   // ── State ─────────────────────────────────────────────────────────────────
 
@@ -93,19 +90,33 @@ export function AIRenderPanel({
 
   // View settings
   const [viewMode, setViewMode] = React.useState<ViewMode>(saved?.view.mode ?? DEFAULT_VIEW.mode);
-  const [realism, setRealism] = React.useState<RealismLevel>(saved?.view.realism ?? DEFAULT_VIEW.realism);
+  const [realism, setRealism] = React.useState<RealismLevel>(
+    saved?.view.realism ?? DEFAULT_VIEW.realism
+  );
   const [lens, setLens] = React.useState<Lens>(saved?.view.lens ?? DEFAULT_VIEW.lens);
-  const [cameraHeight, setCameraHeight] = React.useState(saved?.view.cameraHeightMeters ?? DEFAULT_VIEW.cameraHeightMeters);
-  const [cameraAngle, setCameraAngle] = React.useState(saved?.view.cameraAngleDegrees ?? DEFAULT_VIEW.cameraAngleDegrees);
-  const [direction, setDirection] = React.useState<CompassDirection>(saved?.view.direction ?? DEFAULT_VIEW.direction);
-  const [timeOfDay, setTimeOfDay] = React.useState<TimeOfDay>(saved?.view.timeOfDay ?? DEFAULT_VIEW.timeOfDay);
+  const [cameraHeight, setCameraHeight] = React.useState(
+    saved?.view.cameraHeightMeters ?? DEFAULT_VIEW.cameraHeightMeters
+  );
+  const [cameraAngle, setCameraAngle] = React.useState(
+    saved?.view.cameraAngleDegrees ?? DEFAULT_VIEW.cameraAngleDegrees
+  );
+  const [direction, setDirection] = React.useState<CompassDirection>(
+    saved?.view.direction ?? DEFAULT_VIEW.direction
+  );
+  const [timeOfDay, setTimeOfDay] = React.useState<TimeOfDay>(
+    saved?.view.timeOfDay ?? DEFAULT_VIEW.timeOfDay
+  );
   const [season, setSeason] = React.useState<Season>(saved?.view.season ?? DEFAULT_VIEW.season);
 
   // Strictness
-  const [strictness, setStrictness] = React.useState<StrictnessLevel>(saved?.strictness ?? DEFAULT_STRICTNESS);
+  const [strictness, setStrictness] = React.useState<StrictnessLevel>(
+    saved?.strictness ?? DEFAULT_STRICTNESS
+  );
 
   // Enhancements
-  const [enhancements, setEnhancements] = React.useState<SceneEnhancements>(saved?.enhancements ?? { ...DEFAULT_ENHANCEMENTS });
+  const [enhancements, setEnhancements] = React.useState<SceneEnhancements>(
+    saved?.enhancements ?? { ...DEFAULT_ENHANCEMENTS }
+  );
 
   // Generation state
   const [generatedImage, setGeneratedImage] = React.useState<GeneratedImage | null>(null);
@@ -130,7 +141,18 @@ export function AIRenderPanel({
       season,
     };
     saveSettings({ view, enhancements, strictness });
-  }, [viewMode, realism, lens, cameraHeight, cameraAngle, direction, timeOfDay, season, enhancements, strictness]);
+  }, [
+    viewMode,
+    realism,
+    lens,
+    cameraHeight,
+    cameraAngle,
+    direction,
+    timeOfDay,
+    season,
+    enhancements,
+    strictness,
+  ]);
 
   // ── Build scene options ───────────────────────────────────────────────────
 
@@ -316,8 +338,12 @@ export function AIRenderPanel({
             onChange={(e) => setRealism(e.target.value as RealismLevel)}
             style={selectStyle}
           >
-            <option value="photorealistic">{t("llm.aiRender.realismOptions.photorealistic")}</option>
-            <option value="architectural_visualization">{t("llm.aiRender.realismOptions.architectural")}</option>
+            <option value="photorealistic">
+              {t("llm.aiRender.realismOptions.photorealistic")}
+            </option>
+            <option value="architectural_visualization">
+              {t("llm.aiRender.realismOptions.architectural")}
+            </option>
             <option value="concept_render">{t("llm.aiRender.realismOptions.concept")}</option>
           </select>
 
@@ -438,7 +464,17 @@ export function AIRenderPanel({
       {step === "enhancements" && (
         <div>
           {(Object.keys(enhancements) as (keyof SceneEnhancements)[]).map((key) => (
-            <label key={key} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 12, cursor: "pointer" }}>
+            <label
+              key={key}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 8,
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="checkbox"
                 checked={enhancements[key]}
@@ -457,9 +493,13 @@ export function AIRenderPanel({
                 onChange={(e) => onImageProviderChange?.(e.target.value)}
                 style={selectStyle}
               >
-                {imageProviderOptions.filter((p) => p.available).map((p) => (
-                  <option key={p.id} value={p.id}>{p.label}</option>
-                ))}
+                {imageProviderOptions
+                  .filter((p) => p.available)
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.label}
+                    </option>
+                  ))}
               </select>
             </div>
           )}

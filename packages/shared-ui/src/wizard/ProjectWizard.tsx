@@ -2,19 +2,42 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../hooks/useUiStore.js";
 import { useProjectStore } from "../hooks/useProjectStore.js";
-import type { GardenStyle, GardenGoal, UnitSystem, GeoCoordinates, MapData, MapBoundingBox } from "@mity-garden/domain";
+import type {
+  GardenStyle,
+  GardenGoal,
+  UnitSystem,
+  GeoCoordinates,
+  MapData,
+  MapBoundingBox,
+} from "@mity-garden/domain";
 import { GARDEN_STYLES, GARDEN_GOALS, WIZARD_TOTAL_STEPS } from "@mity-garden/domain";
 import type { MapsAdapter, PlaceSearchResult } from "@mity-garden/maps";
 import { NoOpMapsAdapter } from "@mity-garden/maps";
 
 // ─── Google Maps minimal type declarations ────────────────────────────────────
 
-interface GmLatLng { lat(): number; lng(): number; }
-interface GmLatLngBounds { extend(point: { lat: number; lng: number }): void; }
-interface GmMvcArray<T> { getArray(): T[]; }
-interface GmPolygon { getPath(): GmMvcArray<GmLatLng>; setMap(map: GmMap | null): void; }
-interface GmPolyline { setMap(map: GmMap | null): void; setPath(path: { lat: number; lng: number }[]): void; }
-interface GmMap { fitBounds(bounds: GmLatLngBounds): void; addListener(event: string, handler: (e: unknown) => void): unknown; }
+interface GmLatLng {
+  lat(): number;
+  lng(): number;
+}
+interface GmLatLngBounds {
+  extend(point: { lat: number; lng: number }): void;
+}
+interface GmMvcArray<T> {
+  getArray(): T[];
+}
+interface GmPolygon {
+  getPath(): GmMvcArray<GmLatLng>;
+  setMap(map: GmMap | null): void;
+}
+interface GmPolyline {
+  setMap(map: GmMap | null): void;
+  setPath(path: { lat: number; lng: number }[]): void;
+}
+interface GmMap {
+  fitBounds(bounds: GmLatLngBounds): void;
+  addListener(event: string, handler: (e: unknown) => void): unknown;
+}
 
 // ─── Maps adapter context (consumed by StepLocation) ─────────────────────────
 
@@ -26,7 +49,11 @@ const GoogleMapsApiKeyContext = React.createContext<string | undefined>(undefine
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function computeBoundingBox(vertices: GeoCoordinates[]): { width: number; height: number; areaM2: number } {
+function computeBoundingBox(vertices: GeoCoordinates[]): {
+  width: number;
+  height: number;
+  areaM2: number;
+} {
   const lats = vertices.map((v) => v.lat);
   const lngs = vertices.map((v) => v.lng);
   const minLat = Math.min(...lats);
@@ -63,20 +90,26 @@ function geoToMeterVertices(vertices: GeoCoordinates[]): Array<{ x: number; y: n
   const mPerDegLat = 111_320;
   const mPerDegLng = 111_320 * Math.cos(avgLatRad);
   return vertices.map((v) => ({
-    x: Math.round(((v.lng - minLng) * mPerDegLng) * 100) / 100,
-    y: Math.round(((maxLat - v.lat) * mPerDegLat) * 100) / 100,
+    x: Math.round((v.lng - minLng) * mPerDegLng * 100) / 100,
+    y: Math.round((maxLat - v.lat) * mPerDegLat * 100) / 100,
   }));
 }
 
 function loadGoogleMapsScript(apiKey: string): Promise<void> {
   return new Promise((resolve, reject) => {
     // Already bootstrapped
-    if (window.google?.maps) { resolve(); return; }
+    if (window.google?.maps) {
+      resolve();
+      return;
+    }
 
     // Script tag already injected — poll until google.maps appears
     if (document.getElementById("gmaps-js")) {
       const poll = (): void => {
-        if (window.google?.maps) { resolve(); return; }
+        if (window.google?.maps) {
+          resolve();
+          return;
+        }
         setTimeout(poll, 50);
       };
       poll();
@@ -121,7 +154,9 @@ interface GoogleMapsLibraries {
 async function loadGoogleMapsLibraries(): Promise<GoogleMapsLibraries> {
   const gm = window.google!.maps;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const importLib = (gm as any).importLibrary as ((name: string) => Promise<Record<string, unknown>>) | undefined;
+  const importLib = (gm as any).importLibrary as
+    | ((name: string) => Promise<Record<string, unknown>>)
+    | undefined;
 
   if (typeof importLib === "function") {
     // LatLngBounds is in "core"; Map/Polygon/Polyline are in "maps".
@@ -153,10 +188,21 @@ interface LMap {
   remove(): void;
   setView(center: [number, number], zoom: number): LMap;
 }
-interface LCircleMarker { addTo(map: LMap): LCircleMarker; remove(): void; }
-interface LPolyline { addTo(map: LMap): LPolyline; remove(): void; }
-interface LPolygon { addTo(map: LMap): LPolygon; remove(): void; }
-interface LTileLayer { addTo(map: LMap): LTileLayer; }
+interface LCircleMarker {
+  addTo(map: LMap): LCircleMarker;
+  remove(): void;
+}
+interface LPolyline {
+  addTo(map: LMap): LPolyline;
+  remove(): void;
+}
+interface LPolygon {
+  addTo(map: LMap): LPolygon;
+  remove(): void;
+}
+interface LTileLayer {
+  addTo(map: LMap): LTileLayer;
+}
 interface LeafletStatic {
   map(el: HTMLElement, opts?: object): LMap;
   tileLayer(url: string, opts?: object): LTileLayer;
@@ -167,9 +213,24 @@ interface LeafletStatic {
 
 // ─── Google Maps type helpers ─────────────────────────────────────────────────
 
-type GmMapConstructor = new (el: HTMLElement, opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }) => GmMap;
-type GmPolygonConstructor = new (opts: { paths?: { lat: number; lng: number }[]; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeWeight?: number; editable?: boolean }) => GmPolygon;
-type GmPolylineConstructor = new (opts: { path?: { lat: number; lng: number }[]; strokeColor?: string; strokeWeight?: number; strokeOpacity?: number }) => GmPolyline;
+type GmMapConstructor = new (
+  el: HTMLElement,
+  opts: { center: { lat: number; lng: number }; zoom: number; mapTypeId?: string }
+) => GmMap;
+type GmPolygonConstructor = new (opts: {
+  paths?: { lat: number; lng: number }[];
+  fillColor?: string;
+  fillOpacity?: number;
+  strokeColor?: string;
+  strokeWeight?: number;
+  editable?: boolean;
+}) => GmPolygon;
+type GmPolylineConstructor = new (opts: {
+  path?: { lat: number; lng: number }[];
+  strokeColor?: string;
+  strokeWeight?: number;
+  strokeOpacity?: number;
+}) => GmPolyline;
 type GmLatLngBoundsConstructor = new () => GmLatLngBounds;
 
 declare global {
@@ -190,7 +251,10 @@ declare global {
 
 function loadLeafletScript(): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (window.L) { resolve(); return; }
+    if (window.L) {
+      resolve();
+      return;
+    }
     if (!document.getElementById("leaflet-css")) {
       const link = document.createElement("link");
       link.id = "leaflet-css";
@@ -224,7 +288,13 @@ function LeafletBoundaryEditor({
 }: {
   center?: GeoCoordinates;
   initialBoundary?: GeoCoordinates[];
-  onBoundaryComplete: (verts: GeoCoordinates[], width: number, height: number, areaM2: number, bbox: MapBoundingBox) => void;
+  onBoundaryComplete: (
+    verts: GeoCoordinates[],
+    width: number,
+    height: number,
+    areaM2: number,
+    bbox: MapBoundingBox
+  ) => void;
   onClear: () => void;
 }): React.ReactElement {
   const mapDivRef = React.useRef<HTMLDivElement>(null);
@@ -250,14 +320,18 @@ function LeafletBoundaryEditor({
   React.useEffect(() => {
     if (!loaded || !mapDivRef.current) return;
     const L = window.L!;
-    const c: [number, number] = center ? [center.lat, center.lng] : [51.26, 4.40];
+    const c: [number, number] = center ? [center.lat, center.lng] : [51.26, 4.4];
     const map = L.map(mapDivRef.current, { zoomControl: true }).setView(c, center ? 18 : 13);
     mapRef.current = map;
 
     // ESRI World Imagery — free satellite tiles, no API key required
     L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      { attribution: "Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP", maxZoom: 21 },
+      {
+        attribution:
+          "Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP",
+        maxZoom: 21,
+      }
     ).addTo(map);
 
     // Restore existing boundary if present
@@ -266,7 +340,12 @@ function LeafletBoundaryEditor({
       setVertCount(initialBoundary.length);
       setClosed(true);
       const latlngs = initialBoundary.map((v): [number, number] => [v.lat, v.lng]);
-      L.polygon(latlngs, { color: "#388e3c", fillColor: "#4caf50", fillOpacity: 0.25, weight: 2 }).addTo(map);
+      L.polygon(latlngs, {
+        color: "#388e3c",
+        fillColor: "#4caf50",
+        fillOpacity: 0.25,
+        weight: 2,
+      }).addTo(map);
     }
 
     map.on("click", (e) => {
@@ -276,7 +355,13 @@ function LeafletBoundaryEditor({
       setVertCount(vertsRef.current.length);
 
       // Vertex dot
-      const marker = L.circleMarker([latlng.lat, latlng.lng], { radius: 6, color: "#388e3c", fillColor: "#fff", fillOpacity: 1, weight: 2 });
+      const marker = L.circleMarker([latlng.lat, latlng.lng], {
+        radius: 6,
+        color: "#388e3c",
+        fillColor: "#fff",
+        fillOpacity: 1,
+        weight: 2,
+      });
       marker.addTo(map);
       markersRef.current.push(marker);
 
@@ -285,37 +370,49 @@ function LeafletBoundaryEditor({
       if (vertsRef.current.length > 1) {
         polylineRef.current = L.polyline(
           vertsRef.current.map((v): [number, number] => [v.lat, v.lng]),
-          { color: "#388e3c", weight: 2, dashArray: "6 4" },
+          { color: "#388e3c", weight: 2, dashArray: "6 4" }
         ).addTo(map);
       }
     });
 
-    return () => { map.remove(); };
+    return () => {
+      map.remove();
+    };
   }, [loaded]);
 
   function handleClose(): void {
     if (vertsRef.current.length < 3) return;
     const L = window.L!;
     const map = mapRef.current!;
-    if (polylineRef.current) { polylineRef.current.remove(); polylineRef.current = null; }
+    if (polylineRef.current) {
+      polylineRef.current.remove();
+      polylineRef.current = null;
+    }
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
     const latlngs = vertsRef.current.map((v): [number, number] => [v.lat, v.lng]);
-    polygonRef.current = L.polygon(latlngs, { color: "#388e3c", fillColor: "#4caf50", fillOpacity: 0.25, weight: 2 }).addTo(map);
+    polygonRef.current = L.polygon(latlngs, {
+      color: "#388e3c",
+      fillColor: "#4caf50",
+      fillOpacity: 0.25,
+      weight: 2,
+    }).addTo(map);
     setClosed(true);
     const { width, height, areaM2 } = computeBoundingBox(vertsRef.current);
     // Build an ESRI World Imagery static export URL covering the boundary bounding box
     const lats = vertsRef.current.map((v) => v.lat);
     const lngs = vertsRef.current.map((v) => v.lng);
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const minLat = Math.min(...lats),
+      maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs),
+      maxLng = Math.max(...lngs);
     const bbox: MapBoundingBox = { minLat, maxLat, minLng, maxLng };
     onBoundaryComplete(
       vertsRef.current,
       Math.max(1, Math.round(width * 10) / 10),
       Math.max(1, Math.round(height * 10) / 10),
       Math.round(areaM2),
-      bbox,
+      bbox
     );
   }
 
@@ -323,8 +420,14 @@ function LeafletBoundaryEditor({
     vertsRef.current = [];
     setVertCount(0);
     setClosed(false);
-    if (polylineRef.current) { polylineRef.current.remove(); polylineRef.current = null; }
-    if (polygonRef.current) { polygonRef.current.remove(); polygonRef.current = null; }
+    if (polylineRef.current) {
+      polylineRef.current.remove();
+      polylineRef.current = null;
+    }
+    if (polygonRef.current) {
+      polygonRef.current.remove();
+      polygonRef.current = null;
+    }
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
     onClear();
@@ -335,13 +438,28 @@ function LeafletBoundaryEditor({
   return (
     <div>
       {!loaded && (
-        <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
+        <div
+          style={{
+            height: 320,
+            background: "#e3f2fd",
+            borderRadius: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#666",
+          }}
+        >
           {t("wizard.steps.boundary.loadingMap")}
         </div>
       )}
       <div
         ref={mapDivRef}
-        style={{ height: loaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: loaded ? "2px solid #e0e0e0" : "none" }}
+        style={{
+          height: loaded ? 320 : 0,
+          borderRadius: 8,
+          overflow: "hidden",
+          border: loaded ? "2px solid #e0e0e0" : "none",
+        }}
       />
       {loaded && !closed && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
@@ -349,18 +467,37 @@ function LeafletBoundaryEditor({
             {vertCount === 0
               ? t("wizard.steps.boundary.hintStart")
               : vertCount < 3
-              ? t("wizard.steps.boundary.hintNeedMore", { count: vertCount })
-              : t("wizard.steps.boundary.hintReady", { count: vertCount })}
+                ? t("wizard.steps.boundary.hintNeedMore", { count: vertCount })
+                : t("wizard.steps.boundary.hintReady", { count: vertCount })}
           </span>
           <button
             onClick={handleClose}
             disabled={vertCount < 3}
-            style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: vertCount >= 3 ? "#4caf50" : "#e0e0e0", color: vertCount >= 3 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 12, cursor: vertCount >= 3 ? "pointer" : "not-allowed" }}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 6,
+              border: "none",
+              background: vertCount >= 3 ? "#4caf50" : "#e0e0e0",
+              color: vertCount >= 3 ? "#fff" : "#aaa",
+              fontWeight: 600,
+              fontSize: 12,
+              cursor: vertCount >= 3 ? "pointer" : "not-allowed",
+            }}
           >
             {t("wizard.steps.boundary.closeShape")}
           </button>
           {vertCount > 0 && (
-            <button onClick={handleClearLocal} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
+            <button
+              onClick={handleClearLocal}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: "1px solid #ccc",
+                background: "#fff",
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+            >
               {t("wizard.steps.boundary.clear")}
             </button>
           )}
@@ -368,7 +505,17 @@ function LeafletBoundaryEditor({
       )}
       {loaded && closed && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-          <button onClick={handleClearLocal} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+          <button
+            onClick={handleClearLocal}
+            style={{
+              fontSize: 12,
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              background: "#fff",
+              cursor: "pointer",
+            }}
+          >
             {t("wizard.steps.boundary.clearRedraw")}
           </button>
         </div>
@@ -390,7 +537,17 @@ function StepDimensions(): React.ReactElement {
     <div data-testid="wizard-step-dimensions">
       <h2>{t("wizard.steps.dimensions.title")}</h2>
       {hasBoundary ? (
-        <p style={{ color: "#2e7d32", fontSize: 13, background: "#e8f5e9", borderRadius: 6, padding: "8px 12px", border: "1px solid #a5d6a7", marginBottom: 16 }}>
+        <p
+          style={{
+            color: "#2e7d32",
+            fontSize: 13,
+            background: "#e8f5e9",
+            borderRadius: 6,
+            padding: "8px 12px",
+            border: "1px solid #a5d6a7",
+            marginBottom: 16,
+          }}
+        >
           ✅ {t("wizard.steps.dimensions.autocalcNote")}
         </p>
       ) : (
@@ -433,7 +590,9 @@ function StepDimensions(): React.ReactElement {
               checked={wizard.unit === u}
               onChange={() => setUnit(u)}
             />
-            {u === "metric" ? t("wizard.steps.dimensions.metric") : t("wizard.steps.dimensions.imperial")}
+            {u === "metric"
+              ? t("wizard.steps.dimensions.metric")
+              : t("wizard.steps.dimensions.imperial")}
           </label>
         ))}
       </fieldset>
@@ -521,7 +680,7 @@ function StepBoundary(): React.ReactElement {
       const libs = await loadGoogleMapsLibraries();
       if (cancelled || !mapDivRef.current) return;
 
-      const center = coordinates ?? { lat: 51.26, lng: 4.40 };
+      const center = coordinates ?? { lat: 51.26, lng: 4.4 };
       const map = new libs.Map(mapDivRef.current, {
         center,
         zoom: coordinates ? 18 : 13,
@@ -536,7 +695,13 @@ function StepBoundary(): React.ReactElement {
       // Restore existing boundary on map re-init (e.g. after mode switch)
       if (boundary && boundary.length > 2) {
         const paths = boundary.map((p) => ({ lat: p.lat, lng: p.lng }));
-        completedPolygon = new libs.Polygon({ paths, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
+        completedPolygon = new libs.Polygon({
+          paths,
+          fillColor: "#4caf50",
+          fillOpacity: 0.25,
+          strokeColor: "#388e3c",
+          strokeWeight: 2,
+        });
         completedPolygon.setMap(map);
         const bounds = new libs.LatLngBounds();
         paths.forEach((p) => bounds.extend(p));
@@ -555,7 +720,12 @@ function StepBoundary(): React.ReactElement {
           if (previewPolyline) {
             previewPolyline.setPath(drawnVerts);
           } else {
-            previewPolyline = new libs.Polyline({ path: drawnVerts, strokeColor: "#388e3c", strokeWeight: 2, strokeOpacity: 0.8 });
+            previewPolyline = new libs.Polyline({
+              path: drawnVerts,
+              strokeColor: "#388e3c",
+              strokeWeight: 2,
+              strokeOpacity: 0.8,
+            });
             previewPolyline.setMap(map);
           }
         }
@@ -565,27 +735,44 @@ function StepBoundary(): React.ReactElement {
       // Exposed to the Close Shape button in JSX
       closeShapeRef.current = () => {
         if (drawnVerts.length < 3 || completedPolygon !== null) return;
-        if (previewPolyline) { previewPolyline.setMap(null); previewPolyline = null; }
+        if (previewPolyline) {
+          previewPolyline.setMap(null);
+          previewPolyline = null;
+        }
         const finalVerts = [...drawnVerts];
-        completedPolygon = new libs.Polygon({ paths: finalVerts, fillColor: "#4caf50", fillOpacity: 0.25, strokeColor: "#388e3c", strokeWeight: 2 });
+        completedPolygon = new libs.Polygon({
+          paths: finalVerts,
+          fillColor: "#4caf50",
+          fillOpacity: 0.25,
+          strokeColor: "#388e3c",
+          strokeWeight: 2,
+        });
         completedPolygon.setMap(map);
 
         setBoundary(finalVerts);
         setBoundaryVerts(geoToMeterVertices(finalVerts));
         const { width, height, areaM2 } = computeBoundingBox(finalVerts);
-        setDimensions(Math.max(1, Math.round(width * 10) / 10), Math.max(1, Math.round(height * 10) / 10));
+        setDimensions(
+          Math.max(1, Math.round(width * 10) / 10),
+          Math.max(1, Math.round(height * 10) / 10)
+        );
         setArea(Math.round(areaM2));
         const lats = finalVerts.map((v) => v.lat);
         const lngs = finalVerts.map((v) => v.lng);
         const bbox: MapBoundingBox = {
-          minLat: Math.min(...lats), maxLat: Math.max(...lats),
-          minLng: Math.min(...lngs), maxLng: Math.max(...lngs),
+          minLat: Math.min(...lats),
+          maxLat: Math.max(...lats),
+          minLng: Math.min(...lngs),
+          maxLng: Math.max(...lngs),
         };
         setMapBoundingBox(bbox);
       };
     })();
 
-    return () => { cancelled = true; closeShapeRef.current = null; };
+    return () => {
+      cancelled = true;
+      closeShapeRef.current = null;
+    };
   }, [mapsLoaded, mode]);
 
   const hasBoundary = (boundary?.length ?? 0) > 2;
@@ -602,9 +789,13 @@ function StepBoundary(): React.ReactElement {
   }
 
   const modeTabStyle = (active: boolean): React.CSSProperties => ({
-    flex: 1, padding: "7px 4px", border: "none",
+    flex: 1,
+    padding: "7px 4px",
+    border: "none",
     borderBottom: active ? "2px solid #4caf50" : "2px solid transparent",
-    background: "none", cursor: "pointer", fontSize: 13,
+    background: "none",
+    cursor: "pointer",
+    fontSize: 13,
     fontWeight: active ? 700 : 400,
     color: active ? "#2e7d32" : "#666",
   });
@@ -626,11 +817,19 @@ function StepBoundary(): React.ReactElement {
       {/* ── MAP MODE ── */}
       {mode === "map" && (
         <>
-          <p style={{ marginTop: 0 }}>
-            {t("wizard.steps.boundary.description")}
-          </p>
+          <p style={{ marginTop: 0 }}>{t("wizard.steps.boundary.description")}</p>
           {!apiKey && (
-            <div style={{ fontSize: 12, color: "#666", marginBottom: 8, padding: "4px 8px", background: "#f5f5f5", borderRadius: 4, display: "inline-block" }}>
+            <div
+              style={{
+                fontSize: 12,
+                color: "#666",
+                marginBottom: 8,
+                padding: "4px 8px",
+                background: "#f5f5f5",
+                borderRadius: 4,
+                display: "inline-block",
+              }}
+            >
               📡 {t("wizard.steps.boundary.freeImagery")}
             </div>
           )}
@@ -639,11 +838,30 @@ function StepBoundary(): React.ReactElement {
             <>
               {loadError && <p style={{ color: "#c62828", fontSize: 13 }}>{t(loadError)}</p>}
               {!mapsLoaded && !loadError && (
-                <div style={{ height: 320, background: "#e3f2fd", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#666" }}>
+                <div
+                  style={{
+                    height: 320,
+                    background: "#e3f2fd",
+                    borderRadius: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#666",
+                  }}
+                >
                   {t("wizard.steps.boundary.loadingGoogleMaps")}
                 </div>
               )}
-              <div ref={mapDivRef} data-testid="wizard-gmaps-container" style={{ height: mapsLoaded ? 320 : 0, borderRadius: 8, overflow: "hidden", border: mapsLoaded ? "2px solid #e0e0e0" : "none" }} />
+              <div
+                ref={mapDivRef}
+                data-testid="wizard-gmaps-container"
+                style={{
+                  height: mapsLoaded ? 320 : 0,
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  border: mapsLoaded ? "2px solid #e0e0e0" : "none",
+                }}
+              />
               {/* Click-to-draw instructions */}
               {mapsLoaded && !hasBoundary && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
@@ -651,28 +869,70 @@ function StepBoundary(): React.ReactElement {
                     {drawingVertCount === 0
                       ? t("wizard.steps.boundary.traceHintStart")
                       : drawingVertCount < 3
-                      ? t("wizard.steps.boundary.traceHintNeedMore", { count: drawingVertCount })
-                      : t("wizard.steps.boundary.traceHintReady", { count: drawingVertCount })}
+                        ? t("wizard.steps.boundary.traceHintNeedMore", { count: drawingVertCount })
+                        : t("wizard.steps.boundary.traceHintReady", { count: drawingVertCount })}
                   </span>
                   {drawingVertCount >= 3 && (
                     <button
                       onClick={() => closeShapeRef.current?.()}
-                      style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: "#4caf50", color: "#fff", fontWeight: 600, fontSize: 12, cursor: "pointer" }}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: 6,
+                        border: "none",
+                        background: "#4caf50",
+                        color: "#fff",
+                        fontWeight: 600,
+                        fontSize: 12,
+                        cursor: "pointer",
+                      }}
                     >
                       {t("wizard.steps.boundary.closeShape")}
                     </button>
                   )}
                   {drawingVertCount > 0 && (
-                    <button onClick={handleClearGmaps} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
+                    <button
+                      onClick={handleClearGmaps}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                        border: "1px solid #ccc",
+                        background: "#fff",
+                        fontSize: 12,
+                        cursor: "pointer",
+                      }}
+                    >
                       {t("wizard.steps.boundary.clear")}
                     </button>
                   )}
                 </div>
               )}
               {hasBoundary && area !== null && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-                  <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}</span>
-                  <button onClick={handleClearGmaps} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: 8,
+                    padding: "8px 12px",
+                    background: "#e8f5e9",
+                    border: "1px solid #a5d6a7",
+                    borderRadius: 6,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>
+                    ✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}
+                  </span>
+                  <button
+                    onClick={handleClearGmaps}
+                    style={{
+                      fontSize: 12,
+                      padding: "4px 10px",
+                      borderRadius: 4,
+                      border: "1px solid #ccc",
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
                     {t("wizard.steps.boundary.clearRedraw")}
                   </button>
                 </div>
@@ -690,11 +950,26 @@ function StepBoundary(): React.ReactElement {
                   setArea(areaM2);
                   setMapBoundingBox(bbox);
                 }}
-                onClear={() => { setBoundary([]); setBoundaryVerts([]); setMapBoundingBox(undefined); setArea(null); }}
+                onClear={() => {
+                  setBoundary([]);
+                  setBoundaryVerts([]);
+                  setMapBoundingBox(undefined);
+                  setArea(null);
+                }}
               />
               {hasBoundary && area !== null && (
-                <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-                  <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}</span>
+                <div
+                  style={{
+                    marginTop: 8,
+                    padding: "8px 12px",
+                    background: "#e8f5e9",
+                    border: "1px solid #a5d6a7",
+                    borderRadius: 6,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>
+                    ✅ {t("wizard.steps.boundary.boundaryDrawn", { area })}
+                  </span>
                 </div>
               )}
             </>
@@ -710,7 +985,8 @@ function StepBoundary(): React.ReactElement {
       {mode === "image" && (
         <>
           <p style={{ marginTop: 0 }}>
-            Upload any aerial photo, map screenshot, or garden plan. Trace the outline by clicking, then enter one known measurement to set the scale.
+            Upload any aerial photo, map screenshot, or garden plan. Trace the outline by clicking,
+            then enter one known measurement to set the scale.
           </p>
           <ImageTraceBoundaryEditor
             onBoundaryComplete={(widthM, heightM, areaM2, vertices, mapImageUrl) => {
@@ -719,11 +995,26 @@ function StepBoundary(): React.ReactElement {
               setArea(areaM2);
               if (mapImageUrl) setMapImageUrl(mapImageUrl);
             }}
-            onClear={() => { setDimensions(10, 10); setBoundaryVerts([]); setMapImageUrl(""); setArea(null); }}
+            onClear={() => {
+              setDimensions(10, 10);
+              setBoundaryVerts([]);
+              setMapImageUrl("");
+              setArea(null);
+            }}
           />
           {area !== null && (
-            <div style={{ marginTop: 8, padding: "8px 12px", background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 6 }}>
-              <span style={{ fontSize: 13 }}>✅ {t("wizard.steps.boundary.dimensionsCalculated", { area })}</span>
+            <div
+              style={{
+                marginTop: 8,
+                padding: "8px 12px",
+                background: "#e8f5e9",
+                border: "1px solid #a5d6a7",
+                borderRadius: 6,
+              }}
+            >
+              <span style={{ fontSize: 13 }}>
+                ✅ {t("wizard.steps.boundary.dimensionsCalculated", { area })}
+              </span>
             </div>
           )}
           <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>
@@ -741,7 +1032,13 @@ function ImageTraceBoundaryEditor({
   onBoundaryComplete,
   onClear,
 }: {
-  onBoundaryComplete: (widthM: number, heightM: number, areaM2: number, vertices: Array<{ x: number; y: number }>, mapImageUrl: string) => void;
+  onBoundaryComplete: (
+    widthM: number,
+    heightM: number,
+    areaM2: number,
+    vertices: Array<{ x: number; y: number }>,
+    mapImageUrl: string
+  ) => void;
   onClear: () => void;
 }): React.ReactElement {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -782,7 +1079,11 @@ function ImageTraceBoundaryEditor({
     const first = verts[0]!;
     ctx.moveTo(first.x, first.y);
     for (let i = 1; i < verts.length; i++) ctx.lineTo(verts[i]!.x, verts[i]!.y);
-    if (closed) { ctx.closePath(); ctx.fill(); ctx.setLineDash([]); }
+    if (closed) {
+      ctx.closePath();
+      ctx.fill();
+      ctx.setLineDash([]);
+    }
     ctx.stroke();
 
     // Vertex dots
@@ -927,7 +1228,13 @@ function ImageTraceBoundaryEditor({
       }
     }
     setCalculated(true);
-    onBoundaryComplete(Math.max(0.1, Math.round(widthM * 10) / 10), heightM, areaM2, meterVerts, mapImageUrl);
+    onBoundaryComplete(
+      Math.max(0.1, Math.round(widthM * 10) / 10),
+      heightM,
+      areaM2,
+      meterVerts,
+      mapImageUrl
+    );
   }
 
   // ── redraw when canvas size changes (image loaded) ────────────────────────
@@ -938,24 +1245,45 @@ function ImageTraceBoundaryEditor({
     if (ctx) ctx.drawImage(imgRef.current, 0, 0, canvasSize.w, canvasSize.h);
   }, [imgLoaded, canvasSize]);
 
-  const { widthPx, heightPx } = imgLoaded && closed ? pixelPolygonStats() : { widthPx: 0, heightPx: 0 };
+  const { widthPx, heightPx } =
+    imgLoaded && closed ? pixelPolygonStats() : { widthPx: 0, heightPx: 0 };
 
   return (
     <div>
       {/* Upload button */}
       <label
         style={{
-          display: "inline-block", padding: "8px 16px", borderRadius: 6,
-          border: "1px solid #ccc", background: "#fafafa", cursor: "pointer",
-          fontSize: 13, marginBottom: 10,
+          display: "inline-block",
+          padding: "8px 16px",
+          borderRadius: 6,
+          border: "1px solid #ccc",
+          background: "#fafafa",
+          cursor: "pointer",
+          fontSize: 13,
+          marginBottom: 10,
         }}
       >
         📂 {t("wizard.steps.boundary.upload")}
-        <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
       </label>
 
       {!imgLoaded && (
-        <div style={{ padding: "28px 0", background: "#f5f5f5", borderRadius: 8, border: "2px dashed #ccc", textAlign: "center", color: "#999", fontSize: 13 }}>
+        <div
+          style={{
+            padding: "28px 0",
+            background: "#f5f5f5",
+            borderRadius: 8,
+            border: "2px dashed #ccc",
+            textAlign: "center",
+            color: "#999",
+            fontSize: 13,
+          }}
+        >
           {t("wizard.steps.boundary.uploadHint")}
         </div>
       )}
@@ -964,7 +1292,13 @@ function ImageTraceBoundaryEditor({
       {imgLoaded && (
         <div
           ref={wrapperRef}
-          style={{ position: "relative", display: "inline-block", borderRadius: 8, overflow: "hidden", border: "2px solid #e0e0e0" }}
+          style={{
+            position: "relative",
+            display: "inline-block",
+            borderRadius: 8,
+            overflow: "hidden",
+            border: "2px solid #e0e0e0",
+          }}
         >
           <canvas
             ref={canvasRef}
@@ -983,18 +1317,37 @@ function ImageTraceBoundaryEditor({
             {vertCount === 0
               ? t("wizard.steps.boundary.traceHintStart")
               : vertCount < 3
-              ? t("wizard.steps.boundary.traceHintNeedMore", { count: vertCount })
-              : t("wizard.steps.boundary.traceHintReady", { count: vertCount })}
+                ? t("wizard.steps.boundary.traceHintNeedMore", { count: vertCount })
+                : t("wizard.steps.boundary.traceHintReady", { count: vertCount })}
           </span>
           <button
             onClick={handleClose}
             disabled={vertCount < 3}
-            style={{ padding: "6px 14px", borderRadius: 6, border: "none", background: vertCount >= 3 ? "#4caf50" : "#e0e0e0", color: vertCount >= 3 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 12, cursor: vertCount >= 3 ? "pointer" : "not-allowed" }}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 6,
+              border: "none",
+              background: vertCount >= 3 ? "#4caf50" : "#e0e0e0",
+              color: vertCount >= 3 ? "#fff" : "#aaa",
+              fontWeight: 600,
+              fontSize: 12,
+              cursor: vertCount >= 3 ? "pointer" : "not-allowed",
+            }}
           >
             {t("wizard.steps.boundary.closeShape")}
           </button>
           {vertCount > 0 && (
-            <button onClick={handleReset} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", fontSize: 12, cursor: "pointer" }}>
+            <button
+              onClick={handleReset}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: "1px solid #ccc",
+                background: "#fff",
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+            >
               {t("wizard.steps.boundary.clear")}
             </button>
           )}
@@ -1003,7 +1356,15 @@ function ImageTraceBoundaryEditor({
 
       {/* Scale calibration */}
       {imgLoaded && closed && !calculated && (
-        <div style={{ marginTop: 12, padding: "12px 14px", background: "#fff8e1", border: "1px solid #ffe082", borderRadius: 8 }}>
+        <div
+          style={{
+            marginTop: 12,
+            padding: "12px 14px",
+            background: "#fff8e1",
+            border: "1px solid #ffe082",
+            borderRadius: 8,
+          }}
+        >
           <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "#795548" }}>
             📏 {t("wizard.steps.boundary.scaleTitle")}
           </p>
@@ -1018,19 +1379,46 @@ function ImageTraceBoundaryEditor({
               placeholder="e.g. 15"
               value={refWidthM}
               onChange={(e) => setRefWidthM(e.target.value)}
-              style={{ width: 90, padding: "6px 8px", border: "1px solid #ccc", borderRadius: 6, fontSize: 13 }}
+              style={{
+                width: 90,
+                padding: "6px 8px",
+                border: "1px solid #ccc",
+                borderRadius: 6,
+                fontSize: 13,
+              }}
             />
-            <span style={{ fontSize: 13, color: "#555" }}>{t("wizard.steps.boundary.metersWide")}</span>
+            <span style={{ fontSize: 13, color: "#555" }}>
+              {t("wizard.steps.boundary.metersWide")}
+            </span>
             <button
               onClick={handleCalculate}
               disabled={!refWidthM || parseFloat(refWidthM) <= 0}
-              style={{ padding: "7px 16px", borderRadius: 6, border: "none", background: refWidthM && parseFloat(refWidthM) > 0 ? "#4caf50" : "#e0e0e0", color: refWidthM && parseFloat(refWidthM) > 0 ? "#fff" : "#aaa", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+              style={{
+                padding: "7px 16px",
+                borderRadius: 6,
+                border: "none",
+                background: refWidthM && parseFloat(refWidthM) > 0 ? "#4caf50" : "#e0e0e0",
+                color: refWidthM && parseFloat(refWidthM) > 0 ? "#fff" : "#aaa",
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: "pointer",
+              }}
             >
               {t("wizard.steps.boundary.calculate")}
             </button>
           </div>
           <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
-            <button onClick={handleReset} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+            <button
+              onClick={handleReset}
+              style={{
+                fontSize: 12,
+                padding: "4px 10px",
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                background: "#fff",
+                cursor: "pointer",
+              }}
+            >
               {t("wizard.steps.boundary.redraw")}
             </button>
           </div>
@@ -1039,7 +1427,17 @@ function ImageTraceBoundaryEditor({
 
       {imgLoaded && calculated && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-          <button onClick={handleReset} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
+          <button
+            onClick={handleReset}
+            style={{
+              fontSize: 12,
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              background: "#fff",
+              cursor: "pointer",
+            }}
+          >
             {t("wizard.steps.boundary.clearRedraw")}
           </button>
         </div>
@@ -1152,7 +1550,11 @@ function StepLocation(): React.ReactElement {
           placeholder={t("wizard.steps.location.searchPlaceholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { void handleSearch(); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              void handleSearch();
+            }
+          }}
           data-testid="wizard-address-input"
           style={{
             flex: 1,
@@ -1183,9 +1585,7 @@ function StepLocation(): React.ReactElement {
       </div>
 
       {/* Error */}
-      {error && (
-        <p style={{ color: "#c62828", fontSize: 13, marginTop: 4 }}>{t(error)}</p>
-      )}
+      {error && <p style={{ color: "#c62828", fontSize: 13, marginTop: 4 }}>{t(error)}</p>}
 
       {/* Results dropdown */}
       {results.length > 0 && (
@@ -1213,8 +1613,12 @@ function StepLocation(): React.ReactElement {
                 fontSize: 14,
                 borderBottom: i < results.length - 1 ? "1px solid #f0f0f0" : "none",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLLIElement).style.background = "#f5f5f5"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLLIElement).style.background = ""; }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLLIElement).style.background = "#f5f5f5";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLLIElement).style.background = "";
+              }}
             >
               {r.address}
             </li>
@@ -1238,7 +1642,9 @@ function StepLocation(): React.ReactElement {
           }}
         >
           <span>📍</span>
-          <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span
+            style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+          >
             {address}
           </span>
           <span style={{ color: "#888", flexShrink: 0 }}>
@@ -1300,7 +1706,12 @@ export interface ProjectWizardProps {
   googleMapsApiKey?: string;
 }
 
-export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApiKey }: ProjectWizardProps): React.ReactElement {
+export function ProjectWizard({
+  onComplete,
+  onCancel,
+  mapsAdapter,
+  googleMapsApiKey,
+}: ProjectWizardProps): React.ReactElement {
   const wizard = useUiStore((s) => s.wizard);
   const nextStep = useUiStore((s) => s.wizardNextStep);
   const prevStep = useUiStore((s) => s.wizardPrevStep);
@@ -1351,81 +1762,124 @@ export function ProjectWizard({ onComplete, onCancel, mapsAdapter, googleMapsApi
 
   return (
     <MapsAdapterContext.Provider value={adapter}>
-    <GoogleMapsApiKeyContext.Provider value={googleMapsApiKey}>
-    <div
-      data-testid="project-wizard"
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          padding: 32,
-          width: 540,
-          maxWidth: "90vw",
-          maxHeight: "90vh",
-          overflow: "auto",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-        }}
-      >
-        <div style={{ marginBottom: 8, color: "#888", fontSize: 13 }}>
-          {t("wizard.step", { current: wizard.step, total: WIZARD_TOTAL_STEPS })}
-        </div>
+      <GoogleMapsApiKeyContext.Provider value={googleMapsApiKey}>
         <div
+          data-testid="project-wizard"
           style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
             display: "flex",
-            gap: 4,
-            marginBottom: 24,
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
           }}
         >
-          {Array.from({ length: WIZARD_TOTAL_STEPS }).map((_, i) => (
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              padding: 32,
+              width: 540,
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              overflow: "auto",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+            }}
+          >
+            <div style={{ marginBottom: 8, color: "#888", fontSize: 13 }}>
+              {t("wizard.step", { current: wizard.step, total: WIZARD_TOTAL_STEPS })}
+            </div>
             <div
-              key={i}
               style={{
-                flex: 1,
-                height: 4,
-                borderRadius: 2,
-                background: i < wizard.step ? "#4caf50" : "#e0e0e0",
-                transition: "background 0.2s",
+                display: "flex",
+                gap: 4,
+                marginBottom: 24,
               }}
-            />
-          ))}
-        </div>
+            >
+              {Array.from({ length: WIZARD_TOTAL_STEPS }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    height: 4,
+                    borderRadius: 2,
+                    background: i < wizard.step ? "#4caf50" : "#e0e0e0",
+                    transition: "background 0.2s",
+                  }}
+                />
+              ))}
+            </div>
 
-        <StepComponent />
+            <StepComponent />
 
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 32 }}>
-          <button onClick={handleCancel} style={{ padding: "8px 20px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-            {t("wizard.cancel")}
-          </button>
-          <div style={{ display: "flex", gap: 8 }}>
-            {!isFirstStep && (
-              <button onClick={prevStep} data-testid="wizard-back" style={{ padding: "8px 20px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>
-                {t("wizard.back")}
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 32 }}>
+              <button
+                onClick={handleCancel}
+                style={{
+                  padding: "8px 20px",
+                  borderRadius: 6,
+                  border: "1px solid #ccc",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                {t("wizard.cancel")}
               </button>
-            )}
-            {isLastStep ? (
-              <button onClick={handleFinish} data-testid="wizard-finish" style={{ padding: "8px 24px", borderRadius: 6, border: "none", background: "#4caf50", color: "#fff", fontWeight: 700, cursor: "pointer" }}>
-                {t("wizard.finish")}
-              </button>
-            ) : (
-              <button onClick={nextStep} data-testid="wizard-next" style={{ padding: "8px 24px", borderRadius: 6, border: "none", background: "#4caf50", color: "#fff", fontWeight: 700, cursor: "pointer" }}>
-                {t("wizard.next")}
-              </button>
-            )}
+              <div style={{ display: "flex", gap: 8 }}>
+                {!isFirstStep && (
+                  <button
+                    onClick={prevStep}
+                    data-testid="wizard-back"
+                    style={{
+                      padding: "8px 20px",
+                      borderRadius: 6,
+                      border: "1px solid #ccc",
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t("wizard.back")}
+                  </button>
+                )}
+                {isLastStep ? (
+                  <button
+                    onClick={handleFinish}
+                    data-testid="wizard-finish"
+                    style={{
+                      padding: "8px 24px",
+                      borderRadius: 6,
+                      border: "none",
+                      background: "#4caf50",
+                      color: "#fff",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t("wizard.finish")}
+                  </button>
+                ) : (
+                  <button
+                    onClick={nextStep}
+                    data-testid="wizard-next"
+                    style={{
+                      padding: "8px 24px",
+                      borderRadius: 6,
+                      border: "none",
+                      background: "#4caf50",
+                      color: "#fff",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t("wizard.next")}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-    </GoogleMapsApiKeyContext.Provider>
+      </GoogleMapsApiKeyContext.Provider>
     </MapsAdapterContext.Provider>
   );
 }

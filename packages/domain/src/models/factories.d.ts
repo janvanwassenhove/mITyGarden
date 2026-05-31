@@ -1,7 +1,24 @@
-import type { GardenProject, GardenElement, Layer, UnitSystem, GardenStyle, GardenGoal, Locale, Dimensions, ElementType, Position } from "./types.js";
+import type {
+  GardenProject,
+  GardenElement,
+  Layer,
+  UnitSystem,
+  GardenStyle,
+  GardenGoal,
+  Locale,
+  Dimensions,
+  ElementType,
+  Position,
+} from "./types.js";
 export declare function createProject(overrides?: Partial<GardenProject>): GardenProject;
 export declare function createLayer(name: string, order: number): Layer;
-export declare function createElement(assetId: string, type: ElementType, position: Position, size: Dimensions, overrides?: Partial<GardenElement>): GardenElement;
+export declare function createElement(
+  assetId: string,
+  type: ElementType,
+  position: Position,
+  size: Dimensions,
+  overrides?: Partial<GardenElement>
+): GardenElement;
 export declare function normalizeRotation(degrees: number): number;
 export declare function metersToPixels(meters: number, pixelsPerMeter: number): number;
 export declare function pixelsToMeters(pixels: number, pixelsPerMeter: number): number;

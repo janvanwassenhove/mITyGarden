@@ -17,8 +17,7 @@ interface DesktopDb {
 }
 
 function getDb(): DesktopDb {
-  const db = (window as { mityGardenDesktop?: { db?: DesktopDb } })
-    .mityGardenDesktop?.db;
+  const db = (window as { mityGardenDesktop?: { db?: DesktopDb } }).mityGardenDesktop?.db;
   if (!db) throw new Error("ElectronRepository: mityGardenDesktop.db is not available");
   return db;
 }

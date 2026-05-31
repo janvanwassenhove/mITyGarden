@@ -45,11 +45,27 @@ function buildMenu(win: BrowserWindow): void {
     {
       label: "File",
       submenu: [
-        { label: "New Garden...", accelerator: "CmdOrCtrl+N", click: () => win.webContents.send("menu:new-project") },
-        { label: "Open Project...", accelerator: "CmdOrCtrl+O", click: () => win.webContents.send("menu:open-project") },
+        {
+          label: "New Garden...",
+          accelerator: "CmdOrCtrl+N",
+          click: () => win.webContents.send("menu:new-project"),
+        },
+        {
+          label: "Open Project...",
+          accelerator: "CmdOrCtrl+O",
+          click: () => win.webContents.send("menu:open-project"),
+        },
         { type: "separator" },
-        { label: "Save", accelerator: "CmdOrCtrl+S", click: () => win.webContents.send("menu:save") },
-        { label: "Export...", accelerator: "CmdOrCtrl+E", click: () => win.webContents.send("menu:export") },
+        {
+          label: "Save",
+          accelerator: "CmdOrCtrl+S",
+          click: () => win.webContents.send("menu:save"),
+        },
+        {
+          label: "Export...",
+          accelerator: "CmdOrCtrl+E",
+          click: () => win.webContents.send("menu:export"),
+        },
         { type: "separator" },
         { role: "quit" },
       ],
@@ -57,8 +73,16 @@ function buildMenu(win: BrowserWindow): void {
     {
       label: "Edit",
       submenu: [
-        { label: "Undo", accelerator: "CmdOrCtrl+Z", click: () => win.webContents.send("menu:undo") },
-        { label: "Redo", accelerator: "CmdOrCtrl+Shift+Z", click: () => win.webContents.send("menu:redo") },
+        {
+          label: "Undo",
+          accelerator: "CmdOrCtrl+Z",
+          click: () => win.webContents.send("menu:undo"),
+        },
+        {
+          label: "Redo",
+          accelerator: "CmdOrCtrl+Shift+Z",
+          click: () => win.webContents.send("menu:redo"),
+        },
       ],
     },
     {
@@ -95,50 +119,53 @@ ipcMain.handle("llm:get-config", () => {
 });
 
 // LLM completions run in main process so API keys never leave the Node.js context
-ipcMain.handle("llm:complete", async (_event, messages: Array<{ role: string; content: string }>) => {
-  const openaiKey = process.env["MITY_GARDEN_OPENAI_API_KEY"];
-  const anthropicKey = process.env["MITY_GARDEN_ANTHROPIC_API_KEY"];
-  const provider = process.env["MITY_GARDEN_LLM_PROVIDER"] ?? "openai";
+ipcMain.handle(
+  "llm:complete",
+  async (_event, messages: Array<{ role: string; content: string }>) => {
+    const openaiKey = process.env["MITY_GARDEN_OPENAI_API_KEY"];
+    const anthropicKey = process.env["MITY_GARDEN_ANTHROPIC_API_KEY"];
+    const provider = process.env["MITY_GARDEN_LLM_PROVIDER"] ?? "openai";
 
-  if (provider === "anthropic" && anthropicKey) {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": anthropicKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: process.env["MITY_GARDEN_LLM_MODEL"] ?? "claude-3-haiku-20240307",
-        max_tokens: 1024,
-        messages: messages.filter((m) => m.role !== "system"),
-        system: messages.find((m) => m.role === "system")?.content ?? "",
-      }),
-    });
-    const data = (await res.json()) as { content: Array<{ text: string }> };
-    return { content: data.content[0]?.text ?? "" };
+    if (provider === "anthropic" && anthropicKey) {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": anthropicKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: process.env["MITY_GARDEN_LLM_MODEL"] ?? "claude-3-haiku-20240307",
+          max_tokens: 1024,
+          messages: messages.filter((m) => m.role !== "system"),
+          system: messages.find((m) => m.role === "system")?.content ?? "",
+        }),
+      });
+      const data = (await res.json()) as { content: Array<{ text: string }> };
+      return { content: data.content[0]?.text ?? "" };
+    }
+
+    if (openaiKey) {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: process.env["MITY_GARDEN_LLM_MODEL"] ?? "gpt-4o-mini",
+          messages,
+          response_format: { type: "json_object" },
+          max_tokens: 1024,
+        }),
+      });
+      const data = (await res.json()) as { choices: Array<{ message: { content: string } }> };
+      return { content: data.choices[0]?.message.content ?? "" };
+    }
+
+    throw new Error("No LLM provider configured");
   }
-
-  if (openaiKey) {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${openaiKey}`,
-      },
-      body: JSON.stringify({
-        model: process.env["MITY_GARDEN_LLM_MODEL"] ?? "gpt-4o-mini",
-        messages,
-        response_format: { type: "json_object" },
-        max_tokens: 1024,
-      }),
-    });
-    const data = (await res.json()) as { choices: Array<{ message: { content: string } }> };
-    return { content: data.choices[0]?.message.content ?? "" };
-  }
-
-  throw new Error("No LLM provider configured");
-});
+);
 
 // ─── SQLite DB IPC handlers ───────────────────────────────────────────────────
 

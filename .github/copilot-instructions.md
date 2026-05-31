@@ -29,6 +29,7 @@ When creating a new spec (`specs/<id>-<feature>/spec.md`):
 ## Acceptance Criteria
 
 ### AC-001: <title>
+
 - Given <context>
 - When <action>
 - Then <expected outcome>
@@ -40,7 +41,7 @@ When creating a new spec (`specs/<id>-<feature>/spec.md`):
 ## Test IDs (for E2E)
 
 | Element | data-testid |
-|---------|-------------|
+| ------- | ----------- |
 | …       | …           |
 
 ## Success Metrics
@@ -66,21 +67,22 @@ The `docs/` directory contains living documentation. **Keep it current automatic
 
 ### Rules
 
-| Situation | Action required |
-|-----------|----------------|
-| Adding a new package | Update `docs/architecture.md` — package table, dependency graph |
-| Adding a new Zustand store | Update `docs/architecture.md` — State Management table |
-| Adding a new LLM provider | Update `docs/llm-integration.md` — Supported Providers table |
-| Adding a new locale | Update `docs/i18n.md` — Supported Languages table and steps |
-| Adding a new monorepo command | Update `docs/development.md` — Monorepo Commands section |
-| Changing an IPC channel name | Update `docs/llm-integration.md` (or the relevant doc) |
-| Any public API surface change | Update the relevant `docs/` file in the same commit |
+| Situation                                   | Action required                                                    |
+| ------------------------------------------- | ------------------------------------------------------------------ |
+| Adding a new package                        | Update `docs/architecture.md` — package table, dependency graph    |
+| Adding a new Zustand store                  | Update `docs/architecture.md` — State Management table             |
+| Adding a new LLM provider                   | Update `docs/llm-integration.md` — Supported Providers table       |
+| Adding a new locale                         | Update `docs/i18n.md` — Supported Languages table and steps        |
+| Adding a new monorepo command               | Update `docs/development.md` — Monorepo Commands section           |
+| Changing an IPC channel name                | Update `docs/llm-integration.md` (or the relevant doc)             |
+| Any public API surface change               | Update the relevant `docs/` file in the same commit                |
 | Making a significant architectural decision | Create a new ADR in `docs/adr/` and add it to `docs/adr/README.md` |
-| Introducing a new domain or technical term | Add it to `docs/glossary.md` |
+| Introducing a new domain or technical term  | Add it to `docs/glossary.md`                                       |
 
 ### When to write an ADR
 
 Create an ADR (`docs/adr/NNN-title.md`) whenever you:
+
 - Choose a library or framework over concrete alternatives.
 - Reverse or significantly modify a previous architectural decision.
 - Accept a meaningful trade-off that future contributors need to understand.
@@ -103,30 +105,36 @@ ADRs are append-only. To reverse a decision, mark the old ADR **Superseded** and
 Respect these constraints in every change:
 
 ### Monorepo layout
+
 - Shared logic lives in `packages/` — never duplicate it in `apps/`.
 - Apps in `apps/` import packages via `"workspace:*"` dependencies.
 - Each package exports its public surface through `src/index.ts` only.
 
 ### State management
+
 - All application state lives in Zustand vanilla stores in `packages/domain`.
 - React components access stores via hooks in `packages/shared-ui` (`useProjectStore`, `useUiStore`) or `packages/canvas-engine` (`useCanvasStore`).
 - Never put business logic inside React components — put it in store actions.
 
 ### Persistence
+
 - All data access goes through the `Repository` interface in `packages/persistence`.
 - Web uses `IndexedDBRepository`; Electron desktop uses `ElectronRepository` (IPC bridge).
 - Never call `localStorage`, `fs`, or any storage API directly from a component.
 
 ### LLM / security
+
 - LLM API keys are **main-process only** (Electron). Never expose them to the renderer.
 - All LLM calls in the renderer go through `window.mityGardenDesktop.llm.complete()`.
 
 ### Canvas
+
 - Canvas rendering uses `react-konva` (web/desktop) or a WebView wrapper (mobile).
 - All element mutations go through `projectStore` actions — never mutate canvas state directly.
 - Scale: 50 px per metre at 100% zoom.
 
 ### i18n
+
 - Every user-visible string must use the i18n system (`packages/i18n`).
 - Never hardcode English (or any other language) strings in components.
 - Supported locales: `en`, `nl`, `fr`. Add translations to all three when adding new keys.
@@ -136,17 +144,20 @@ Respect these constraints in every change:
 ## 4. Testing Standards
 
 ### Unit tests
+
 - Unit tests live alongside the package they test in `packages/<name>/tests/`.
 - Use **Vitest** for unit tests.
 - Test stores and business logic, not React rendering.
 
 ### E2E tests
+
 - E2E tests live in `tests/e2e/` and use **Playwright** (Chromium).
 - Every spec AC that can be automated must have a corresponding E2E test.
 - Use `data-testid` attributes defined in the spec's Test IDs table — never select by CSS class or text.
 - E2E tests must pass before merging any feature branch.
 
 ### Coverage expectations
+
 - New store actions → unit test required.
 - New wizard step or canvas interaction → E2E test required.
 - Bug fixes → regression test required (unit or E2E, whichever is appropriate).

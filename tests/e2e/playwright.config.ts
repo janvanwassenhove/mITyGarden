@@ -8,10 +8,7 @@ export default defineConfig({
   retries: process.env["CI"] ? 2 : 0,
   workers: process.env["CI"] ? 1 : undefined,
 
-  reporter: [
-    ["list"],
-    ["html", { outputFolder: "playwright-report" }],
-  ],
+  reporter: [["list"], ["html", { outputFolder: "playwright-report" }]],
 
   use: {
     baseURL: "http://localhost:5173",

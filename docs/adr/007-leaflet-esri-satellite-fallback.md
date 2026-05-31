@@ -25,23 +25,25 @@ ESRI World Imagery is a publicly accessible tile service that requires no API ke
 
 ## Alternatives considered
 
-| Alternative | Reason rejected |
-|-------------|----------------|
-| Google Maps only, no fallback | Violates REQ-BOUNDARY-02; excludes users without a GCP account |
+| Alternative                    | Reason rejected                                                         |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| Google Maps only, no fallback  | Violates REQ-BOUNDARY-02; excludes users without a GCP account          |
 | OpenStreetMap (standard tiles) | Street map only — no satellite imagery; insufficient for garden tracing |
-| Mapbox GL JS | Requires an API key like Google; same problem |
-| Static background image | Cannot be centred on user's address; no real tracing possible |
-| Manual coordinate entry | Very poor UX; defeats the purpose of the feature |
+| Mapbox GL JS                   | Requires an API key like Google; same problem                           |
+| Static background image        | Cannot be centred on user's address; no real tracing possible           |
+| Manual coordinate entry        | Very poor UX; defeats the purpose of the feature                        |
 
 ## Consequences
 
 **Positive:**
+
 - All users can draw a boundary without any API key configuration.
 - ESRI World Imagery has global high-resolution satellite coverage.
 - Leaflet is lightweight (~42 kB gzipped) and well-supported.
 - The two paths share the same downstream boundary calculation — no duplication of math.
 
 **Negative / trade-offs:**
+
 - Two separate map library implementations to maintain (Google Maps path + Leaflet path).
 - ESRI tile usage is subject to Esri's terms of service; heavy usage may require attribution or a commercial agreement.
 - Leaflet.draw UX differs slightly from Google Maps Drawing Manager; visual consistency between the two paths is not guaranteed.

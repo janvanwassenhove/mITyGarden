@@ -2,24 +2,24 @@
 
 ## Key documentation
 
-| Doc | Purpose |
-|-----|---------|
-| [docs/architecture.md](architecture.md) | Monorepo layout, stores, persistence, milestones |
-| [docs/glossary.md](glossary.md) | Definitions for all domain and technical terms |
-| [docs/adr/](adr/README.md) | Architecture Decision Records — why decisions were made |
-| [docs/llm-integration.md](llm-integration.md) | LLM + image providers, env vars, adding providers |
-| [docs/i18n.md](i18n.md) | Supported locales, adding translations |
-| [specs/](../specs/) | Feature specs (ACs, REQs, test IDs) |
+| Doc                                           | Purpose                                                 |
+| --------------------------------------------- | ------------------------------------------------------- |
+| [docs/architecture.md](architecture.md)       | Monorepo layout, stores, persistence, milestones        |
+| [docs/glossary.md](glossary.md)               | Definitions for all domain and technical terms          |
+| [docs/adr/](adr/README.md)                    | Architecture Decision Records — why decisions were made |
+| [docs/llm-integration.md](llm-integration.md) | LLM + image providers, env vars, adding providers       |
+| [docs/i18n.md](i18n.md)                       | Supported locales, adding translations                  |
+| [specs/](../specs/)                           | Feature specs (ACs, REQs, test IDs)                     |
 
 ## Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Node.js | ≥ 22.0.0 |
-| pnpm | ≥ 10.7.0 |
-| Python | ≥ 3.12 (for Spec Kit) |
-| uv | ≥ 0.11 (for Spec Kit) |
-| Git | any recent |
+| Tool    | Version               |
+| ------- | --------------------- |
+| Node.js | ≥ 22.0.0              |
+| pnpm    | ≥ 10.7.0              |
+| Python  | ≥ 3.12 (for Spec Kit) |
+| uv      | ≥ 0.11 (for Spec Kit) |
+| Git     | any recent            |
 
 ## Quick Start
 
@@ -103,10 +103,10 @@ Every feature is governed by a spec file under `specs/<NNN>-<slug>/spec.md`.
 
 ### Current specs
 
-| ID | Feature | Spec |
-|----|---------|------|
-| 001 | Project Creation Wizard | [specs/001-project-wizard/spec.md](../specs/001-project-wizard/spec.md) |
-| 002 | Garden Design Canvas | [specs/002-garden-canvas/spec.md](../specs/002-garden-canvas/spec.md) |
+| ID  | Feature                      | Spec                                                                                |
+| --- | ---------------------------- | ----------------------------------------------------------------------------------- |
+| 001 | Project Creation Wizard      | [specs/001-project-wizard/spec.md](../specs/001-project-wizard/spec.md)             |
+| 002 | Garden Design Canvas         | [specs/002-garden-canvas/spec.md](../specs/002-garden-canvas/spec.md)               |
 | 003 | Google Maps Boundary Drawing | [specs/003-google-maps-boundary/spec.md](../specs/003-google-maps-boundary/spec.md) |
 
 ## Creating a New Package

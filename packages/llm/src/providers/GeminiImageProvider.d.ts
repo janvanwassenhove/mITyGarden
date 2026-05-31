@@ -7,12 +7,12 @@ import type { ImageGenerationProvider, ImageGenerationRequest, GeneratedImage } 
  * API docs: https://ai.google.dev/api/generate-content#generate-content-using-imagen
  */
 export declare class GeminiImageProvider implements ImageGenerationProvider {
-    private readonly apiKey;
-    readonly name = "imagen-3";
-    private readonly model;
-    constructor(apiKey: string, model?: string);
-    isConfigured(): boolean;
-    supportsReferenceImage(): boolean;
-    generateImage(req: ImageGenerationRequest): Promise<GeneratedImage>;
+  private readonly apiKey;
+  readonly name = "imagen-3";
+  private readonly model;
+  constructor(apiKey: string, model?: string);
+  isConfigured(): boolean;
+  supportsReferenceImage(): boolean;
+  generateImage(req: ImageGenerationRequest): Promise<GeneratedImage>;
 }
 //# sourceMappingURL=GeminiImageProvider.d.ts.map

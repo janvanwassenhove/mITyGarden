@@ -3,12 +3,27 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { GardenCanvas } from "@mity-garden/canvas-engine";
-import { useProjectStore, useUiStore, AssetLibraryPanel, LLMSuggestionsPanel } from "@mity-garden/shared-ui";
+import {
+  useProjectStore,
+  useUiStore,
+  AssetLibraryPanel,
+  LLMSuggestionsPanel,
+} from "@mity-garden/shared-ui";
 import type { AssetDefinition } from "@mity-garden/domain";
 import { canvasStore } from "@mity-garden/domain";
 import { getRepoInstance } from "../repository.js";
 import { exportProjectAsJSON, exportProjectAsText } from "../export.js";
-import { getLLMProvider, getImageProvider, resetProviders, createLLMProvider, createImageProvider, setDefaultLLMProviderName, setDefaultImageProviderName, getAvailableLLMProviders, getAvailableImageProviders } from "../llm.js";
+import {
+  getLLMProvider,
+  getImageProvider,
+  resetProviders,
+  createLLMProvider,
+  createImageProvider,
+  setDefaultLLMProviderName,
+  setDefaultImageProviderName,
+  getAvailableLLMProviders,
+  getAvailableImageProviders,
+} from "../llm.js";
 import type { LLMProviderName, ImageProviderName } from "../llm.js";
 import type { GardenLayoutSuggestion } from "@mity-garden/llm";
 import { getAssetById } from "@mity-garden/asset-library";
@@ -77,9 +92,13 @@ export function DesignPage(): React.ReactElement {
 
   // Wire up Electron File → Export JSON menu item
   useEffect(() => {
-    const desktop = (window as { mityGardenDesktop?: { on?: (ch: string, cb: () => void) => void } }).mityGardenDesktop;
+    const desktop = (
+      window as { mityGardenDesktop?: { on?: (ch: string, cb: () => void) => void } }
+    ).mityGardenDesktop;
     if (!desktop?.on || !project) return;
-    const handler = (): void => { void exportProjectAsJSON(project, repo); };
+    const handler = (): void => {
+      void exportProjectAsJSON(project, repo);
+    };
     desktop.on("menu:export", handler);
     // ipcRenderer.on returns a cleanup only in some versions; fall back gracefully
     return undefined;
@@ -112,19 +131,42 @@ export function DesignPage(): React.ReactElement {
 
   if (!project) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          gap: 16,
+        }}
+      >
         <div style={{ fontSize: 64 }}>🌱</div>
         <h2>{t("project.noGardenOpen")}</h2>
         <div style={{ display: "flex", gap: 12 }}>
           <button
             onClick={openWizard}
-            style={{ padding: "10px 20px", borderRadius: 8, background: "#4caf50", color: "#fff", border: "none", cursor: "pointer", fontWeight: 600 }}
+            style={{
+              padding: "10px 20px",
+              borderRadius: 8,
+              background: "#4caf50",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
           >
             {t("project.createNew")}
           </button>
           <button
             onClick={() => void navigate("/")}
-            style={{ padding: "10px 20px", borderRadius: 8, background: "#fff", border: "2px solid #ccc", cursor: "pointer" }}
+            style={{
+              padding: "10px 20px",
+              borderRadius: 8,
+              background: "#fff",
+              border: "2px solid #ccc",
+              cursor: "pointer",
+            }}
           >
             {t("project.openProject")}
           </button>
@@ -163,7 +205,13 @@ export function DesignPage(): React.ReactElement {
             onClick={undo}
             title="Undo (Ctrl+Z)"
             data-testid="toolbar-undo"
-            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff" }}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              background: "#fff",
+            }}
           >
             ↩ {t("canvas.undo")}
           </button>
@@ -171,7 +219,13 @@ export function DesignPage(): React.ReactElement {
             onClick={redo}
             title="Redo (Ctrl+Shift+Z)"
             data-testid="toolbar-redo"
-            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff" }}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              background: "#fff",
+            }}
           >
             ↪ {t("canvas.redo")}
           </button>
@@ -182,12 +236,27 @@ export function DesignPage(): React.ReactElement {
           {selectedAssetId && (
             <>
               <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
-              <span style={{ fontSize: 12, color: "#1565c0", background: "#e3f2fd", padding: "2px 8px", borderRadius: 4 }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "#1565c0",
+                  background: "#e3f2fd",
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                }}
+              >
                 🖊 {t("canvas.placement.hint")}
               </span>
               <button
                 onClick={() => setSelectedAssetId(null)}
-                style={{ padding: "2px 8px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff", fontSize: 12 }}
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                  border: "1px solid #ccc",
+                  cursor: "pointer",
+                  background: "#fff",
+                  fontSize: 12,
+                }}
               >
                 ✕ {t("canvas.placement.cancel")}
               </button>
@@ -196,18 +265,33 @@ export function DesignPage(): React.ReactElement {
           {/* Map layer toggle — always visible; disabled when project has no map data */}
           <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
           <button
-            onClick={() => (project.mapBoundingBox ?? project.mapImageUrl) ? canvasStore.getState().toggleMapLayer() : undefined}
-            title={(project.mapBoundingBox ?? project.mapImageUrl) ? t("canvas.mapLayer.toggle") : t("canvas.mapLayer.noImage")}
+            onClick={() =>
+              (project.mapBoundingBox ?? project.mapImageUrl)
+                ? canvasStore.getState().toggleMapLayer()
+                : undefined
+            }
+            title={
+              (project.mapBoundingBox ?? project.mapImageUrl)
+                ? t("canvas.mapLayer.toggle")
+                : t("canvas.mapLayer.noImage")
+            }
             data-testid="toolbar-toggle-map-layer"
             disabled={!(project.mapBoundingBox ?? project.mapImageUrl)}
             style={{
               padding: "4px 10px",
               borderRadius: 4,
-              border: (project.mapBoundingBox ?? project.mapImageUrl) && mapLayerVisible ? "1px solid #4caf50" : "1px solid #ccc",
+              border:
+                (project.mapBoundingBox ?? project.mapImageUrl) && mapLayerVisible
+                  ? "1px solid #4caf50"
+                  : "1px solid #ccc",
               cursor: (project.mapBoundingBox ?? project.mapImageUrl) ? "pointer" : "not-allowed",
-              background: (project.mapBoundingBox ?? project.mapImageUrl) && mapLayerVisible ? "#e8f5e9" : "#fff",
+              background:
+                (project.mapBoundingBox ?? project.mapImageUrl) && mapLayerVisible
+                  ? "#e8f5e9"
+                  : "#fff",
               fontSize: 12,
-              fontWeight: (project.mapBoundingBox ?? project.mapImageUrl) && mapLayerVisible ? 700 : 400,
+              fontWeight:
+                (project.mapBoundingBox ?? project.mapImageUrl) && mapLayerVisible ? 700 : 400,
               opacity: (project.mapBoundingBox ?? project.mapImageUrl) ? 1 : 0.45,
             }}
           >
@@ -218,7 +302,14 @@ export function DesignPage(): React.ReactElement {
             onClick={() => void exportProjectAsJSON(project, repo)}
             title="Export project as JSON"
             data-testid="toolbar-export-json"
-            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff", fontSize: 12 }}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              background: "#fff",
+              fontSize: 12,
+            }}
           >
             ⬇ JSON
           </button>
@@ -226,7 +317,14 @@ export function DesignPage(): React.ReactElement {
             onClick={() => exportProjectAsText(project)}
             title="Export project proposal as text"
             data-testid="toolbar-export-text"
-            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "#fff", fontSize: 12 }}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              background: "#fff",
+              fontSize: 12,
+            }}
           >
             📄 Proposal
           </button>
@@ -250,7 +348,11 @@ export function DesignPage(): React.ReactElement {
         </div>
 
         {/* Canvas Area */}
-        <div ref={containerRef} style={{ flex: 1, overflow: "hidden", position: "relative" }} data-testid="canvas-area">
+        <div
+          ref={containerRef}
+          style={{ flex: 1, overflow: "hidden", position: "relative" }}
+          data-testid="canvas-area"
+        >
           <GardenCanvas
             project={project}
             width={canvasSize.width}
@@ -275,8 +377,6 @@ export function DesignPage(): React.ReactElement {
           onApplySuggestion={handleApplySuggestion}
         />
       )}
-
-
     </div>
   );
 }

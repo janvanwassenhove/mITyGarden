@@ -3,12 +3,7 @@
 // intermediate model consumed by the prompt builder and reference renderer.
 
 import type { GardenProject, GardenElement, Dimensions } from "@mity-garden/domain";
-import type {
-  ImageGenerationScene,
-  SceneElement,
-  SceneBoundary,
-  SceneOptions,
-} from "./types.js";
+import type { ImageGenerationScene, SceneElement, SceneBoundary, SceneOptions } from "./types.js";
 import {
   DEFAULT_VIEW,
   DEFAULT_ENHANCEMENTS,
@@ -27,7 +22,7 @@ import {
  */
 export function buildScene(
   project: GardenProject,
-  options: SceneOptions = {},
+  options: SceneOptions = {}
 ): ImageGenerationScene {
   const { dimensions, style, goals, layers, unit, mapData, boundaryVertices } = project;
 
@@ -80,13 +75,11 @@ export function buildScene(
 
 function buildBoundary(
   vertices: Array<{ x: number; y: number }> | undefined,
-  dimensions: Dimensions,
+  dimensions: Dimensions
 ): SceneBoundary {
   if (vertices && vertices.length >= 3) {
     const n = vertices.length;
-    const coords = vertices
-      .map((v) => `(${v.x.toFixed(1)}, ${v.y.toFixed(1)})`)
-      .join(", ");
+    const coords = vertices.map((v) => `(${v.x.toFixed(1)}, ${v.y.toFixed(1)})`).join(", ");
     return {
       shapeDescription: `irregular ${n}-sided polygon with vertices in metres: ${coords}`,
       vertices: vertices.map((v) => ({ x: v.x, y: v.y })),
@@ -103,10 +96,7 @@ function buildBoundary(
   };
 }
 
-function buildSceneElement(
-  element: GardenElement,
-  gardenDimensions: Dimensions,
-): SceneElement {
+function buildSceneElement(element: GardenElement, gardenDimensions: Dimensions): SceneElement {
   return {
     id: element.id,
     category: element.type,

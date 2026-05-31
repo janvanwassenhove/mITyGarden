@@ -65,7 +65,7 @@ export class DalleProvider implements ImageGenerationProvider {
 
   constructor(
     private readonly apiKey: string,
-    private readonly model: string = "gpt-image-1",
+    private readonly model: string = "gpt-image-1"
   ) {
     this.name = model;
   }
@@ -113,9 +113,7 @@ export class DalleProvider implements ImageGenerationProvider {
         const parsed = JSON.parse(text) as OpenAIErrorResponse;
         const errMsg = parsed.error?.message;
         const errCode = parsed.error?.code;
-        detail = errMsg
-          ? `${errCode ? `[${errCode}] ` : ""}${errMsg}`
-          : text.slice(0, 300);
+        detail = errMsg ? `${errCode ? `[${errCode}] ` : ""}${errMsg}` : text.slice(0, 300);
       } catch {
         detail = response.statusText || "Unknown error";
       }

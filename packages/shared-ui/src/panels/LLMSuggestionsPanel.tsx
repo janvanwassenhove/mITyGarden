@@ -128,7 +128,8 @@ function SuggestionCard({
             fontSize: 13,
           }}
         >
-          ✔ Apply Layout ({suggestion.placements.length} element{suggestion.placements.length !== 1 ? "s" : ""})
+          ✔ Apply Layout ({suggestion.placements.length} element
+          {suggestion.placements.length !== 1 ? "s" : ""})
         </button>
       )}
     </div>
@@ -254,15 +255,28 @@ export function LLMSuggestionsPanel({
             {/* Provider chooser */}
             {llmProviderOptions && llmProviderOptions.filter((p) => p.available).length > 0 && (
               <div style={{ marginBottom: 10 }}>
-                <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 3 }}>Provider</label>
+                <label style={{ fontSize: 12, color: "#666", display: "block", marginBottom: 3 }}>
+                  Provider
+                </label>
                 <select
                   value={llmProvider.name}
                   onChange={(e) => onLLMProviderChange?.(e.target.value)}
-                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #ccc', fontSize: 12, background: '#fff' }}
+                  style={{
+                    width: "100%",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    border: "1px solid #ccc",
+                    fontSize: 12,
+                    background: "#fff",
+                  }}
                 >
-                  {llmProviderOptions.filter((p) => p.available).map((p) => (
-                    <option key={p.id} value={p.id}>{p.label}</option>
-                  ))}
+                  {llmProviderOptions
+                    .filter((p) => p.available)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.label}
+                      </option>
+                    ))}
                 </select>
               </div>
             )}

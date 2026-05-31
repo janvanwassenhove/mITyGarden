@@ -12,7 +12,10 @@ export declare function getAssetVisualDescription(assetId: string): string;
  * - x increases to the right
  * - y increases downward
  */
-export declare function getPositionDescription(position: Position, gardenDimensions: Dimensions): string;
+export declare function getPositionDescription(
+  position: Position,
+  gardenDimensions: Dimensions
+): string;
 /**
  * Converts element dimensions to a human-readable size description.
  */

@@ -36,8 +36,4 @@ export {
 
 export { buildScene } from "./SceneBuilder.js";
 
-export {
-  buildPrompt,
-  buildShortPrompt,
-  buildNegativePrompt,
-} from "./PromptBuilder.js";
+export { buildPrompt, buildShortPrompt, buildNegativePrompt } from "./PromptBuilder.js";

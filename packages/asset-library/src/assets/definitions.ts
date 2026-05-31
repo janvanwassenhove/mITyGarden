@@ -163,7 +163,10 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
     labels: {
       en: { name: "Rectangular Pool", description: "Standard rectangular swimming pool" },
       nl: { name: "Rechthoekig zwembad", description: "Standaard rechthoekig zwembad" },
-      fr: { name: "Piscine rectangulaire", description: "Piscine de natation rectangulaire standard" },
+      fr: {
+        name: "Piscine rectangulaire",
+        description: "Piscine de natation rectangulaire standard",
+      },
     },
     thumbnail: poolSvg("#4fc3f7", "#0277bd", 2),
     constraints: { snapToGrid: true, allowOverlap: false },
@@ -515,7 +518,10 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
     labels: {
       en: { name: "Wood Decking", description: "Hardwood or composite decking boards" },
       nl: { name: "Houten terras", description: "Hardhouten of composiet terrasplanken" },
-      fr: { name: "Terrasse en bois", description: "Planches de terrasse en bois dur ou composite" },
+      fr: {
+        name: "Terrasse en bois",
+        description: "Planches de terrasse en bois dur ou composite",
+      },
     },
     thumbnail: terraceWoodSvg("#a1887f", "#5d4037"),
     constraints: { snapToGrid: true, allowOverlap: false },
@@ -568,7 +574,10 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
     labels: {
       en: { name: "Wildflower Meadow", description: "Natural wildflower meadow zone" },
       nl: { name: "Bloemenweiland", description: "Natuurlijke zone met veldbloemen" },
-      fr: { name: "Prairie fleurie", description: "Zone de prairie naturelle avec fleurs sauvages" },
+      fr: {
+        name: "Prairie fleurie",
+        description: "Zone de prairie naturelle avec fleurs sauvages",
+      },
     },
     thumbnail: grassSvg("#aed581", "#558b2f", 2),
     constraints: { snapToGrid: true, allowOverlap: false },
@@ -929,8 +938,14 @@ export const ASSET_LIBRARY: AssetDefinition[] = [
     tags: ["terrain", "sunken", "depressed", "lowered", "seating"],
     labels: {
       en: { name: "Sunken Area", description: "Depressed garden zone for seating or planting" },
-      nl: { name: "Verzonken zone", description: "Verlaagde tuinzone voor zitplaatsen of beplanting" },
-      fr: { name: "Zone en creux", description: "Zone de jardin en contrebas pour sièges ou plantation" },
+      nl: {
+        name: "Verzonken zone",
+        description: "Verlaagde tuinzone voor zitplaatsen of beplanting",
+      },
+      fr: {
+        name: "Zone en creux",
+        description: "Zone de jardin en contrebas pour sièges ou plantation",
+      },
     },
     thumbnail: sunkenAreaSvg(),
     constraints: { snapToGrid: true, allowOverlap: false },

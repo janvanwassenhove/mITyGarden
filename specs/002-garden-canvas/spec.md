@@ -7,35 +7,41 @@
 ## Acceptance Criteria
 
 ### AC-001: Canvas initialisation
+
 - Given a garden project is open
 - When the design page loads
 - Then a canvas is displayed matching the project's dimensions
 - And a green boundary rectangle is visible representing the garden area
 
 ### AC-002: Place element from asset library
+
 - Given the "Place" tool is active
 - When I click an asset in the asset library panel
 - And click on the canvas
 - Then a new garden element appears at the clicked position
 
 ### AC-003: Select element
+
 - Given elements exist on the canvas
 - When I click an element
 - Then it becomes selected (visible selection handles)
 - And its properties appear in the properties panel
 
 ### AC-004: Move element
+
 - Given an element is selected
 - When I drag it on the canvas
 - Then it moves to the new position
 - And the project is marked as dirty (unsaved)
 
 ### AC-005: Delete element
+
 - Given an element is selected
 - When I press Delete or Backspace
 - Then the element is removed from the canvas
 
 ### AC-006: Undo/Redo
+
 - Given I have performed an action (add/move/delete)
 - When I click Undo (or Ctrl+Z)
 - Then the last action is reversed
@@ -43,16 +49,19 @@
 - Then the action is re-applied
 
 ### AC-007: Pan and zoom
+
 - User can pan by clicking and dragging with the Pan tool
 - User can zoom with the scroll wheel or pinch gesture
 - Zoom level is clamped between 10% and 1000%
 
 ### AC-008: Grid snap
+
 - When grid snap is enabled
 - Elements snap to the nearest grid point during placement and movement
 - Default grid size is 1 metre
 
 ### AC-009: Rename element
+
 - Given an element exists on the canvas
 - When the user double-clicks the element OR right-clicks and chooses "Rename"
 - Then an inline text input appears positioned over the element, pre-filled with the current label
@@ -71,13 +80,13 @@
 
 ## Test IDs (for E2E)
 
-| Element | data-testid |
-|---------|-------------|
-| Canvas area | `canvas-area` |
-| Undo button | `toolbar-undo` |
-| Redo button | `toolbar-redo` |
-| Context menu rename item | `ctx-rename` |
-| Rename input overlay | `canvas-rename-input` |
+| Element                  | data-testid           |
+| ------------------------ | --------------------- |
+| Canvas area              | `canvas-area`         |
+| Undo button              | `toolbar-undo`        |
+| Redo button              | `toolbar-redo`        |
+| Context menu rename item | `ctx-rename`          |
+| Rename input overlay     | `canvas-rename-input` |
 
 ## Success Metrics
 

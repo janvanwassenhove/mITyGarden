@@ -26,11 +26,11 @@ _Screenshots coming in Milestone 3 (interactive canvas)._
 
 ## Platforms
 
-| Platform | Tech | Status |
-|----------|------|--------|
-| 🌐 Web | Vite + React + react-konva | Milestone 0 ✅ |
-| 🖥️ Desktop | Electron + better-sqlite3 | Milestone 4 |
-| 📱 Mobile | Expo (React Native + WebView) | Milestone 8 |
+| Platform   | Tech                          | Status         |
+| ---------- | ----------------------------- | -------------- |
+| 🌐 Web     | Vite + React + react-konva    | Milestone 0 ✅ |
+| 🖥️ Desktop | Electron + better-sqlite3     | Milestone 4    |
+| 📱 Mobile  | Expo (React Native + WebView) | Milestone 8    |
 
 ## Quick Start
 
@@ -47,19 +47,19 @@ pnpm --filter @mity-garden/web dev
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, Vite 6, React Router 7 |
-| Canvas | react-konva 18, Konva 9 |
-| State | Zustand 5 (vanilla + React hooks) |
-| i18n | i18next 24, react-i18next 15 |
-| Desktop | Electron 34, electron-builder |
-| Mobile | Expo SDK 53, React Native 0.79 |
-| Persistence | IndexedDB (web), SQLite (desktop) |
-| LLM | OpenAI API, Anthropic API |
-| Testing | Vitest 3 (unit), Playwright 1.50 (E2E) |
-| CI/CD | GitHub Actions, GitHub Pages |
-| Monorepo | pnpm 10 workspaces, Turborepo 2 |
+| Layer       | Technology                             |
+| ----------- | -------------------------------------- |
+| Frontend    | React 19, Vite 6, React Router 7       |
+| Canvas      | react-konva 18, Konva 9                |
+| State       | Zustand 5 (vanilla + React hooks)      |
+| i18n        | i18next 24, react-i18next 15           |
+| Desktop     | Electron 34, electron-builder          |
+| Mobile      | Expo SDK 53, React Native 0.79         |
+| Persistence | IndexedDB (web), SQLite (desktop)      |
+| LLM         | OpenAI API, Anthropic API              |
+| Testing     | Vitest 3 (unit), Playwright 1.50 (E2E) |
+| CI/CD       | GitHub Actions, GitHub Pages           |
+| Monorepo    | pnpm 10 workspaces, Turborepo 2        |
 
 ## Monorepo Structure
 

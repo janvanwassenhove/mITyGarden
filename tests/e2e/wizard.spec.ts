@@ -79,7 +79,7 @@ test.describe("Project Creation Wizard", () => {
 
   test("progress bar advances through steps", async ({ page }) => {
     await page.getByTestId("new-project-btn").click();
-    
+
     // Check initial state — step 1 of 5
     await expect(page.getByText("Step 1 of 5")).toBeVisible();
     await page.getByTestId("wizard-next").click();
@@ -108,7 +108,7 @@ test.describe("Project Creation Wizard", () => {
   test("Google Maps boundary step loads map when API key is present", async ({ page }) => {
     // Intercept the Google Maps script to prevent real network request
     await page.route("**/maps.googleapis.com/maps/api/js*", (route) =>
-      route.fulfill({ status: 200, contentType: "text/javascript", body: "/* mocked */" }),
+      route.fulfill({ status: 200, contentType: "text/javascript", body: "/* mocked */" })
     );
 
     // Set a fake API key in localStorage so the wizard shows the Google Maps branch

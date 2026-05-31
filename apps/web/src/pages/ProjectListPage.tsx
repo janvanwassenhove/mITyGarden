@@ -38,11 +38,15 @@ export function ProjectListPage(): React.ReactElement {
   }
 
   return (
-    <div
-      data-testid="project-list-page"
-      style={{ maxWidth: 800, margin: "0 auto", padding: 32 }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+    <div data-testid="project-list-page" style={{ maxWidth: 800, margin: "0 auto", padding: 32 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
         <h1 style={{ fontSize: 28, fontWeight: 700, color: "#1b5e20" }}>{t("project.title")}</h1>
         <button
           onClick={openWizard}
@@ -95,12 +99,15 @@ export function ProjectListPage(): React.ReactElement {
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+            gap: 16,
+          }}
+        >
           {projects.map((p) => (
-            <div
-              key={p.id}
-              style={{ position: "relative" }}
-            >
+            <div key={p.id} style={{ position: "relative" }}>
               <button
                 onClick={() => void handleOpen(p.id)}
                 data-testid={`project-card-${p.id}`}
@@ -117,7 +124,8 @@ export function ProjectListPage(): React.ReactElement {
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.borderColor = "#4caf50";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(76,175,80,0.2)";
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                    "0 4px 12px rgba(76,175,80,0.2)";
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.borderColor = "#e8f5e9";

@@ -23,7 +23,9 @@
     "steps": {
       "dimensions": {
         "title": "Garden Dimensions",
-        "description": "Enter the size of your garden and choose your preferred measurement unit.",        "autocalcNote": "Dimensions auto-calculated from your drawn boundary (bounding box). You can fine-tune them below.",        "width": "Width",
+        "description": "Enter the size of your garden and choose your preferred measurement unit.",
+        "autocalcNote": "Dimensions auto-calculated from your drawn boundary (bounding box). You can fine-tune them below.",
+        "width": "Width",
         "height": "Depth",
         "unit": "Unit system",
         "metric": "Metric (meters)",

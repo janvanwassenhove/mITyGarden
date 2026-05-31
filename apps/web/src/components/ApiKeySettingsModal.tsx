@@ -1,12 +1,21 @@
 import React, { useState } from "react";
-import { getApiKeys, getEnvApiKeys, saveApiKeys, getGoogleMapsApiKey, saveGoogleMapsApiKey } from "../apiKeys.js";
+import {
+  getApiKeys,
+  getEnvApiKeys,
+  saveApiKeys,
+  getGoogleMapsApiKey,
+  saveGoogleMapsApiKey,
+} from "../apiKeys.js";
 
 export interface ApiKeySettingsModalProps {
   onSaved: () => void;
   onClose: () => void;
 }
 
-export function ApiKeySettingsModal({ onSaved, onClose }: ApiKeySettingsModalProps): React.ReactElement {
+export function ApiKeySettingsModal({
+  onSaved,
+  onClose,
+}: ApiKeySettingsModalProps): React.ReactElement {
   const initial = getApiKeys();
   const envKeys = getEnvApiKeys();
   const [openai, setOpenai] = useState(initial.openai);
@@ -15,7 +24,7 @@ export function ApiKeySettingsModal({ onSaved, onClose }: ApiKeySettingsModalPro
   const envGoogleMaps = import.meta.env.GOOGLE_MAPS_API_KEY;
   const hasEnvGoogleMaps = Boolean(envGoogleMaps && envGoogleMaps.length > 0);
   const [googleMaps, setGoogleMaps] = useState(
-    hasEnvGoogleMaps ? "" : (localStorage.getItem("mitygarden_google_maps_key") ?? ""),
+    hasEnvGoogleMaps ? "" : (localStorage.getItem("mitygarden_google_maps_key") ?? "")
   );
 
   // Only save the keys that are not overridden by env vars
@@ -97,7 +106,9 @@ export function ApiKeySettingsModal({ onSaved, onClose }: ApiKeySettingsModalPro
           value={anthropic}
           onChange={setAnthropic}
           testId="api-key-anthropic"
-          {...(envKeys.anthropic !== undefined ? { fromEnv: true, envValue: envKeys.anthropic } : {})}
+          {...(envKeys.anthropic !== undefined
+            ? { fromEnv: true, envValue: envKeys.anthropic }
+            : {})}
         />
         <KeyField
           label="Gemini key"
@@ -201,7 +212,10 @@ function KeyField(props: {
             letterSpacing: "0.15em",
           }}
         >
-          {"•".repeat(Math.min((envValue?.length ?? 0), 24))} <span style={{ fontSize: 11, opacity: 0.7 }}>({envValue?.length ?? 0} chars, from VITE_* env)</span>
+          {"•".repeat(Math.min(envValue?.length ?? 0, 24))}{" "}
+          <span style={{ fontSize: 11, opacity: 0.7 }}>
+            ({envValue?.length ?? 0} chars, from VITE_* env)
+          </span>
         </div>
       ) : (
         <input
@@ -224,4 +238,3 @@ function KeyField(props: {
     </div>
   );
 }
-

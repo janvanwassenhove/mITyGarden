@@ -79,7 +79,7 @@ export function AssetLibraryPanel({
   const { t } = useTranslation("common");
   const [query, setQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    () => new Set(getAssetCategories().keys()),
+    () => new Set(getAssetCategories().keys())
   );
 
   const filtered = useMemo(() => {
@@ -138,7 +138,14 @@ export function AssetLibraryPanel({
           background: "#f9fbe7",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 8,
+          }}
+        >
           <div style={{ fontWeight: 700, fontSize: 13, color: "#33691e" }}>
             🌱 {t("assetLibrary.title")}
           </div>

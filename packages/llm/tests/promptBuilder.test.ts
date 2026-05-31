@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { buildPrompt, buildShortPrompt, buildNegativePrompt } from "../src/aiRender/PromptBuilder.js";
+import {
+  buildPrompt,
+  buildShortPrompt,
+  buildNegativePrompt,
+} from "../src/aiRender/PromptBuilder.js";
 import { buildScene } from "../src/aiRender/SceneBuilder.js";
 import { createProject } from "@mity-garden/domain";
 import type { GardenProject } from "@mity-garden/domain";

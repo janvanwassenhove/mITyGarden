@@ -23,7 +23,7 @@ export class GeminiImageProvider implements ImageGenerationProvider {
 
   constructor(
     private readonly apiKey: string,
-    model = "imagen-3.0-generate-002",
+    model = "imagen-3.0-generate-002"
   ) {
     this.model = model;
   }

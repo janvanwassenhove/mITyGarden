@@ -38,7 +38,8 @@ export function getAvailableImageProviders(): ProviderOption[] {
 export function createLLMProvider(name?: LLMProviderName): LLMProvider {
   const keys = getEffectiveApiKeys();
   if (name === "openai" && keys.openai.length > 0) return new OpenAIProvider(keys.openai);
-  if (name === "anthropic" && keys.anthropic.length > 0) return new AnthropicProvider(keys.anthropic);
+  if (name === "anthropic" && keys.anthropic.length > 0)
+    return new AnthropicProvider(keys.anthropic);
   // Auto-select first available
   if (keys.openai.length > 0) return new OpenAIProvider(keys.openai);
   if (keys.anthropic.length > 0) return new AnthropicProvider(keys.anthropic);
@@ -49,7 +50,8 @@ export function createLLMProvider(name?: LLMProviderName): LLMProvider {
 
 export function createImageProvider(name?: ImageProviderName): ImageGenerationProvider {
   const keys = getEffectiveApiKeys();
-  if (name === "gpt-image-1" && keys.openai.length > 0) return new DalleProvider(keys.openai, "gpt-image-1");
+  if (name === "gpt-image-1" && keys.openai.length > 0)
+    return new DalleProvider(keys.openai, "gpt-image-1");
   if (name === "imagen-3" && keys.gemini.length > 0) return new GeminiImageProvider(keys.gemini);
   // Auto-select first available
   if (keys.openai.length > 0) return new DalleProvider(keys.openai, "gpt-image-1");

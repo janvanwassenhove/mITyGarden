@@ -28,21 +28,23 @@ All storage calls go through the `Repository` interface — no component may cal
 
 ## Alternatives considered
 
-| Alternative | Reason rejected |
-|-------------|----------------|
-| `localStorage` (web) | 5 MB limit; synchronous; not suitable for project-sized JSON |
-| File System Access API (web) | Requires user gesture for every save; poor UX; limited browser support |
-| PouchDB / CouchDB sync | Full cloud sync complexity too early; adds server dependency |
-| Electron `fs` directly from renderer | Violates contextIsolation; security anti-pattern |
+| Alternative                          | Reason rejected                                                        |
+| ------------------------------------ | ---------------------------------------------------------------------- |
+| `localStorage` (web)                 | 5 MB limit; synchronous; not suitable for project-sized JSON           |
+| File System Access API (web)         | Requires user gesture for every save; poor UX; limited browser support |
+| PouchDB / CouchDB sync               | Full cloud sync complexity too early; adds server dependency           |
+| Electron `fs` directly from renderer | Violates contextIsolation; security anti-pattern                       |
 
 ## Consequences
 
 **Positive:**
+
 - `ProjectRepository` interface allows swapping adapters without touching components or stores.
 - Desktop SQLite provides fast queries, WAL concurrency, and a path to relational features.
 - Web IndexedDB is truly offline-capable with no backend.
 
 **Negative / trade-offs:**
+
 - IPC round-trips on desktop add latency for `listProjects` on large collections; mitigated by returning only `ProjectSummary` (id, name, dates) in the list query.
 - IndexedDB API is notoriously verbose; `IndexedDBRepository` wraps it but adds a dependency on its correctness.
 - Mobile adapter is deferred; mobile builds currently have no persistence.

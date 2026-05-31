@@ -1,5 +1,15 @@
 import { createStore } from "zustand/vanilla";
-import type { Locale, WizardState, UnitSystem, GardenStyle, GardenGoal, Polygon, GeoCoordinates, Position, MapBoundingBox } from "../models/types.js";
+import type {
+  Locale,
+  WizardState,
+  UnitSystem,
+  GardenStyle,
+  GardenGoal,
+  Polygon,
+  GeoCoordinates,
+  Position,
+  MapBoundingBox,
+} from "../models/types.js";
 import { WIZARD_TOTAL_STEPS } from "../models/types.js";
 
 // ─── UI Store ─────────────────────────────────────────────────────────────────

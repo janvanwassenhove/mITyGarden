@@ -28,12 +28,10 @@ const ASSET_VISUAL_DESCRIPTIONS: Record<string, string> = {
     "mature birch tree with light bark, delicate open canopy, fine green leaves, slender white trunk",
   "tree-apple":
     "small mature apple tree with natural rounded canopy, green foliage, fruit-bearing appearance",
-  "tree-palm":
-    "tall palm tree with long fronds, slender trunk, tropical appearance",
+  "tree-palm": "tall palm tree with long fronds, slender trunk, tropical appearance",
   "tree-magnolia":
     "flowering magnolia tree with rounded canopy and subtle pink blossom accents, dark green glossy leaves",
-  "tree-bamboo":
-    "bamboo clump with tall slender canes, dense narrow green foliage, upright growth",
+  "tree-bamboo": "bamboo clump with tall slender canes, dense narrow green foliage, upright growth",
   "tree-weeping-willow":
     "mature weeping willow tree with soft hanging branches and broad green canopy, elegant draping form",
 
@@ -42,8 +40,7 @@ const ASSET_VISUAL_DESCRIPTIONS: Record<string, string> = {
     "flowering rose bush with green foliage and colorful blooms, compact rounded form",
   "plant-lavender":
     "lavender planting with purple flower spikes and silvery-green foliage, low growing",
-  "plant-boxwood":
-    "neatly trimmed boxwood hedge or topiary, dense dark green compact foliage",
+  "plant-boxwood": "neatly trimmed boxwood hedge or topiary, dense dark green compact foliage",
   "plant-hydrangea":
     "hydrangea shrub with large round flower clusters in blue or pink, broad green leaves",
   "plant-ornamental-grass":
@@ -68,16 +65,13 @@ const ASSET_VISUAL_DESCRIPTIONS: Record<string, string> = {
   // Playground
   "playground-swingset":
     "children's swing set with A-frame structure, two seats, safe landing area",
-  "playground-sandbox":
-    "children's sandbox with wooden frame, clean sand fill, play area",
-  "playground-trampoline":
-    "round in-ground trampoline with safety net, recessed into lawn",
+  "playground-sandbox": "children's sandbox with wooden frame, clean sand fill, play area",
+  "playground-trampoline": "round in-ground trampoline with safety net, recessed into lawn",
 
   // Paths
   "path-stepping-stones":
     "stepping stone path with natural irregularly shaped flat stones set into lawn",
-  "path-paved":
-    "paved garden path with brick or stone pavers, clean edges, gentle curves",
+  "path-paved": "paved garden path with brick or stone pavers, clean edges, gentle curves",
 
   // Buildings
   "building-house":
@@ -90,10 +84,8 @@ const ASSET_VISUAL_DESCRIPTIONS: Record<string, string> = {
     "open garden gazebo or pergola with decorative roof structure, seating area beneath",
 
   // Fences, walls & borders
-  "fence-wood":
-    "wooden garden fence with vertical boards, natural timber finish, privacy height",
-  "fence-hedge":
-    "neatly maintained green hedge, dense foliage, natural garden boundary",
+  "fence-wood": "wooden garden fence with vertical boards, natural timber finish, privacy height",
+  "fence-hedge": "neatly maintained green hedge, dense foliage, natural garden boundary",
   "wall-brick":
     "brick garden wall with traditional masonry, warm red-brown tones, solid construction",
 
@@ -136,10 +128,7 @@ export function getAssetVisualDescription(assetId: string): string {
  * - x increases to the right
  * - y increases downward
  */
-export function getPositionDescription(
-  position: Position,
-  gardenDimensions: Dimensions,
-): string {
+export function getPositionDescription(position: Position, gardenDimensions: Dimensions): string {
   const xRatio = position.x / gardenDimensions.width;
   const yRatio = position.y / gardenDimensions.height;
 

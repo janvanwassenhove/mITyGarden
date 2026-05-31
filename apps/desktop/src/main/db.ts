@@ -61,9 +61,9 @@ export function listProjectsSQLite(): ProjectSummary[] {
 
 export function getProjectSQLite(id: string): GardenProject | null {
   const db = getDb();
-  const row = db
-    .prepare("SELECT data FROM projects WHERE id = ?")
-    .get(id) as { data: string } | undefined;
+  const row = db.prepare("SELECT data FROM projects WHERE id = ?").get(id) as
+    | { data: string }
+    | undefined;
 
   if (!row) return null;
 
@@ -77,14 +77,16 @@ export function getProjectSQLite(id: string): GardenProject | null {
 export function saveProjectSQLite(project: GardenProject): void {
   const db = getDb();
   const data = JSON.stringify(project);
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO projects (id, name, data, created_at, updated_at)
     VALUES (@id, @name, @data, @created_at, @updated_at)
     ON CONFLICT(id) DO UPDATE SET
       name       = excluded.name,
       data       = excluded.data,
       updated_at = excluded.updated_at
-  `).run({
+  `
+  ).run({
     id: project.id,
     name: project.name,
     data,

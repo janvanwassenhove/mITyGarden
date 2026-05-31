@@ -80,11 +80,10 @@ export class GardenImageService {
       .slice(0, 12); // cap to avoid prompt length issues
 
     const elementList =
-      elementIds.length > 0
-        ? `Garden elements include: ${elementIds.join(", ")}.`
-        : "";
+      elementIds.length > 0 ? `Garden elements include: ${elementIds.join(", ")}.` : "";
 
-    const goalList = goals.length > 0 ? `Design goals: ${goals.map((g) => g.replace(/-/g, " ")).join(", ")}.` : "";
+    const goalList =
+      goals.length > 0 ? `Design goals: ${goals.map((g) => g.replace(/-/g, " ")).join(", ")}.` : "";
 
     // Location context from map data
     let locationDesc = "";
@@ -94,7 +93,9 @@ export class GardenImageService {
         parts.push(`Located at ${mapData.address}`);
       }
       if (mapData.coordinates) {
-        parts.push(`(${mapData.coordinates.lat.toFixed(5)}, ${mapData.coordinates.lng.toFixed(5)})`);
+        parts.push(
+          `(${mapData.coordinates.lat.toFixed(5)}, ${mapData.coordinates.lng.toFixed(5)})`
+        );
       }
       if (parts.length > 0) {
         locationDesc = `${parts.join(" ")}. `;
@@ -141,7 +142,7 @@ export class GardenImageService {
 
   async generateFromProject(
     project: GardenProject,
-    viewType: "aerial" | "perspective" = "aerial",
+    viewType: "aerial" | "perspective" = "aerial"
   ): Promise<GeneratedImage> {
     const prompt = this.buildPrompt(project, viewType);
     return this.provider.generateImage({
@@ -164,7 +165,10 @@ export class GardenImageService {
    * Build a scene from the project and optional overrides, then return the
    * structured prompt without generating an image.
    */
-  buildScenePrompt(project: GardenProject, options?: SceneOptions): { scene: ImageGenerationScene; prompt: string; negativePrompt: string } {
+  buildScenePrompt(
+    project: GardenProject,
+    options?: SceneOptions
+  ): { scene: ImageGenerationScene; prompt: string; negativePrompt: string } {
     const scene = buildScene(project, options);
     return {
       scene,
@@ -181,7 +185,7 @@ export class GardenImageService {
   async generateFromScene(
     project: GardenProject,
     options?: SceneOptions,
-    referenceImage?: Blob,
+    referenceImage?: Blob
   ): Promise<GeneratedImage> {
     const { scene, prompt } = this.buildScenePrompt(project, options);
 

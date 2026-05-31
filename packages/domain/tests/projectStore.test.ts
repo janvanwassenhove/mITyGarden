@@ -81,7 +81,10 @@ describe("projectStore", () => {
   });
 
   it("loads an existing project", () => {
-    const customProject = createProject({ name: "My Garden", dimensions: { width: 30, height: 25 } });
+    const customProject = createProject({
+      name: "My Garden",
+      dimensions: { width: 30, height: 25 },
+    });
     projectStore.getState().loadProject(customProject);
 
     const state = projectStore.getState();

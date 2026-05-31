@@ -25,7 +25,7 @@ function safeFilename(name: string): string {
 
 export async function exportProjectAsJSON(
   project: GardenProject,
-  repo: ProjectRepository,
+  repo: ProjectRepository
 ): Promise<void> {
   const json = await repo.exportJSON(project);
   const filename = `${safeFilename(project.name)}.garden.json`;

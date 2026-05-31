@@ -55,11 +55,14 @@ export function AppShell(): React.ReactElement {
           boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
         }}
       >
-        <Link to="/" style={{ color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 18 }}>
+        <Link
+          to="/"
+          style={{ color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 18 }}
+        >
           🌿 mITyGarden
         </Link>
-        {projectName !== null && (
-          editing ? (
+        {projectName !== null &&
+          (editing ? (
             <input
               ref={inputRef}
               data-testid="project-name-input"
@@ -68,8 +71,13 @@ export function AppShell(): React.ReactElement {
               onChange={(e) => setDraft(e.target.value)}
               onBlur={commit}
               onKeyDown={(e) => {
-                if (e.key === "Enter") { e.preventDefault(); commit(); }
-                else if (e.key === "Escape") { e.preventDefault(); cancel(); }
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  commit();
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  cancel();
+                }
               }}
               style={{
                 background: "rgba(255,255,255,0.15)",
@@ -107,8 +115,7 @@ export function AppShell(): React.ReactElement {
             >
               {projectName}
             </button>
-          )
-        )}
+          ))}
         <div style={{ flex: 1 }} />
         <button
           onClick={openWizard}

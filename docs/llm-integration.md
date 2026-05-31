@@ -30,34 +30,34 @@ Returns only: { content: string }
 
 ## Environment Variables
 
-| Variable | Platform | Purpose |
-|----------|----------|---------|
-| `OPENAI_API_KEY` | Web / Desktop renderer | OpenAI text (GPT) + image (DALL·E) |
-| `ANTHROPIC_API_KEY` | Web / Desktop renderer | Anthropic text (Claude) |
-| `GEMINI_API_KEY` | Web / Desktop renderer | Google Gemini image generation |
-| `GOOGLE_MAPS_API_KEY` | Web / Desktop renderer | Google Maps boundary drawing (wizard) |
-| `MITY_GARDEN_OPENAI_API_KEY` | Desktop main process | OpenAI via Electron IPC path |
-| `MITY_GARDEN_ANTHROPIC_API_KEY` | Desktop main process | Anthropic via Electron IPC path |
-| `MITY_GARDEN_LLM_PROVIDER` | Desktop main process | `openai` (default) or `anthropic` |
-| `MITY_GARDEN_LLM_MODEL` | Desktop main process | Override default model name |
+| Variable                        | Platform               | Purpose                               |
+| ------------------------------- | ---------------------- | ------------------------------------- |
+| `OPENAI_API_KEY`                | Web / Desktop renderer | OpenAI text (GPT) + image (DALL·E)    |
+| `ANTHROPIC_API_KEY`             | Web / Desktop renderer | Anthropic text (Claude)               |
+| `GEMINI_API_KEY`                | Web / Desktop renderer | Google Gemini image generation        |
+| `GOOGLE_MAPS_API_KEY`           | Web / Desktop renderer | Google Maps boundary drawing (wizard) |
+| `MITY_GARDEN_OPENAI_API_KEY`    | Desktop main process   | OpenAI via Electron IPC path          |
+| `MITY_GARDEN_ANTHROPIC_API_KEY` | Desktop main process   | Anthropic via Electron IPC path       |
+| `MITY_GARDEN_LLM_PROVIDER`      | Desktop main process   | `openai` (default) or `anthropic`     |
+| `MITY_GARDEN_LLM_MODEL`         | Desktop main process   | Override default model name           |
 
 ## Text LLM Providers
 
-| Provider | Class | Default Model |
-|----------|-------|--------------|
-| OpenAI | `OpenAIProvider` | `gpt-4o-mini` |
-| Anthropic | `AnthropicProvider` | `claude-3-haiku-20240307` |
-| No-op | `NoOpLLMProvider` | — (throws descriptive error) |
+| Provider  | Class               | Default Model                |
+| --------- | ------------------- | ---------------------------- |
+| OpenAI    | `OpenAIProvider`    | `gpt-4o-mini`                |
+| Anthropic | `AnthropicProvider` | `claude-3-haiku-20240307`    |
+| No-op     | `NoOpLLMProvider`   | — (throws descriptive error) |
 
 Selection priority in the web factory: OpenAI key present → Anthropic key present → NoOp.
 
 ## Image Generation Providers
 
-| Provider | Class | Notes |
-|----------|-------|-------|
-| DALL·E 3 (OpenAI) | `DalleProvider` | Requires `OPENAI_API_KEY` |
-| Gemini Imagen | `GeminiImageProvider` | Requires `GEMINI_API_KEY` |
-| No-op | `NoOpImageProvider` | Returns descriptive error |
+| Provider          | Class                 | Notes                     |
+| ----------------- | --------------------- | ------------------------- |
+| DALL·E 3 (OpenAI) | `DalleProvider`       | Requires `OPENAI_API_KEY` |
+| Gemini Imagen     | `GeminiImageProvider` | Requires `GEMINI_API_KEY` |
+| No-op             | `NoOpImageProvider`   | Returns descriptive error |
 
 `GardenImageService` (in `packages/llm/src/image.ts`) wraps an `ImageGenerationProvider` and provides the `generateGardenImage(project)` high-level method used by `LLMSuggestionsPanel`.
 
@@ -73,13 +73,13 @@ Garden JSON → SceneBuilder → ImageGenerationScene → PromptBuilder → Rich
 
 ### Pipeline stages
 
-| Stage | Module | Purpose |
-|-------|--------|---------|
-| Asset descriptions | `packages/llm/src/aiRender/assetDescriptions.ts` | Maps all 45 assets to rich visual descriptions |
-| Scene builder | `packages/llm/src/aiRender/SceneBuilder.ts` | Normalizes project into `ImageGenerationScene` |
-| Prompt builder | `packages/llm/src/aiRender/PromptBuilder.ts` | Converts scene to structured natural-language prompt |
-| Reference render | `packages/canvas-engine/src/services/ReferenceRenderService.ts` | Generates simplified top-down PNG using headless Konva |
-| AI render panel | `packages/shared-ui/src/panels/AIRenderPanel.tsx` | Multi-step wizard UI for render configuration |
+| Stage              | Module                                                          | Purpose                                                |
+| ------------------ | --------------------------------------------------------------- | ------------------------------------------------------ |
+| Asset descriptions | `packages/llm/src/aiRender/assetDescriptions.ts`                | Maps all 45 assets to rich visual descriptions         |
+| Scene builder      | `packages/llm/src/aiRender/SceneBuilder.ts`                     | Normalizes project into `ImageGenerationScene`         |
+| Prompt builder     | `packages/llm/src/aiRender/PromptBuilder.ts`                    | Converts scene to structured natural-language prompt   |
+| Reference render   | `packages/canvas-engine/src/services/ReferenceRenderService.ts` | Generates simplified top-down PNG using headless Konva |
+| AI render panel    | `packages/shared-ui/src/panels/AIRenderPanel.tsx`               | Multi-step wizard UI for render configuration          |
 
 ### Key types (in `packages/llm/src/aiRender/types.ts`)
 

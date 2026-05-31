@@ -25,7 +25,11 @@ export interface ProjectActions {
   newProject: (overrides?: Partial<GardenProject>) => void;
   loadProject: (project: GardenProject) => void;
   closeProject: () => void;
-  updateProject: (updates: Partial<Pick<GardenProject, "name" | "dimensions" | "unit" | "style" | "goals" | "metadata">>) => void;
+  updateProject: (
+    updates: Partial<
+      Pick<GardenProject, "name" | "dimensions" | "unit" | "style" | "goals" | "metadata">
+    >
+  ) => void;
 
   // Layer actions
   addLayer: (name?: string) => void;
@@ -34,9 +38,19 @@ export interface ProjectActions {
   reorderLayer: (layerId: UUID, newOrder: number) => void;
 
   // Element actions
-  addElement: (layerId: UUID, assetId: string, type: ElementType, position: Position, size: Dimensions) => UUID;
+  addElement: (
+    layerId: UUID,
+    assetId: string,
+    type: ElementType,
+    position: Position,
+    size: Dimensions
+  ) => UUID;
   removeElement: (layerId: UUID, elementId: UUID) => void;
-  updateElement: (layerId: UUID, elementId: UUID, updates: Partial<Omit<GardenElement, "id">>) => void;
+  updateElement: (
+    layerId: UUID,
+    elementId: UUID,
+    updates: Partial<Omit<GardenElement, "id">>
+  ) => void;
   moveElement: (layerId: UUID, elementId: UUID, position: Position) => void;
 
   // History
@@ -58,9 +72,7 @@ function applyAction(project: GardenProject, action: HistoryAction): GardenProje
       return {
         ...project,
         layers: project.layers.map((l) =>
-          l.id === action.layerId
-            ? { ...l, elements: [...l.elements, action.element] }
-            : l
+          l.id === action.layerId ? { ...l, elements: [...l.elements, action.element] } : l
         ),
       };
     }
@@ -81,9 +93,7 @@ function applyAction(project: GardenProject, action: HistoryAction): GardenProje
           l.id === action.layerId
             ? {
                 ...l,
-                elements: l.elements.map((e) =>
-                  e.id === action.after.id ? action.after : e
-                ),
+                elements: l.elements.map((e) => (e.id === action.after.id ? action.after : e)),
               }
             : l
         ),
@@ -112,11 +122,21 @@ function applyAction(project: GardenProject, action: HistoryAction): GardenProje
 function reverseAction(action: HistoryAction): HistoryAction {
   switch (action.type) {
     case "ADD_ELEMENT":
-      return { type: "REMOVE_ELEMENT", layerId: action.layerId, elementId: action.element.id, element: action.element };
+      return {
+        type: "REMOVE_ELEMENT",
+        layerId: action.layerId,
+        elementId: action.element.id,
+        element: action.element,
+      };
     case "REMOVE_ELEMENT":
       return { type: "ADD_ELEMENT", layerId: action.layerId, element: action.element };
     case "UPDATE_ELEMENT":
-      return { type: "UPDATE_ELEMENT", layerId: action.layerId, before: action.after, after: action.before };
+      return {
+        type: "UPDATE_ELEMENT",
+        layerId: action.layerId,
+        before: action.after,
+        after: action.before,
+      };
     case "ADD_LAYER":
       return { type: "REMOVE_LAYER", layer: action.layer };
     case "REMOVE_LAYER":
@@ -193,7 +213,13 @@ export const projectStore = createStore<ProjectStore>()(
       if (!project) return;
       const layer = project.layers.find((l) => l.id === layerId);
       if (!layer) return;
-      const before = { id: layer.id, name: layer.name, visible: layer.visible, locked: layer.locked, order: layer.order };
+      const before = {
+        id: layer.id,
+        name: layer.name,
+        visible: layer.visible,
+        locked: layer.locked,
+        order: layer.order,
+      };
       const after = { ...before, ...updates };
       const action: HistoryAction = { type: "UPDATE_LAYER", before, after };
       const updated = applyAction(pushHistory(withTimestamp(project), action), action);

@@ -33,7 +33,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm --filter @mity-garden/e2e exec playwright install --with-deps chromium
+        run: pnpm --filter @mity-garden/e2e exec playwright install --with-deps chromium firefox
 
       - name: Run Playwright tests
         run: pnpm --filter @mity-garden/e2e test

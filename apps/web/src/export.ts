@@ -45,17 +45,15 @@ export function exportProjectAsText(project: GardenProject): void {
     `Updated:  ${new Date(project.updatedAt).toLocaleDateString()}`,
     "",
     "── DIMENSIONS ─────────────────────────────────────────",
-    `  Width :  ${project.dimensions.width} ${project.unit === "metric" ? "m" : "ft"}`,
-    `  Height:  ${project.dimensions.height} ${project.unit === "metric" ? "m" : "ft"}`,
+    `  Width :  ${String(project.dimensions.width)} ${project.unit === "metric" ? "m" : "ft"}`,
+    `  Height:  ${String(project.dimensions.height)} ${project.unit === "metric" ? "m" : "ft"}`,
     `  Area  :  ${(project.dimensions.width * project.dimensions.height).toFixed(1)} ${project.unit === "metric" ? "m²" : "ft²"}`,
     "",
   ];
 
-  if (project.style) {
-    lines.push("── STYLE ──────────────────────────────────────────────");
-    lines.push(`  ${project.style.charAt(0).toUpperCase() + project.style.slice(1)}`);
-    lines.push("");
-  }
+  lines.push("── STYLE ──────────────────────────────────────────────");
+  lines.push(`  ${project.style.charAt(0).toUpperCase() + project.style.slice(1)}`);
+  lines.push("");
 
   if (project.goals.length > 0) {
     lines.push("── GOALS ──────────────────────────────────────────────");
@@ -82,7 +80,7 @@ export function exportProjectAsText(project: GardenProject): void {
   lines.push("── LAYERS ─────────────────────────────────────────────");
   for (const layer of project.layers) {
     const vis = layer.visible ? "visible" : "hidden";
-    lines.push(`  • ${layer.name} [${vis}, ${layer.elements.length} element(s)]`);
+    lines.push(`  • ${layer.name} [${vis}, ${String(layer.elements.length)} element(s)]`);
   }
   lines.push("");
   lines.push("═══════════════════════════════════════════════════════");

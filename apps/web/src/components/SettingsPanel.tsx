@@ -2,13 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "@mity-garden/shared-ui";
 import type { Locale } from "@mity-garden/domain";
-import {
-  getApiKeys,
-  getEnvApiKeys,
-  saveApiKeys,
-  getGoogleMapsApiKey,
-  saveGoogleMapsApiKey,
-} from "../apiKeys.js";
+import { getApiKeys, getEnvApiKeys, saveApiKeys, saveGoogleMapsApiKey } from "../apiKeys.js";
 
 // ─── Lined cog icon (outline / "lined" style) ─────────────────────────────────
 
@@ -103,7 +97,9 @@ export function SettingsPanel({ onSaved }: SettingsPanelProps): React.ReactEleme
     >
       {/* Dialog */}
       <div
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
         role="dialog"
         aria-modal="true"
         aria-label={t("nav.settings")}
@@ -172,7 +168,9 @@ export function SettingsPanel({ onSaved }: SettingsPanelProps): React.ReactEleme
             ).map((opt) => (
               <button
                 key={opt.value}
-                onClick={() => setLocale(opt.value)}
+                onClick={() => {
+                  setLocale(opt.value);
+                }}
                 style={{
                   flex: 1,
                   padding: "8px 4px",
@@ -369,7 +367,9 @@ function KeyField(props: {
           data-testid={testId}
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            onChange(e.target.value);
+          }}
           style={{
             width: "100%",
             padding: "8px 10px",

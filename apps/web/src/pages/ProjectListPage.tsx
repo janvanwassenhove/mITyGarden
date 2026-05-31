@@ -123,13 +123,12 @@ export function ProjectListPage(): React.ReactElement {
                   transition: "border-color 0.2s, box-shadow 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#4caf50";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                    "0 4px 12px rgba(76,175,80,0.2)";
+                  e.currentTarget.style.borderColor = "#4caf50";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(76,175,80,0.2)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#e8f5e9";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                  e.currentTarget.style.borderColor = "#e8f5e9";
+                  e.currentTarget.style.boxShadow = "none";
                 }}
               >
                 <div style={{ fontSize: 32, marginBottom: 8 }}>🌿</div>
@@ -158,12 +157,12 @@ export function ProjectListPage(): React.ReactElement {
                   transition: "color 0.15s, background 0.15s",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.color = "#e53935";
-                  (e.currentTarget as HTMLButtonElement).style.background = "#fce4ec";
+                  e.currentTarget.style.color = "#e53935";
+                  e.currentTarget.style.background = "#fce4ec";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.color = "#bdbdbd";
-                  (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                  e.currentTarget.style.color = "#bdbdbd";
+                  e.currentTarget.style.background = "transparent";
                 }}
               >
                 🗑

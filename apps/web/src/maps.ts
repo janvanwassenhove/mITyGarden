@@ -10,7 +10,7 @@ import { GoogleMapsAdapter, NominatimMapsAdapter } from "@mity-garden/maps";
  * Google Cloud Console to prevent unauthorised use.
  */
 export function createMapsAdapter(): MapsAdapter {
-  const googleKey = import.meta.env["VITE_GOOGLE_MAPS_API_KEY"];
+  const googleKey = import.meta.env["VITE_GOOGLE_MAPS_API_KEY"] as string | undefined;
   if (googleKey && googleKey.length > 0) {
     return new GoogleMapsAdapter(googleKey);
   }

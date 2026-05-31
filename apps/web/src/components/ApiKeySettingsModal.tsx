@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  getApiKeys,
-  getEnvApiKeys,
-  saveApiKeys,
-  getGoogleMapsApiKey,
-  saveGoogleMapsApiKey,
-} from "../apiKeys.js";
+import { getApiKeys, getEnvApiKeys, saveApiKeys, saveGoogleMapsApiKey } from "../apiKeys.js";
 
 export interface ApiKeySettingsModalProps {
   onSaved: () => void;
@@ -53,7 +47,9 @@ export function ApiKeySettingsModal({
     >
       {/* Dialog */}
       <div
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
         role="dialog"
         aria-modal="true"
         aria-label="Configure API Keys"
@@ -222,7 +218,9 @@ function KeyField(props: {
           type="password"
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            onChange(e.target.value);
+          }}
           data-testid={testId}
           autoComplete="off"
           style={{

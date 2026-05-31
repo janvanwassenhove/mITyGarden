@@ -114,7 +114,9 @@ export function DesignPage(): React.ReactElement {
       }
     });
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   // Auto-save with debounce
@@ -126,7 +128,9 @@ export function DesignPage(): React.ReactElement {
       markClean();
       setSaving(false);
     }, 2000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [project, isDirty, setSaving, markClean]);
 
   if (!project) {
@@ -248,7 +252,9 @@ export function DesignPage(): React.ReactElement {
                 🖊 {t("canvas.placement.hint")}
               </span>
               <button
-                onClick={() => setSelectedAssetId(null)}
+                onClick={() => {
+                  setSelectedAssetId(null);
+                }}
                 style={{
                   padding: "2px 8px",
                   borderRadius: 4,
@@ -265,11 +271,11 @@ export function DesignPage(): React.ReactElement {
           {/* Map layer toggle — always visible; disabled when project has no map data */}
           <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
           <button
-            onClick={() =>
-              (project.mapBoundingBox ?? project.mapImageUrl)
-                ? canvasStore.getState().toggleMapLayer()
-                : undefined
-            }
+            onClick={() => {
+              if (project.mapBoundingBox ?? project.mapImageUrl) {
+                canvasStore.getState().toggleMapLayer();
+              }
+            }}
             title={
               (project.mapBoundingBox ?? project.mapImageUrl)
                 ? t("canvas.mapLayer.toggle")
@@ -314,7 +320,9 @@ export function DesignPage(): React.ReactElement {
             ⬇ JSON
           </button>
           <button
-            onClick={() => exportProjectAsText(project)}
+            onClick={() => {
+              exportProjectAsText(project);
+            }}
             title="Export project proposal as text"
             data-testid="toolbar-export-text"
             style={{
@@ -330,7 +338,9 @@ export function DesignPage(): React.ReactElement {
           </button>
           <div style={{ width: 1, background: "#e0e0e0", margin: "0 4px" }} />
           <button
-            onClick={() => setLlmPanelOpen((v) => !v)}
+            onClick={() => {
+              setLlmPanelOpen((v) => !v);
+            }}
             title="Toggle AI suggestions panel"
             data-testid="toolbar-ai-panel"
             style={{
@@ -358,7 +368,9 @@ export function DesignPage(): React.ReactElement {
             width={canvasSize.width}
             height={canvasSize.height}
             pendingAssetId={selectedAssetId}
-            onAssetPlaced={() => setSelectedAssetId(null)}
+            onAssetPlaced={() => {
+              setSelectedAssetId(null);
+            }}
           />
         </div>
       </div>

@@ -68,7 +68,9 @@ export function AppShell(): React.ReactElement {
               data-testid="project-name-input"
               value={draft}
               maxLength={100}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => {
+                setDraft(e.target.value);
+              }}
               onBlur={commit}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
